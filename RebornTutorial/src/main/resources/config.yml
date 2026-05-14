@@ -1,0 +1,29 @@
+stage1-minutes: 10
+stage2-minutes: 10
+stage3-portal-cooldown-seconds: 60
+
+protected-zones:  # 세계별 보호 구역. 좌표 직접 지정.
+  FANTASY:
+    - { world: tutorial_fantasy, min: { x: -50, y: 0, z: -50 }, max: { x: 50, y: 256, z: 50 } }
+
+unprotected-mob-multiplier: 1.5
+
+# 세계별 자동 지급 기본 스킬 (RebornSkill ID)
+starter-skills:
+  FANTASY:    [fireball_1, basic_slash, healing_hands]
+  DEMON:      [demon_blast, hell_fire_low]
+  HEAVEN:     [holy_light, shield_of_light]
+  SPIRIT:     [element_sense, essence_collect, element_bullet]
+  MARTIAL:    [samje_basic_form]
+  IMMORTAL:   [yeongi_basic, talisman_basic]
+  YOKAI:      [transform_human, fox_fire]
+  EARTH:      [hunter_basic, gun_handling]
+  MAGITECH:   [drone_summon, energy_shield]
+  APOCALYPSE: [survival_kit, basic_firearm]
+  CYBERPUNK:  [neural_accel]
+  DRAGON:     [breath_basic, flight]
+  OCEAN:      [water_breathing, basic_navigation]
+
+# 튜토리얼 NPC 최소 스탯
+tutorial-npc-min-stat: 10000
+champion-npc-stat: 50000

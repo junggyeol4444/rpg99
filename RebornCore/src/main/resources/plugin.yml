@@ -1,0 +1,17 @@
+name: RebornCore
+version: '${project.version}'
+main: kr.reborn.core.RebornCore
+api-version: '1.20'
+folia-supported: true
+authors: [ReincarnationWorld]
+description: 환생의 월드 코어 플러그인 (DB·스탯·경지·이벤트버스)
+load: STARTUP
+commands:
+  reborncore:
+    description: RebornCore 관리 명령어
+    aliases: [rcore, rc]
+    permission: reborncore.admin
+permissions:
+  reborncore.admin:
+    default: op
+    description: 코어 관리 권한

@@ -1,0 +1,21 @@
+name: RebornCurse
+version: '${project.version}'
+main: kr.reborn.curse.RebornCurse
+api-version: '1.20'
+folia-supported: true
+authors: [ReincarnationWorld]
+description: 축복·저주 시스템 (세계별 고유 + 범용)
+depend: [RebornCore]
+softdepend: [RebornStat, RebornNPC, RebornSkill]
+load: POSTWORLD
+commands:
+  buff:
+    description: 현재 축복·저주 목록 GUI
+  curse:
+    description: 축복/저주 부여·해제 (관리자)
+    usage: /curse apply|cure <player> <id>
+permissions:
+  reborncurse.use:
+    default: true
+  reborncurse.admin:
+    default: op

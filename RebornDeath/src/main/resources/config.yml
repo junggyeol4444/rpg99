@@ -1,0 +1,31 @@
+underworld:
+  world: underworld
+  arrive: { x: 0.5, y: 64, z: 0.5 }
+  revive-min-seconds: 300
+  reincarnate-min-seconds: 1800
+  revive-min-underworld-ki: 50
+
+drop:
+  pickup-only-owner-seconds: 600
+
+reincarnation:
+  bonus-by-tier:
+    "절대자": { LUCK: 5, MENTAL: 3 }
+    "그랜드 마스터": { LUCK: 3 }
+    "default": { LUCK: 1 }
+  permanent-titles: [환생자, 영원의여행자]
+
+crime:
+  pk-crime: 100
+  pk-fame: -50
+  hourly-decay: 10
+  thresholds:
+    - { min: 0, level: 0, label: "일반" }
+    - { min: 100, level: 1, label: "1등급 — NPC 경계" }
+    - { min: 300, level: 2, label: "2등급 — NPC 적대" }
+    - { min: 600, level: 3, label: "3등급 — 포스터" }
+    - { min: 1000, level: 4, label: "4등급 — 사냥꾼 파견" }
+    - { min: 2000, level: 5, label: "5등급 — 전 세계 수배" }
+
+abyss:
+  inner-resistance-zero-vanish: true

@@ -1,0 +1,40 @@
+clan:
+  create-min-total-stats: 300
+  create-cost-currency: GOLD_COIN
+  create-cost-amount: 10000
+  level-thresholds: [0, 100, 300, 700, 1500, 3000, 6000, 12000, 25000, 50000, 100000]
+
+marriage:
+  fantasy-ritual: church
+  martial-ritual: heaven_earth_bow
+  demon-ritual: blood_contract
+  yokai-ritual: full_moon_lake
+  buff-radius: 30
+  buff-stat-percent: 5
+
+child:
+  request-success-chance: 0.30
+  cooldown-hours: 24
+  parent-stat-percent: 5
+
+territory:
+  size: 16
+  cost-currency: GOLD_COIN
+  cost-amount: 1000
+  upkeep-per-day: 100
+  bonus-stat-percent: 5
+
+kingdom:
+  required-clan-level: 7
+  required-territories: 3
+  cost: 100000
+
+lineages:
+  DRAGON:       { stat: STRENGTH, percent: 5, skill: breath_basic }
+  DEMON_LORD:   { stat: DEMON_KI, percent: 10 }
+  KITSUNE:      { stat: CHARM, percent: 20 }
+  ROYAL:        { stat: CHARISMA, percent: 30 }
+  ELF:          { stat: AGILITY, percent: 10 }
+  GOLD_DRAGON:  { stat: STRENGTH, percent: 8 }
+  DEMON_NOBLE:  { stat: DEMON_KI, percent: 7 }
+  decay-per-generation: 10

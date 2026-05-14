@@ -1,0 +1,16 @@
+name: RebornNPC
+version: '${project.version}'
+main: kr.reborn.npc.RebornNPC
+api-version: '1.20'
+folia-supported: true
+authors: [ReincarnationWorld]
+description: NPC AI·감정·관계·대화·전투·자율행동
+depend: [RebornCore]
+softdepend: [ProtocolLib]
+load: POSTWORLD
+commands:
+  rnpc:
+    description: NPC 관리
+    permission: rebornnpc.admin
+permissions:
+  rebornnpc.admin: { default: op }

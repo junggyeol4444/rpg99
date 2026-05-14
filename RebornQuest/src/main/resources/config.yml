@@ -1,0 +1,27 @@
+quests:
+  fantasy_intro:
+    name: "&e첫걸음"
+    type: KILL
+    target: ZOMBIE
+    amount: 5
+    world: FANTASY
+    rewards:
+      stat: { STRENGTH: 3 }
+      money: { currency: GOLD_COIN, amount: 100 }
+      title: "초보 모험가"
+  marwang_invasion:
+    name: "&c마왕의 침공"
+    type: WORLD
+    phases:
+      - { name: "접경 함락", target: KILL, amount: 30 }
+      - { name: "남부 전선", target: KILL, amount: 80 }
+      - { name: "본대 진격", target: BOSS, target-id: arcane_dragon }
+    rewards:
+      stat: { STRENGTH: 50, INTELLIGENCE: 50 }
+      title: "대전의 영웅"
+    linked: marwang_침략_demon
+  marwang_침략_demon:
+    name: "&5중간계 침략"
+    type: WORLD
+    world: DEMON
+    linked: marwang_invasion

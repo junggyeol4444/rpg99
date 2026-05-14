@@ -1,0 +1,121 @@
+# 13세계 통화 정의 (id: 표시명/색상/CustomModelData/소속세계)
+currencies:
+  GOLD_COIN:
+    name: "&6골드코인"
+    world: FANTASY
+    icon: GOLD_INGOT
+    model: 1001
+  SOUL_STONE:
+    name: "&5영혼석"
+    world: DEMON
+    icon: AMETHYST_SHARD
+    model: 1002
+  FAITH_CRYSTAL:
+    name: "&b신앙의결정"
+    world: HEAVEN
+    icon: PRISMARINE_CRYSTALS
+    model: 1003
+  ESSENCE:
+    name: "&a정수"
+    world: SPIRIT
+    icon: GHAST_TEAR
+    model: 1004
+  SILVER_TAEL:
+    name: "&7은냥"
+    world: MARTIAL
+    icon: IRON_NUGGET
+    model: 1005
+  IMMORTAL_STONE:
+    name: "&d선석"
+    world: IMMORTAL
+    icon: END_CRYSTAL
+    model: 1006
+  YOKAI_CRYSTAL:
+    name: "&5요기결정"
+    world: YOKAI
+    icon: PURPLE_DYE
+    model: 1007
+  WON:
+    name: "&f원"
+    world: EARTH
+    icon: PAPER
+    model: 1008
+  MANA_STONE:
+    name: "&9마석"
+    world: EARTH
+    icon: LAPIS_LAZULI
+    model: 1009
+  MAGITECH_CORE:
+    name: "&3마도코어"
+    world: MAGITECH
+    icon: HEART_OF_THE_SEA
+    model: 1010
+  PURIFIED_WATER:
+    name: "&b정화수"
+    world: APOCALYPSE
+    icon: POTION
+    model: 1011
+  CREDIT:
+    name: "&e크레딧"
+    world: CYBERPUNK
+    icon: GOLD_NUGGET
+    model: 1012
+  DRAGON_SCALE:
+    name: "&c용린편"
+    world: DRAGON
+    icon: NETHERITE_SCRAP
+    model: 1013
+  OCEAN_GOLD:
+    name: "&6해양금화"
+    world: OCEAN
+    icon: GOLD_NUGGET
+    model: 1014
+
+# 환율: from -> to: rate (1 from = rate to)
+exchange-rates:
+  GOLD_COIN:
+    SILVER_TAEL: 10.0
+    WON: 100.0
+    OCEAN_GOLD: 1.5
+  SILVER_TAEL:
+    GOLD_COIN: 0.1
+    WON: 10.0
+
+exchange-fee-percent: 5.0
+exchange-fluctuation-percent: 30.0  # WorldAI ±30% 동적 조정
+
+# 상점
+shops:
+  fantasy_general:
+    name: "&6판타지 잡화상"
+    world: FANTASY
+    items:
+      - id: COMMON_BREAD
+        material: BREAD
+        currency: GOLD_COIN
+        buy: 5
+        sell: 1
+        stock: -1   # 무한
+      - id: STEEL_SWORD
+        material: IRON_SWORD
+        currency: GOLD_COIN
+        buy: 200
+        sell: 50
+        stock: 5
+        restock-minutes: 60
+
+# 경매
+auction:
+  registration-fee-percent: 2.0
+  sale-fee-percent: 3.0
+  default-duration-hours: 24
+  max-listings-per-player: 10
+
+# 거래
+trade:
+  countdown-seconds: 5
+  apocalypse-barter-only: true   # 아포칼립스는 화폐 거래 불가
+
+# 우편함
+mailbox:
+  expire-days: 30

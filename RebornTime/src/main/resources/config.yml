@@ -1,0 +1,36 @@
+timezone: Asia/Seoul
+sync-interval-seconds: 60
+
+# 시간 예외 월드: 별도 처리
+exception-worlds:
+  time_realm: { mode: FLUX }            # 5분마다 0.1~20배 랜덤
+  underworld: { mode: FIXED, time: 14000 }
+  abyss: { mode: FIXED, time: 18000 }
+  void: { mode: FIXED, time: 12500 }   # 황혼 (무간지대)
+  dragon_chamber_aurelius: { mode: SCALE, ratio: 10 }
+  dragon_chamber_ignifer:  { mode: SCALE, ratio: 10 }
+  dragon_chamber_nocterna: { mode: SCALE, ratio: 10 }
+  dragon_chamber_cerylis:  { mode: SCALE, ratio: 10 }
+  dragon_chamber_silvarex: { mode: SCALE, ratio: 10 }
+
+# 연결권
+realm-groups:
+  group1: [FANTASY, DEMON, HEAVEN, SPIRIT]
+  group2: [MARTIAL, IMMORTAL, YOKAI]
+  independent: [EARTH, MAGITECH, APOCALYPSE, CYBERPUNK, DRAGON, OCEAN]
+
+# 포탈
+fixed-portals:
+  - { id: fantasy_demon_border, from: { world: fantasy, x: 100, y: 65, z: 100 }, to: DEMON, requires-tier-stats: 0 }
+  - { id: martial_immortal_ascend, from: { world: martial, x: 200, y: 100, z: 200 }, to: IMMORTAL, requires-tier-stats: 5000 }
+
+# 시간의 방
+time-chamber:
+  enter-tier-stats: 200
+  enter-dragon-power: 500
+  ratio: 10            # 내부 10년 = 외부 1년
+  max-internal-years: 100
+  reentry-cooldown-real-hours: 24
+
+# 보름달 주기 (현실 30일)
+full-moon-cycle-days: 30

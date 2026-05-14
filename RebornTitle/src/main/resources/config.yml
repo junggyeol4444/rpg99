@@ -1,0 +1,54 @@
+# 칭호 정의 — type: ACHIEVEMENT, TIER, CLAN, NPC, WORLD_QUEST, AI
+titles:
+  first_kill:
+    type: ACHIEVEMENT
+    name: "&7첫 사냥꾼"
+    description: "최초의 몬스터를 사냥했다"
+    requirement: { type: KILL_COUNT, value: 1 }
+    effects:
+      stats: { LUCK: 1 }
+  hundred_kills:
+    type: ACHIEVEMENT
+    name: "&a백전노장"
+    description: "100번의 전투를 승리했다"
+    requirement: { type: KILL_COUNT, value: 100 }
+    effects:
+      stats: { STRENGTH: 5 }
+  world_traveler_3:
+    type: ACHIEVEMENT
+    name: "&b세계 여행자"
+    description: "3개의 세계를 방문했다"
+    requirement: { type: WORLDS_VISITED, value: 3 }
+    effects:
+      stats: { CHARM: 5, LUCK: 3 }
+  sword_master:
+    type: TIER
+    name: "&6소드 마스터"
+    description: "검의 극의에 도달했다"
+    requirement: { type: TIER, value: "소드 마스터" }
+    effects:
+      stats: { STRENGTH: 30 }
+  guild_lord:
+    type: CLAN
+    name: "&5가문주"
+    description: "가문을 이끄는 자"
+    requirement: { type: CLAN_RANK, value: "LEADER" }
+    effects:
+      stats: { CHARISMA: 20 }
+  hidden_master_revealed:
+    type: AI
+    name: "&c&l은둔고수"
+    description: "정체를 드러낸 절대자"
+    requirement: { type: ADMIN_GRANT }
+    effects:
+      stats: { STRENGTH: 50, INTELLIGENCE: 50 }
+      special: HIDDEN_MASTER_REVEAL
+
+# 랭킹 갱신
+ranking:
+  refresh-minutes: 5
+  per-page: 100
+  cross-world-threshold: 5000
+
+# NPC 호감도 변동 시 칭호 회수
+npc-revoke-on-favor-loss: true

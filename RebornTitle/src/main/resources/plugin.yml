@@ -1,0 +1,22 @@
+name: RebornTitle
+version: '${project.version}'
+main: kr.reborn.title.RebornTitle
+api-version: '1.20'
+folia-supported: true
+authors: [ReincarnationWorld]
+description: 칭호 6종 + 분야별 랭킹
+depend: [RebornCore]
+softdepend: [RebornStat, RebornNPC, RebornQuest, RebornClan]
+load: POSTWORLD
+commands:
+  title:
+    description: 칭호 관리
+    usage: /title list|set <id>|info <id>
+  ranking:
+    description: 랭킹 GUI
+    aliases: [rank]
+permissions:
+  reborntitle.use:
+    default: true
+  reborntitle.admin:
+    default: op

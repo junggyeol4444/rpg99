@@ -1,0 +1,117 @@
+# 히든 클래스 40종 — INITIAL 10 + ACHIEVEMENT 30
+classes:
+  divine_heir:
+    type: INITIAL
+    name: "&e&l신의 후계자"
+    description: "신성 스탯 초기 1, 신 전환 조건 완화"
+    chance: 0.0001
+    world: ANY
+    effects:
+      stats_override: { DIVINITY: 1 }
+      passive: GOD_ASCENT_RELAX
+  chaos_child:
+    type: INITIAL
+    name: "&d혼돈의 아이"
+    description: "정령력 30%↑, 모든 원소 동시 사용"
+    chance: 0.001
+    world: SPIRIT
+    effects:
+      stats: { SPIRIT_POWER: 30 }
+      passive: ALL_ELEMENTS
+  natural_demon_bone:
+    type: INITIAL
+    name: "&5천생마골"
+    description: "마기 흡수 3배"
+    chance: 0.001
+    world: DEMON
+    effects:
+      passive: DEMON_KI_X3
+  immortal:
+    type: INITIAL
+    name: "&6불멸자"
+    description: "최초 사망 시 부활 + 전 스탯 10% 영구↑"
+    chance: 0.0005
+    world: ANY
+    effects:
+      passive: FIRST_DEATH_REVIVE
+  dragon_blood:
+    type: INITIAL
+    name: "&c용의 피"
+    description: "초기 용력 30, 성장 2배"
+    chance: 0.001
+    world: DRAGON
+    effects:
+      stats: { DRAGON_POWER: 30 }
+      passive: DRAGON_GROW_X2
+  nameless:
+    type: INITIAL
+    name: "&7무명인"
+    description: "랭킹 미표시, 암살단 퀘스트"
+    chance: 0.001
+    world: MARTIAL
+    effects:
+      passive: HIDDEN_FROM_RANK
+  gate_adaptor:
+    type: INITIAL
+    name: "&3게이트 적응자"
+    description: "게이트 내 스탯 +20%"
+    chance: 0.001
+    world: EARTH
+    effects:
+      passive: GATE_BOOST_20
+  heaven_eye:
+    type: INITIAL
+    name: "&b천안통"
+    description: "수련 효율 3배, 타인 경지 파악"
+    chance: 0.001
+    world: IMMORTAL
+    effects:
+      passive: TRAIN_X3
+  yokai_essence:
+    type: INITIAL
+    name: "&5요왕의 자질"
+    description: "변신 완벽, 요기 축적 2배"
+    chance: 0.001
+    world: YOKAI
+    effects:
+      passive: YOKAI_X2
+  machine_kin:
+    type: INITIAL
+    name: "&d기계와의 친화"
+    description: "사이버 사이코 면역, 무제한 인체 개조"
+    chance: 0.001
+    world: CYBERPUNK
+    effects:
+      resistance: [cyber_psychosis]
+      passive: UNLIMITED_CYBERWARE
+
+  # 달성 조건형 (예시 3종 — 30종 중)
+  magic_swordsman:
+    type: ACHIEVEMENT
+    name: "&d마검사"
+    description: "마법과 검술의 길이 하나로"
+    conditions:
+      - { type: STAT_MIN, stat: MANA, value: 1000 }
+      - { type: STAT_MIN, stat: AURA, value: 1000 }
+      - { type: TIER_REACHED, tier: "5서클" }
+      - { type: TIER_REACHED, tier: "소드 마스터" }
+    effects:
+      skills: [magic_sword_fusion]
+  world_traveler:
+    type: ACHIEVEMENT
+    name: "&b세계여행자"
+    description: "절대자 + 3세계 이상"
+    conditions:
+      - { type: TIER_REACHED, tier: "절대자" }
+      - { type: WORLDS_VISITED, value: 3 }
+    effects:
+      passive: WORLD_HOP_COOL_DOWN
+  dimensional_merchant:
+    type: ACHIEVEMENT
+    name: "&6차원상인"
+    description: "3세계 방문 + 거래 100회"
+    conditions:
+      - { type: WORLDS_VISITED, value: 3 }
+      - { type: TRADE_COUNT, value: 100 }
+    effects:
+      passive: EXCHANGE_FEE_EXEMPT

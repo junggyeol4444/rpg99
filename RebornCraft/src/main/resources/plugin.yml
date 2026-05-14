@@ -1,0 +1,28 @@
+name: RebornCraft
+version: '${project.version}'
+main: kr.reborn.craft.RebornCraft
+api-version: '1.20'
+folia-supported: true
+authors: [ReincarnationWorld]
+description: 커스텀 아이템 + 7등급 + 제작 직업
+depend: [RebornCore]
+softdepend: [RebornStat]
+load: POSTWORLD
+commands:
+  craft:
+    description: 제작 GUI
+  accessory:
+    description: 장신구 GUI
+    aliases: [acc]
+  repair:
+    description: 수리 (NPC 또는 아이템)
+  enchant:
+    description: 강화 GUI (마법부여사 전용)
+  craftitem:
+    description: 커스텀 아이템 지급 (관리자)
+    usage: /craftitem <id>
+permissions:
+  reborncraft.use:
+    default: true
+  reborncraft.admin:
+    default: op

@@ -1,0 +1,126 @@
+# 등급별 색상
+grade-colors:
+  COMMON: "&7"
+  UNCOMMON: "&a"
+  RARE: "&9"
+  HEROIC: "&5"
+  LEGENDARY: "&6"
+  MYTHIC: "&c"
+  GENESIS: "&e&l"
+
+grade-glow-from: RARE  # RARE 이상 글로우
+particle-from: MYTHIC
+
+# 커스텀 아이템 정의
+items:
+  iron_sword_basic:
+    base: IRON_SWORD
+    model: 2001
+    name: "&a강철 검"
+    grade: UNCOMMON
+    type: WEAPON
+    lore: ["&7기본 강철 검", "&7손에 익은 무게"]
+    stats: { STRENGTH: 5 }
+    durability: 200
+    tradable: true
+    droppable: true
+  flame_sword:
+    base: NETHERITE_SWORD
+    model: 2002
+    name: "&c불꽃의 검"
+    grade: LEGENDARY
+    type: WEAPON
+    lore: ["&7불꽃이 깃든 전설의 검"]
+    stats: { STRENGTH: 50, MANA: 20 }
+    skill: FLAME_SLASH
+    durability: 1000
+  amulet_of_wisdom:
+    base: GOLD_NUGGET
+    model: 2003
+    name: "&5지혜의 부적"
+    grade: HEROIC
+    type: ACCESSORY
+    accessory_slot: NECKLACE
+    stats: { INTELLIGENCE: 30 }
+    durability: -1
+  healing_potion:
+    base: POTION
+    model: 2004
+    name: "&d치유의 영약"
+    grade: COMMON
+    type: CONSUMABLE
+    consume:
+      type: HEAL
+      value: 100.0
+      cooldown: 60
+  martial_manual:
+    base: BOOK
+    model: 2005
+    name: "&6태극권 비급"
+    grade: RARE
+    type: SKILL_BOOK
+    consume:
+      type: LEARN_SKILL
+      value: TAEGEUK_FIST
+
+# 제작 직업
+professions:
+  blacksmith:
+    name: "&7대장장이"
+    world: FANTASY
+    master_npc: smith_argus
+  alchemist:
+    name: "&a연금술사"
+    world: FANTASY
+  enchanter:
+    name: "&5마법부여사"
+    world: FANTASY
+  rune_smith:
+    name: "&3룬공방사"
+    world: FANTASY
+  pill_master:
+    name: "&d단약사"
+    world: IMMORTAL
+  cyber_tech:
+    name: "&dCyber Tech"
+    world: CYBERPUNK
+
+# 제작 숙련도 단계
+proficiency:
+  TIERS:
+    [{ name: "견습", min: 0 },
+     { name: "숙련", min: 500 },
+     { name: "장인", min: 2000 },
+     { name: "명장", min: 5000 },
+     { name: "대장장", min: 15000 },
+     { name: "신장", min: 50000 }]
+  max-jobs: 3
+
+# 레시피 정의 (간략)
+recipes:
+  iron_sword_basic_recipe:
+    profession: blacksmith
+    min_proficiency: 0
+    materials: [{ material: IRON_INGOT, amount: 3 }]
+    result: iron_sword_basic
+    cast_seconds: 3
+    success_rate: 0.95
+    exp_gain: 30
+  flame_sword_recipe:
+    profession: blacksmith
+    min_proficiency: 5000
+    materials:
+      - { material: NETHERITE_INGOT, amount: 1 }
+      - { material: BLAZE_ROD, amount: 5 }
+    result: flame_sword
+    cast_seconds: 10
+    success_rate: 0.4
+    higher_grade_chance: 0.05
+    exp_gain: 500
+
+# 강화
+enchant:
+  fail-break-chance:
+    LEGENDARY: 0.1
+    MYTHIC: 0.3
+    GENESIS: 0.0   # 창세 안 깨짐

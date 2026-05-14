@@ -1,0 +1,19 @@
+name: RebornStat
+version: '${project.version}'
+main: kr.reborn.stat.RebornStat
+api-version: '1.20'
+folia-supported: true
+authors: [ReincarnationWorld]
+description: 스탯·경지·성장·미니게임
+depend: [RebornCore]
+load: POSTWORLD
+commands:
+  stats:
+    description: 스탯 GUI
+  tierup:
+    description: 경지 돌파 시도
+  meditate:
+    description: 운기조식 (무협)
+permissions:
+  rebornstat.use:
+    default: true

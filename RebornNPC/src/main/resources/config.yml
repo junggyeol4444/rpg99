@@ -1,0 +1,21 @@
+ai-tick-interval: 10
+spawn-distance: 48
+despawn-distance: 64
+max-npcs-per-chunk: 10
+
+emotion-decay-rate:
+  anger: 1.5
+  fear: 1.0
+  trust: 0.2
+  happiness: 0.5
+  sadness: 0.3
+  curiosity: 0.4
+
+relation:
+  same-faction-bonus: 30
+  enemy-faction-penalty: -30
+
+# 은둔고수: 정체 드러나는 조건
+hermit:
+  reveal-favor: 80
+  fake-stat-mult: 0.05  # 평소 표시 스탯은 실제의 5%

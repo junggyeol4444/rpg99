@@ -1,0 +1,57 @@
+spawn-tick-interval: 100
+max-mobs-per-chunk: 8
+despawn-distance: 80
+boss-announce-radius: 50
+boss-contribution-top: 10
+
+# 몬스터 정의 — 실제 운영에서는 monsters/ 폴더로 분할
+monsters:
+  goblin_grunt:
+    base: ZOMBIE
+    name: "&7고블린"
+    world: FANTASY
+    hp: 20
+    damage: 4
+    speed: 0.25
+    ai: BASIC
+    drops:
+      - { item: BONE, chance: 0.3, amount: [1, 2] }
+  fire_imp:
+    base: BLAZE
+    name: "&c임프"
+    world: FANTASY
+    hp: 30
+    damage: 6
+    ai: RANGED
+  shadow_assassin:
+    base: VINDICATOR
+    name: "&8그림자 어쌔신"
+    world: DEMON
+    hp: 60
+    damage: 12
+    ai: BASIC
+  yokai_kitsune:
+    base: WOLF
+    name: "&d요호"
+    world: YOKAI
+    hp: 80
+    damage: 15
+    ai: PACK
+  apocalypse_zombie:
+    base: ZOMBIE
+    name: "&2변종 좀비"
+    world: APOCALYPSE
+    hp: 40
+    damage: 8
+    ai: SWARM
+
+bosses:
+  arcane_dragon:
+    base: ENDER_DRAGON
+    name: "&5고대 마룡"
+    world: FANTASY
+    hp: 5000
+    damage: 80
+    phases: 3
+    drops:
+      - { item: NETHER_STAR, chance: 1.0, amount: [1, 1] }

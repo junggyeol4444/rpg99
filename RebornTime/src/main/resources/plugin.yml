@@ -1,0 +1,20 @@
+name: RebornTime
+version: '${project.version}'
+main: kr.reborn.time.RebornTime
+api-version: '1.20'
+folia-supported: true
+authors: [ReincarnationWorld]
+description: 시간 동기화·세계 이동·시간의 방·달
+depend: [RebornCore]
+softdepend: [RebornStat]
+load: POSTWORLD
+commands:
+  worldtravel:
+    description: 세계 이동
+    aliases: [wt]
+  time:
+    description: 시간 정보
+  chamber:
+    description: 시간의 방
+permissions:
+  reborntime.use: { default: true }

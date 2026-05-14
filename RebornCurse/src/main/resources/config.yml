@@ -1,0 +1,101 @@
+# 축복·저주 정의
+blessings:
+  goddess_blessing:
+    name: "&b여신의 축복"
+    description: "행운이 영원히 함께한다"
+    duration: -1  # 영구
+    stackable: false
+    effects:
+      stats: { LUCK: 30 }
+  spirit_king:
+    name: "&a정령왕의 가호"
+    description: "원소 스킬 50% 강화"
+    duration: -1
+    effects:
+      stats: { SPIRIT_POWER: 100 }
+      special: ELEMENT_SKILL_BOOST_50
+  dragon_recognition:
+    name: "&c드래곤의 인정"
+    description: "맷집과 근력 +50"
+    duration: -1
+    effects:
+      stats: { ENDURANCE: 50, STRENGTH: 50 }
+  martial_lord:
+    name: "&6무림맹주의 격"
+    description: "카리스마 +100"
+    duration: -1
+    effects:
+      stats: { CHARISMA: 100 }
+
+curses:
+  qi_deviation:
+    name: "&5주화입마"
+    description: "정신력 -5/30초, 5% 광폭화"
+    duration: -1
+    max_stacks: 1
+    tick_interval_seconds: 30
+    effects:
+      stats_tick: { MENTAL: -5 }
+      berserk_chance: 0.05
+    cure_methods: [SOLIM_ABBOT_NPC, BING_SIM_DAN, HEAL_QUEST]
+    world: MARTIAL
+  demon_erosion:
+    name: "&8마기 침식"
+    description: "지능·정신력 -3/분, 1시간 후 자동 해제"
+    duration: 3600
+    max_stacks: 5
+    tick_interval_seconds: 60
+    effects:
+      stats_tick: { INTELLIGENCE: -3, MENTAL: -3 }
+    cure_methods: [PURIFY_ORB, HARMONY_FOUNTAIN, AUTO_EXPIRE]
+    world: DEMON
+  divine_punishment:
+    name: "&c천벌"
+    description: "천기 -500 + 신성 스킬 봉인"
+    duration: 604800  # 7일
+    effects:
+      stats: { HEAVEN_KI: -500 }
+      lock_skill_school: HOLY
+    cure_methods: [ARCHANGEL_REPENT_QUEST, AUTO_EXPIRE]
+    world: HEAVEN
+  cyber_psychosis:
+    name: "&dCyber Psychosis"
+    description: "정신력 -100, 10% 확률 광폭화"
+    duration: -1
+    tick_interval_seconds: 30
+    effects:
+      stats: { MENTAL: -100 }
+      berserk_chance: 0.10
+    cure_methods: [THERAPIST_NPC, NEURAL_STABILIZER, REMOVE_CYBERNETICS_3]
+    world: CYBERPUNK
+  radiation:
+    name: "&2방사능 오염"
+    description: "전 스탯 -1/2분 (30분)"
+    duration: 1800
+    max_stacks: 10
+    tick_interval_seconds: 120
+    effects:
+      stats_tick_common: -1
+    cure_methods: [ANTI_RAD_SERUM, MED_BAY]
+    world: APOCALYPSE
+  pact_break_penalty:
+    name: "&5계약 파기의 대가"
+    description: "정령력 영구 50% 감소"
+    duration: -1
+    effects:
+      stats_percent: { SPIRIT_POWER: -0.5 }
+    cure_methods: []  # 해제 불가
+    world: SPIRIT
+  pirate_curse:
+    name: "&3해적의 저주"
+    description: "배에서 떨어지면 HP 지속 감소"
+    duration: 86400
+    effects:
+      out_of_ship_hp_drain: 1.0
+    cure_methods: [SEA_WITCH_NPC]
+    world: OCEAN
+
+berserk:
+  duration-seconds: 10
+  radius-blocks: 10
+  pk-crime-reduction-percent: 50

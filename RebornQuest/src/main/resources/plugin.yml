@@ -1,0 +1,16 @@
+name: RebornQuest
+version: '${project.version}'
+main: kr.reborn.quest.RebornQuest
+api-version: '1.20'
+folia-supported: true
+authors: [ReincarnationWorld]
+description: NPC·월드·발견·자기생성·세력 퀘스트
+depend: [RebornCore]
+softdepend: [RebornNPC, RebornStat, RebornEconomy, RebornWorldAI]
+load: POSTWORLD
+commands:
+  quest:
+    description: 퀘스트
+    permission: rebornquest.use
+permissions:
+  rebornquest.use: { default: true }

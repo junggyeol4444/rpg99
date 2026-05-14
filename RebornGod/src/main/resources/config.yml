@@ -1,0 +1,32 @@
+ascend:
+  faith-required: 10000
+  challenge-trials-required: 2
+
+tiers:
+  - { name: "하급신",  min: 1,     max: 1000  }
+  - { name: "중급신",  min: 1000,  max: 5000  }
+  - { name: "상급신",  min: 5000,  max: 10000 }
+  - { name: "주신",    min: 10000, max: 49999 }
+  - { name: "개념신",  min: 50000, max: 999999 }
+
+domain:
+  size:
+    하급신: 500
+    중급신: 2000
+    상급신: 10000
+    주신: 100000
+    개념신: 999999
+  upkeep-divinity-per-day: 10
+
+skills:
+  divine_shield:    { tier: 하급신, cost: 50,  effect: SHIELD_10S }
+  miracle_heal:     { tier: 하급신, cost: 100, effect: AOE_HEAL_30 }
+  world_decree:     { tier: 중급신, cost: 500, effect: WORLD_RULE_1H }
+  divine_punishment:{ tier: 상급신, cost: 1000, effect: DAMAGE_X10 }
+  avatar_descent:   { tier: 주신,   cost: 5000, effect: AVATAR_30M }
+  concept_dominion: { tier: 개념신, cost: 10000, effect: ABSOLUTE }
+
+npc-gods:
+  arcanus:    { world: FANTASY, divinity: 30000, name: "창조신 아르카누스" }
+  azathoth:   { world: DEMON,   divinity: 999999, name: "고대 마신 아자토스 (봉인)", sealed: true }
+  cheonje:    { world: HEAVEN,  divinity: 40000, name: "천제" }

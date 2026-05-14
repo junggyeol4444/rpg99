@@ -1,0 +1,16 @@
+name: RebornTutorial
+version: '${project.version}'
+main: kr.reborn.tutorial.RebornTutorial
+api-version: '1.20'
+folia-supported: true
+authors: [ReincarnationWorld]
+description: 13세계 튜토리얼
+depend: [RebornCore]
+softdepend: [RebornNPC, RebornSkill, RebornDeath]
+load: POSTWORLD
+commands:
+  rtut:
+    description: 튜토리얼 관리
+    permission: reborntutorial.admin
+permissions:
+  reborntutorial.admin: { default: op }

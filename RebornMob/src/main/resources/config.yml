@@ -4,54 +4,191 @@ despawn-distance: 80
 boss-announce-radius: 50
 boss-contribution-top: 10
 
-# 몬스터 정의 — 실제 운영에서는 monsters/ 폴더로 분할
+# ============================================================
+# 몬스터 정의 — 세계별 (5장 5-1 ~ 5-13)
+# ============================================================
 monsters:
-  goblin_grunt:
-    base: ZOMBIE
-    name: "&7고블린"
-    world: FANTASY
-    hp: 20
-    damage: 4
-    speed: 0.25
-    ai: BASIC
-    drops:
-      - { item: BONE, chance: 0.3, amount: [1, 2] }
-  fire_imp:
-    base: BLAZE
-    name: "&c임프"
-    world: FANTASY
-    hp: 30
-    damage: 6
-    ai: RANGED
-  shadow_assassin:
-    base: VINDICATOR
-    name: "&8그림자 어쌔신"
-    world: DEMON
-    hp: 60
-    damage: 12
-    ai: BASIC
-  yokai_kitsune:
-    base: WOLF
-    name: "&d요호"
-    world: YOKAI
-    hp: 80
-    damage: 15
-    ai: PACK
-  apocalypse_zombie:
-    base: ZOMBIE
-    name: "&2변종 좀비"
-    world: APOCALYPSE
-    hp: 40
-    damage: 8
-    ai: SWARM
+  # ─── 판타지: 하급 ────────────────────────────
+  fantasy_goblin:        { base: ZOMBIE, name: "&7고블린", world: FANTASY, hp: 20, damage: 4, ai: PACK, drops: [{ item: BONE, chance: 0.3, amount: [1, 2] }] }
+  fantasy_slime_king:    { base: SLIME, name: "&a킹 슬라임", world: FANTASY, hp: 60, damage: 8, ai: BASIC, drops: [{ item: SLIME_BALL, chance: 0.8, amount: [2, 4] }] }
+  fantasy_slime_poison:  { base: SLIME, name: "&2독 슬라임", world: FANTASY, hp: 30, damage: 6, ai: BASIC }
+  fantasy_slime_metal:   { base: MAGMA_CUBE, name: "&7메탈 슬라임", world: FANTASY, hp: 100, damage: 3, ai: FLEE }
+  fantasy_kobold:        { base: ZOMBIE, name: "&8코볼트", world: FANTASY, hp: 15, damage: 3, ai: PACK }
+  fantasy_giant_spider:  { base: SPIDER, name: "&8거대 거미", world: FANTASY, hp: 35, damage: 7, ai: BASIC }
+  fantasy_low_wolf:      { base: WOLF, name: "&7로우 울프", world: FANTASY, hp: 25, damage: 5, ai: PACK }
+  fantasy_skeleton:      { base: SKELETON, name: "&f스켈레톤 병사", world: FANTASY, hp: 25, damage: 6, ai: RANGED }
+  fantasy_zombie:        { base: ZOMBIE, name: "&2좀비", world: FANTASY, hp: 30, damage: 5, ai: BASIC }
+  fantasy_giant_rat:     { base: SILVERFISH, name: "&8거대 쥐", world: FANTASY, hp: 12, damage: 3, ai: SWARM }
+  fantasy_harpy:         { base: PHANTOM, name: "&d하피", world: FANTASY, hp: 40, damage: 8, ai: FLYING }
+  fantasy_imp:           { base: VEX, name: "&c임프", world: FANTASY, hp: 25, damage: 6, ai: FLYING }
 
+  # ─── 판타지: 중급 ────────────────────────────
+  fantasy_orc:           { base: PIGLIN_BRUTE, name: "&2오크", world: FANTASY, hp: 80, damage: 12, ai: PACK }
+  fantasy_troll:         { base: HOGLIN, name: "&a트롤", world: FANTASY, hp: 200, damage: 20, ai: BASIC }
+  fantasy_ogre:          { base: RAVAGER, name: "&7오우거", world: FANTASY, hp: 250, damage: 25, ai: BASIC }
+  fantasy_minotaur:      { base: RAVAGER, name: "&6미노타우로스", world: FANTASY, hp: 180, damage: 22, ai: TERRITORIAL }
+  fantasy_centaur:       { base: HORSE, name: "&e켄타우로스 전사", world: FANTASY, hp: 150, damage: 18, ai: PACK }
+  fantasy_ghost:         { base: VEX, name: "&f고스트", world: FANTASY, hp: 60, damage: 10, ai: FLYING }
+  fantasy_basilisk:      { base: WITHER_SKELETON, name: "&2바실리스크", world: FANTASY, hp: 220, damage: 28, ai: TERRITORIAL }
+  fantasy_cockatrice:    { base: CHICKEN, name: "&5코카트리스", world: FANTASY, hp: 50, damage: 15, ai: BASIC }
+  fantasy_gargoyle:      { base: VEX, name: "&8가고일", world: FANTASY, hp: 100, damage: 14, ai: FLYING }
+  fantasy_wyvern:        { base: PHANTOM, name: "&5와이번", world: FANTASY, hp: 300, damage: 30, ai: FLYING }
+  fantasy_skeleton_knight:{ base: WITHER_SKELETON, name: "&f스켈레톤 나이트", world: FANTASY, hp: 150, damage: 25, ai: BASIC }
+  fantasy_wraith:        { base: VEX, name: "&8레이스", world: FANTASY, hp: 80, damage: 18, ai: FLYING }
+  fantasy_magic_golem:   { base: IRON_GOLEM, name: "&7마법 골렘", world: FANTASY, hp: 400, damage: 30, ai: BASIC }
+
+  # ─── 판타지: 상급 ────────────────────────────
+  fantasy_griffin:       { base: PHANTOM, name: "&6그리폰", world: FANTASY, hp: 600, damage: 50, ai: FLYING }
+  fantasy_hydra:         { base: WITHER, name: "&2히드라", world: FANTASY, hp: 1500, damage: 60, ai: BOSS, phases: 3 }
+  fantasy_chimera:       { base: RAVAGER, name: "&c키메라", world: FANTASY, hp: 800, damage: 55, ai: BASIC }
+  fantasy_manticore:     { base: HOGLIN, name: "&4맨티코어", world: FANTASY, hp: 700, damage: 50, ai: BASIC }
+  fantasy_cyclops:       { base: RAVAGER, name: "&7사이클롭스", world: FANTASY, hp: 1000, damage: 70, ai: TERRITORIAL }
+  fantasy_kraken:        { base: GUARDIAN, name: "&3크라켄 (호수)", world: FANTASY, hp: 1200, damage: 65, ai: AQUATIC }
+  fantasy_balrog:        { base: BLAZE, name: "&4발록", world: FANTASY, hp: 2000, damage: 100, ai: BOSS, phases: 3 }
+
+  # ─── 판타지: 최상급/보스 ────────────────────────
+  fantasy_red_dragon:    { base: ENDER_DRAGON, name: "&4&l레드 드래곤 (고룡)", world: FANTASY, hp: 8000, damage: 200, ai: BOSS, phases: 4 }
+  fantasy_gold_dragon:   { base: ENDER_DRAGON, name: "&6&l골드 드래곤 (고룡)", world: FANTASY, hp: 10000, damage: 250, ai: BOSS, phases: 5 }
+  fantasy_lich:          { base: WITHER_SKELETON, name: "&5에인션트 리치", world: FANTASY, hp: 3000, damage: 80, ai: BOSS, phases: 3 }
+
+  # ─── 마계 ────────────────────────────────────
+  demon_hellhound:       { base: WOLF, name: "&4지옥견", world: DEMON, hp: 60, damage: 18, ai: PACK }
+  demon_imp:             { base: VEX, name: "&c하급 데몬", world: DEMON, hp: 40, damage: 10, ai: BASIC }
+  demon_succubus:        { base: WITCH, name: "&d서큐버스", world: DEMON, hp: 120, damage: 25, ai: RANGED }
+  demon_marune:          { base: PIGLIN_BRUTE, name: "&5중급 데몬", world: DEMON, hp: 350, damage: 45, ai: BASIC }
+  demon_archdemon:       { base: WITHER_SKELETON, name: "&4상급 데몬", world: DEMON, hp: 1500, damage: 80, ai: BASIC }
+  demon_balrog:          { base: BLAZE, name: "&4&l발록", world: DEMON, hp: 4000, damage: 130, ai: BOSS, phases: 3 }
+  demon_corpse_giant:    { base: ZOMBIE, name: "&2부패 거인", world: DEMON, hp: 800, damage: 50, ai: BASIC }
+  demon_shadow_hunter:   { base: VINDICATOR, name: "&8그림자 사냥꾼", world: DEMON, hp: 200, damage: 60, ai: TERRITORIAL }
+  demon_business_worm:   { base: ENDERMITE, name: "&8심연충", world: DEMON, hp: 30, damage: 8, ai: SWARM }
+  demon_karma_beast:     { base: HUSK, name: "&4카르마 괴물", world: DEMON, hp: 250, damage: 35, ai: BASIC }
+  demon_lord_baal:       { base: WITHER, name: "&4&l[마왕] 바알", world: DEMON, hp: 50000, damage: 500, ai: BOSS, phases: 5 }
+  demon_lord_lucifer:    { base: ENDER_DRAGON, name: "&4&l[마왕] 루시페르", world: DEMON, hp: 80000, damage: 800, ai: BOSS, phases: 7 }
+
+  # ─── 천계 ────────────────────────────────────
+  heaven_angel_novice:   { base: VEX, name: "&f견습 천사", world: HEAVEN, hp: 30, damage: 8, ai: FLYING }
+  heaven_angel:          { base: ALLAY, name: "&e천사", world: HEAVEN, hp: 100, damage: 20, ai: FLYING }
+  heaven_archangel:      { base: VEX, name: "&e&l대천사", world: HEAVEN, hp: 1500, damage: 100, ai: BOSS, phases: 3 }
+  heaven_corrupted_angel:{ base: VEX, name: "&8타락 천사", world: HEAVEN, hp: 800, damage: 70, ai: FLYING }
+  heaven_chaos_beast:    { base: WARDEN, name: "&5혼돈의 괴물", world: HEAVEN, hp: 2500, damage: 120, ai: BOSS, phases: 3 }
+
+  # ─── 정령계 ────────────────────────────────────
+  spirit_wild_fire:      { base: BLAZE, name: "&c야생 화염 정령", world: SPIRIT, hp: 80, damage: 18, ai: FLYING }
+  spirit_wild_water:     { base: GUARDIAN, name: "&3야생 수정령", world: SPIRIT, hp: 100, damage: 15, ai: AQUATIC }
+  spirit_wild_wind:      { base: ALLAY, name: "&f야생 풍정령", world: SPIRIT, hp: 60, damage: 12, ai: FLYING }
+  spirit_wild_earth:     { base: IRON_GOLEM, name: "&7야생 토정령", world: SPIRIT, hp: 200, damage: 22, ai: BASIC }
+  spirit_predator:       { base: WARDEN, name: "&8정령 포식자", world: SPIRIT, hp: 600, damage: 60, ai: BASIC }
+  spirit_king_fire:      { base: BLAZE, name: "&c&l[정령왕] 이프리나", world: SPIRIT, hp: 30000, damage: 400, ai: BOSS, phases: 5 }
+  spirit_king_water:     { base: ELDER_GUARDIAN, name: "&3&l[정령왕] 운디네르", world: SPIRIT, hp: 28000, damage: 380, ai: BOSS, phases: 5 }
+  spirit_king_wind:      { base: ALLAY, name: "&f&l[정령왕] 실피드론", world: SPIRIT, hp: 25000, damage: 350, ai: BOSS, phases: 5 }
+  spirit_king_earth:     { base: IRON_GOLEM, name: "&7&l[정령왕] 노움가르드", world: SPIRIT, hp: 35000, damage: 420, ai: BOSS, phases: 5 }
+
+  # ─── 무협 (마물·영물·독충·흉수) ───────────────────
+  martial_dokho:         { base: OCELOT, name: "&c독호 (毒虎)", world: MARTIAL, hp: 200, damage: 30, ai: TERRITORIAL }
+  martial_hyeolnyang:    { base: WOLF, name: "&4혈랑", world: MARTIAL, hp: 100, damage: 22, ai: PACK }
+  martial_iron_bear:     { base: POLAR_BEAR, name: "&8철갑웅", world: MARTIAL, hp: 500, damage: 40, ai: BASIC }
+  martial_poison_bird:   { base: PARROT, name: "&2음독조", world: MARTIAL, hp: 60, damage: 18, ai: FLYING }
+  martial_ghost_ape:     { base: ZOMBIE, name: "&8귀원", world: MARTIAL, hp: 250, damage: 35, ai: BASIC }
+  martial_ten_thousand_ice_silkworm: { base: SILVERFISH, name: "&b만년빙잠", world: MARTIAL, hp: 150, damage: 25, ai: BASIC }
+  martial_thousand_li_snake: { base: SLIME, name: "&2천리독사", world: MARTIAL, hp: 80, damage: 30, ai: BASIC }
+  martial_five_poison:   { base: TURTLE, name: "&5오독교", world: MARTIAL, hp: 800, damage: 60, ai: BOSS, phases: 2 }
+  martial_kangshi_white: { base: HUSK, name: "&f백강시", world: MARTIAL, hp: 100, damage: 18, ai: BASIC }
+  martial_kangshi_green: { base: ZOMBIE, name: "&2녹강시", world: MARTIAL, hp: 250, damage: 30, ai: BASIC }
+  martial_kangshi_black: { base: HUSK, name: "&0흑강시", world: MARTIAL, hp: 600, damage: 50, ai: BASIC }
+  martial_kangshi_fly:   { base: WITHER_SKELETON, name: "&5비강시", world: MARTIAL, hp: 1500, damage: 80, ai: BOSS, phases: 2 }
+  martial_imuk:          { base: GUARDIAN, name: "&3이무기", world: MARTIAL, hp: 3000, damage: 100, ai: BOSS, phases: 3 }
+  martial_thousand_year_kitsune: { base: WOLF, name: "&5천년 요호", world: MARTIAL, hp: 1500, damage: 80, ai: BOSS, phases: 3 }
+  martial_cheonma_descend: { base: WITHER, name: "&5&l[천마] 강림체", world: MARTIAL, hp: 60000, damage: 600, ai: BOSS, phases: 7 }
+
+  # ─── 선계 ────────────────────────────────────
+  immortal_demon_immortal:{ base: WITHER_SKELETON, name: "&5마선", world: IMMORTAL, hp: 1500, damage: 80, ai: BASIC }
+  immortal_geopsoo:      { base: BLAZE, name: "&3겁수", world: IMMORTAL, hp: 800, damage: 60, ai: FLYING }
+  immortal_seongwi:      { base: VEX, name: "&8선귀", world: IMMORTAL, hp: 400, damage: 40, ai: FLYING }
+  immortal_panacea_guard:{ base: IRON_GOLEM, name: "&a영약 수호수", world: IMMORTAL, hp: 5000, damage: 150, ai: BOSS, phases: 3 }
+  immortal_human_alchemist: { base: ZOMBIE_VILLAGER, name: "&4인약사", world: IMMORTAL, hp: 1000, damage: 60, ai: BASIC }
+  immortal_taeheo_master:{ base: WITHER, name: "&5&l태허선궁 궁주", world: IMMORTAL, hp: 70000, damage: 700, ai: BOSS, phases: 7 }
+
+  # ─── 요계 ────────────────────────────────────
+  yokai_oni:             { base: PIGLIN_BRUTE, name: "&c오니", world: YOKAI, hp: 250, damage: 30, ai: BASIC }
+  yokai_tengu:           { base: PHANTOM, name: "&8텐구", world: YOKAI, hp: 200, damage: 28, ai: FLYING }
+  yokai_kappa:           { base: TURTLE, name: "&3갓파", world: YOKAI, hp: 150, damage: 22, ai: AQUATIC }
+  yokai_yukionna:        { base: STRAY, name: "&b유키온나", world: YOKAI, hp: 300, damage: 35, ai: RANGED }
+  yokai_nekomata:        { base: CAT, name: "&d네코마타", world: YOKAI, hp: 120, damage: 25, ai: BASIC }
+  yokai_dokkaebi:        { base: ZOMBIFIED_PIGLIN, name: "&5도깨비", world: YOKAI, hp: 180, damage: 28, ai: PACK }
+  yokai_haeche:          { base: OCELOT, name: "&6해태", world: YOKAI, hp: 500, damage: 50, ai: TERRITORIAL }
+  yokai_samjokgu:        { base: WOLF, name: "&8삼족구", world: YOKAI, hp: 200, damage: 32, ai: PACK }
+  yokai_bulgasari:       { base: IRON_GOLEM, name: "&7불가사리", world: YOKAI, hp: 800, damage: 60, ai: BASIC }
+  yokai_baektaek:        { base: HORSE, name: "&f백택", world: YOKAI, hp: 600, damage: 45, ai: PASSIVE }
+  yokai_kumiho:          { base: WOLF, name: "&5&l구미호 (9미)", world: YOKAI, hp: 30000, damage: 350, ai: BOSS, phases: 9 }
+  yokai_emperor:         { base: ENDER_DRAGON, name: "&5&l[요제] 강림", world: YOKAI, hp: 80000, damage: 800, ai: BOSS, phases: 7 }
+
+  # ─── 지구 ────────────────────────────────────
+  earth_gate_e:          { base: ZOMBIE, name: "&fE급 게이트 몬스터", world: EARTH, hp: 30, damage: 5, ai: BASIC }
+  earth_gate_d:          { base: ZOMBIE, name: "&aD급 게이트 몬스터", world: EARTH, hp: 80, damage: 10, ai: BASIC }
+  earth_gate_c:          { base: PIGLIN, name: "&9C급 게이트 몬스터", world: EARTH, hp: 250, damage: 25, ai: BASIC }
+  earth_gate_b:          { base: PIGLIN_BRUTE, name: "&5B급 게이트 몬스터", world: EARTH, hp: 700, damage: 50, ai: BASIC }
+  earth_gate_a:          { base: WITHER_SKELETON, name: "&6A급 게이트 몬스터", world: EARTH, hp: 1500, damage: 80, ai: BASIC }
+  earth_gate_s:          { base: WITHER, name: "&cS급 게이트 보스", world: EARTH, hp: 5000, damage: 200, ai: BOSS, phases: 3 }
+  earth_labyrinth_100f:  { base: ENDER_DRAGON, name: "&0&l미궁 100층", world: EARTH, hp: 100000, damage: 1000, ai: BOSS, phases: 10 }
+
+  # ─── 마도공학계 ──────────────────────────────────
+  magitech_runaway_drone:{ base: VEX, name: "&c폭주 마도 드론", world: MAGITECH, hp: 80, damage: 18, ai: FLYING }
+  magitech_runaway_golem:{ base: IRON_GOLEM, name: "&7폭주 골렘", world: MAGITECH, hp: 500, damage: 40, ai: BASIC }
+  magitech_arcane_virus: { base: SLIME, name: "&5마법 바이러스", world: MAGITECH, hp: 60, damage: 10, ai: SWARM }
+
+  # ─── 아포칼립스 ──────────────────────────────────
+  apoc_mutant_rat:       { base: SILVERFISH, name: "&8변종 쥐", world: APOCALYPSE, hp: 20, damage: 5, ai: SWARM }
+  apoc_zombie:           { base: ZOMBIE, name: "&2방사능 좀비", world: APOCALYPSE, hp: 60, damage: 12, ai: BASIC }
+  apoc_mutant_dog:       { base: WOLF, name: "&8변이 개", world: APOCALYPSE, hp: 80, damage: 18, ai: PACK }
+  apoc_radiation_bear:   { base: POLAR_BEAR, name: "&2방사능 곰", world: APOCALYPSE, hp: 400, damage: 50, ai: TERRITORIAL }
+  apoc_radiation_beast:  { base: WARDEN, name: "&2&l방사능 괴수", world: APOCALYPSE, hp: 8000, damage: 200, ai: BOSS, phases: 3 }
+  apoc_end_guardian:     { base: WITHER, name: "&8&l종말의 수호자", world: APOCALYPSE, hp: 30000, damage: 400, ai: BOSS, phases: 5 }
+
+  # ─── 사이버펑크 ──────────────────────────────────
+  cyber_runaway_ai:      { base: VEX, name: "&5폭주 AI", world: CYBERPUNK, hp: 150, damage: 30, ai: FLYING }
+  cyber_psycho:          { base: ZOMBIE, name: "&c사이버 사이코", world: CYBERPUNK, hp: 200, damage: 40, ai: BASIC }
+  cyber_combat_drone:    { base: VEX, name: "&7전투 드론", world: CYBERPUNK, hp: 100, damage: 25, ai: FLYING }
+  cyber_corp_mech:       { base: IRON_GOLEM, name: "&8기업 전쟁 메카", world: CYBERPUNK, hp: 1500, damage: 100, ai: BOSS, phases: 3 }
+
+  # ─── 드래곤계 ────────────────────────────────────
+  dragon_hatchling:      { base: ENDERMITE, name: "&7새끼용", world: DRAGON, hp: 100, damage: 15, ai: BASIC }
+  dragon_drake:          { base: PHANTOM, name: "&8드레이크", world: DRAGON, hp: 400, damage: 40, ai: FLYING }
+  dragon_wyvern:         { base: PHANTOM, name: "&5와이번", world: DRAGON, hp: 600, damage: 50, ai: FLYING }
+  dragon_mid:            { base: PHANTOM, name: "&3중룡", world: DRAGON, hp: 1500, damage: 80, ai: FLYING }
+  dragon_adult:          { base: ENDER_DRAGON, name: "&6성룡", world: DRAGON, hp: 5000, damage: 200, ai: BOSS, phases: 3 }
+  dragon_elder:          { base: ENDER_DRAGON, name: "&c&l고룡", world: DRAGON, hp: 15000, damage: 350, ai: BOSS, phases: 5 }
+  dragon_king_aurelius:  { base: ENDER_DRAGON, name: "&6&l[용왕] 아우렐리스", world: DRAGON, hp: 50000, damage: 600, ai: BOSS, phases: 7 }
+
+  # ─── 해양제국 ────────────────────────────────────
+  ocean_giant_shark:     { base: GUARDIAN, name: "&3거대 상어", world: OCEAN, hp: 200, damage: 30, ai: AQUATIC }
+  ocean_jellyfish:       { base: GUARDIAN, name: "&5독해파리", world: OCEAN, hp: 60, damage: 15, ai: AQUATIC }
+  ocean_sea_serpent:     { base: GUARDIAN, name: "&2바다 뱀", world: OCEAN, hp: 400, damage: 40, ai: AQUATIC }
+  ocean_pirate_zombie:   { base: ZOMBIE, name: "&8해적 좀비", world: OCEAN, hp: 80, damage: 18, ai: BASIC }
+  ocean_giant_octopus:   { base: GUARDIAN, name: "&5거대 문어", world: OCEAN, hp: 800, damage: 50, ai: AQUATIC }
+  ocean_siren:           { base: WITCH, name: "&d사이렌", world: OCEAN, hp: 250, damage: 35, ai: AQUATIC }
+  ocean_kraken:          { base: ELDER_GUARDIAN, name: "&5&l크라켄", world: OCEAN, hp: 8000, damage: 200, ai: BOSS, phases: 3 }
+  ocean_sea_dragon:      { base: ENDER_DRAGON, name: "&3&l해룡", world: OCEAN, hp: 12000, damage: 250, ai: BOSS, phases: 5 }
+  ocean_sea_king:        { base: WITHER, name: "&3&l[해왕] 부활", world: OCEAN, hp: 60000, damage: 700, ai: BOSS, phases: 7 }
+
+# ============================================================
+# 보스 (월드 퀘스트로 소환되는 별도 보스)
+# ============================================================
 bosses:
   arcane_dragon:
     base: ENDER_DRAGON
-    name: "&5고대 마룡"
+    name: "&5&l고대 마룡"
     world: FANTASY
     hp: 5000
     damage: 80
     phases: 3
     drops:
       - { item: NETHER_STAR, chance: 1.0, amount: [1, 1] }
+  cheonma_descend_boss:
+    base: WITHER
+    name: "&5&l[월드퀘스트] 천마 강림"
+    world: MARTIAL
+    hp: 60000
+    damage: 600
+    phases: 7
+    drops:
+      - { item: NETHER_STAR, chance: 1.0, amount: [3, 5] }

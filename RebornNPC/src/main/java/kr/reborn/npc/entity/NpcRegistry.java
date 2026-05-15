@@ -49,6 +49,7 @@ public final class NpcRegistry {
     }
 
     private void materialize(RebornNpc n) {
+        if (n.location == null) return;
         World w = n.location.getWorld();
         if (w == null) return;
         var v = w.spawn(n.location, n.defaultEntity());
@@ -66,24 +67,59 @@ public final class NpcRegistry {
     }
 
     public void loadAll() {
+        // 1) config.yml의 npcs: 섹션을 사전 정의 NPC로 등록 (좌표는 임시, 운영 시 /rnpc spawn으로 배치)
+        var npcSec = plugin.getConfig().getConfigurationSection("npcs");
+        if (npcSec != null) {
+            for (String id : npcSec.getKeys(false)) {
+                if (byId.containsKey(id)) continue;
+                var s = npcSec.getConfigurationSection(id);
+                if (s == null) continue;
+                String name = s.getString("name", id);
+                WorldKey world;
+                try { world = WorldKey.valueOf(s.getString("world", "LOBBY")); }
+                catch (Exception e) { world = WorldKey.LOBBY; }
+                String faction = s.getString("faction", "");
+                String job = s.getString("job", "VILLAGER");
+                RebornNpc n = new RebornNpc(id, name, world, null);
+                n.faction = faction;
+                n.job = job;
+                n.hermit = s.getBoolean("hermit", false);
+                var statSec = s.getConfigurationSection("stats");
+                if (statSec != null) {
+                    for (String k : statSec.getKeys(false)) n.stats.put(k, statSec.getDouble(k));
+                }
+                byId.put(id, n);
+            }
+            plugin.getLogger().info("config 사전 정의 NPC " + byId.size() + "개 등록");
+        }
+
+        // 2) 운영 중 저장된 npcs.yml — 좌표 포함, 실제 스폰
         File f = new File(plugin.getDataFolder(), "npcs.yml");
         if (!f.exists()) return;
         YamlConfiguration y = YamlConfiguration.loadConfiguration(f);
         for (String id : y.getKeys(false)) {
             String name = y.getString(id + ".name", id);
-            WorldKey world = WorldKey.valueOf(y.getString(id + ".world", "FANTASY"));
+            WorldKey world;
+            try { world = WorldKey.valueOf(y.getString(id + ".world", "FANTASY")); }
+            catch (Exception e) { world = WorldKey.FANTASY; }
             String worldName = y.getString(id + ".bukkit-world", "world");
             World bw = Bukkit.getWorld(worldName);
             if (bw == null) continue;
             Location loc = new Location(bw,
                     y.getDouble(id + ".x"), y.getDouble(id + ".y"), y.getDouble(id + ".z"));
-            RebornNpc n = spawn(id, name, world, loc,
-                    y.getString(id + ".faction", ""), y.getString(id + ".job", "VILLAGER"));
-            n.hermit = y.getBoolean(id + ".hermit", false);
-            for (String key : y.getConfigurationSection(id + ".stats") == null ?
-                    java.util.Collections.<String>emptySet()
-                    : y.getConfigurationSection(id + ".stats").getKeys(false)) {
-                n.stats.put(key, y.getDouble(id + ".stats." + key));
+            // 사전 정의 데이터가 있으면 좌표만 갱신 후 스폰
+            RebornNpc existing = byId.get(id);
+            if (existing != null) {
+                existing.location = loc;
+                materialize(existing);
+            } else {
+                RebornNpc n = spawn(id, name, world, loc,
+                        y.getString(id + ".faction", ""), y.getString(id + ".job", "VILLAGER"));
+                n.hermit = y.getBoolean(id + ".hermit", false);
+                var stSec = y.getConfigurationSection(id + ".stats");
+                if (stSec != null) {
+                    for (String key : stSec.getKeys(false)) n.stats.put(key, stSec.getDouble(key));
+                }
             }
         }
     }
@@ -93,6 +129,7 @@ public final class NpcRegistry {
         plugin.getDataFolder().mkdirs();
         YamlConfiguration y = new YamlConfiguration();
         for (RebornNpc n : byId.values()) {
+            if (n.location == null) continue;  // 좌표 없는 사전 정의는 저장 안 함
             String b = n.id + ".";
             y.set(b + "name", n.displayName);
             y.set(b + "world", n.world.name());

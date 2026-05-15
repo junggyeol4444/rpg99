@@ -27,6 +27,40 @@ skills:
   concept_dominion: { tier: 개념신, cost: 10000, effect: ABSOLUTE }
 
 npc-gods:
-  arcanus:    { world: FANTASY, divinity: 30000, name: "창조신 아르카누스" }
-  azathoth:   { world: DEMON,   divinity: 999999, name: "고대 마신 아자토스 (봉인)", sealed: true }
-  cheonje:    { world: HEAVEN,  divinity: 40000, name: "천제" }
+  # 판타지
+  arcanus:        { world: FANTASY, divinity: 30000, name: "&6&l창조신 아르카누스",     concept: CREATION }
+  fantasy_war:    { world: FANTASY, divinity: 25000, name: "&c전쟁의 신",             concept: WAR }
+  fantasy_death:  { world: FANTASY, divinity: 28000, name: "&8죽음의 신",             concept: DEATH }
+  fantasy_nature: { world: FANTASY, divinity: 22000, name: "&a자연의 여신",           concept: NATURE }
+  # 마계
+  azathoth:       { world: DEMON,   divinity: 999999, name: "&0&l고대 마신 아자토스 (봉인)", sealed: true, concept: CHAOS }
+  demon_chaos:    { world: DEMON,   divinity: 35000, name: "&5혼돈의 마신",            concept: CHAOS }
+  # 천계
+  cheonje:        { world: HEAVEN,  divinity: 40000, name: "&e&l천제",                concept: ORDER }
+  heaven_light:   { world: HEAVEN,  divinity: 35000, name: "&f빛의 신",               concept: LIGHT }
+  heaven_judge:   { world: HEAVEN,  divinity: 30000, name: "&e심판의 신",             concept: JUDGMENT }
+  # 정령계
+  spirit_root:    { world: SPIRIT,  divinity: 50000, name: "&a&l태초의 정령신",       concept: NATURE }
+  # 무협
+  martial_warrior:{ world: MARTIAL, divinity: 25000, name: "&6무신",                  concept: WAR }
+  martial_dao:    { world: MARTIAL, divinity: 28000, name: "&5도의 신",               concept: DAO }
+  # 선계
+  immortal_root:  { world: IMMORTAL, divinity: 45000, name: "&5선계 시조신",          concept: IMMORTALITY }
+  # 요계
+  yokai_root:     { world: YOKAI,   divinity: 30000, name: "&5요계 시조신",            concept: TRANSFORMATION }
+  # 지구
+  earth_gate_god: { world: EARTH,   divinity: 22000, name: "&3게이트의 신",            concept: PORTAL }
+  # 마도공학
+  magitech_god:   { world: MAGITECH, divinity: 25000, name: "&b기술의 신",             concept: KNOWLEDGE }
+  # 아포칼립스
+  apoc_root:      { world: APOCALYPSE, divinity: 30000, name: "&8종말의 신",           concept: DEATH }
+  # 사이버펑크
+  cyber_singular: { world: CYBERPUNK, divinity: 28000, name: "&5싱귤래리티의 신",      concept: SINGULARITY }
+  # 드래곤
+  dragon_root:    { world: DRAGON,  divinity: 50000, name: "&6&l용족 시조신",         concept: SOVEREIGNTY }
+  # 해양
+  ocean_root:     { world: OCEAN,   divinity: 35000, name: "&3해왕신",                 concept: SEA }
+  # 시간계
+  time_warden:    { world: TIME_REALM, divinity: 60000, name: "&e&l시간 수호자",       concept: TIME }
+  # 명계
+  myungwang:      { world: UNDERWORLD, divinity: 55000, name: "&8&l명왕",              concept: DEATH }

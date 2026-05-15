@@ -19,3 +19,351 @@ relation:
 hermit:
   reveal-favor: 80
   fake-stat-mult: 0.05  # 평소 표시 스탯은 실제의 5%
+
+# ============================================================
+# NPC 사전 정의 — 13세계 + 로비
+# (좌표는 운영 단계에서 /rnpc spawn으로 배치 후 자동 저장)
+# ============================================================
+npcs:
+  # ─── 환생의 월드 (로비) ────────────────────────
+  reincarnation_goddess:
+    name: "&6&l환생의 여신"
+    world: LOBBY
+    job: GODDESS
+    faction: COSMIC
+    stats: { CHARISMA: 50000, INTELLIGENCE: 50000, MENTAL: 50000 }
+    speech: "&6환영한다, 새로운 영혼이여. 너의 운명은 이제 시작된다."
+  guardian_angel_1:
+    name: "&f수호 천사"
+    world: LOBBY
+    job: GUARDIAN
+    faction: HEAVEN
+    stats: { CHARISMA: 5000, MENTAL: 5000 }
+    count: 10  # 10명 배치
+
+  # ─── 판타지: 주요 NPC ────────────────────────
+  arteon_king:
+    name: "&6&l[아르테온 왕] 알렉산더 7세"
+    world: FANTASY
+    job: KING
+    faction: arteon_royal
+    stats: { CHARISMA: 4500, INTELLIGENCE: 1500, STRENGTH: 800, MENTAL: 1200 }
+  silvania_queen:
+    name: "&a&l[실바니아 여왕] 엘렐리스"
+    world: FANTASY
+    job: QUEEN
+    faction: silvania_royal
+    stats: { CHARISMA: 4200, INTELLIGENCE: 2000, AGILITY: 1500, MANA: 1000 }
+  perros_king:
+    name: "&8&l[페르로스 왕] 그림릭"
+    world: FANTASY
+    job: KING
+    faction: perros_royal
+    stats: { STRENGTH: 2000, ENDURANCE: 1500, AURA: 1200, CHARISMA: 1000 }
+  kaiser_emperor:
+    name: "&e&l[카이젤 황제] 라인하르트"
+    world: FANTASY
+    job: EMPEROR
+    faction: kaiser_imperial
+    stats: { CHARISMA: 5000, MANA: 2000, AURA: 1500, INTELLIGENCE: 2500 }
+  mage_tower_master:
+    name: "&5&l대마탑주"
+    world: FANTASY
+    job: MAGE
+    faction: kaiser_imperial
+    stats: { INTELLIGENCE: 3000, MANA: 5000, MENTAL: 2000 }
+  smith_argus:
+    name: "&7대장장이 아르거스"
+    world: FANTASY
+    job: BLACKSMITH
+    stats: { STRENGTH: 500, ENDURANCE: 700 }
+
+  # 판타지 은둔고수
+  hermit_old_swordsman:
+    name: "&7노검사 (외형)"
+    world: FANTASY
+    job: HERMIT
+    hermit: true
+    stats: { STRENGTH: 6000, AURA: 5000, AGILITY: 4000 }  # 절대자급 — 정체 공개 시
+  hermit_garbage_lich:
+    name: "&8걸인 (외형)"
+    world: FANTASY
+    job: HERMIT
+    hermit: true
+    stats: { INTELLIGENCE: 7000, MANA: 8000, MENTAL: 5000 }
+
+  # ─── 마계: 7대 마왕 ────────────────────────
+  marwang_lucifer:
+    name: "&5&l[교만의 마왕] 루시페르"
+    world: DEMON
+    job: DEMON_LORD
+    faction: lucifer_realm
+    stats: { DEMON_KI: 8000, STRENGTH: 3000, INTELLIGENCE: 2500, CHARISMA: 1500 }
+  marwang_leviathan:
+    name: "&3&l[질투의 마왕] 레비아탄"
+    world: DEMON
+    job: DEMON_LORD
+    faction: leviathan_realm
+    stats: { DEMON_KI: 6000, AGILITY: 3000, INTELLIGENCE: 2500 }
+  marwang_satan:
+    name: "&4&l[분노의 마왕] 사탄"
+    world: DEMON
+    job: DEMON_LORD
+    faction: satan_realm
+    stats: { DEMON_KI: 7000, STRENGTH: 4500, ENDURANCE: 1500 }
+  marwang_belphegor:
+    name: "&7&l[나태의 마왕] 벨페고르"
+    world: DEMON
+    job: DEMON_LORD
+    faction: belphegor_realm
+    stats: { DEMON_KI: 5500, INTELLIGENCE: 3000, MENTAL: 2500 }
+  marwang_mammon:
+    name: "&6&l[탐욕의 마왕] 마몬"
+    world: DEMON
+    job: DEMON_LORD
+    faction: mammon_realm
+    stats: { DEMON_KI: 4500, INTELLIGENCE: 3500, CHARISMA: 2000 }
+  marwang_beelzebub:
+    name: "&2&l[폭식의 마왕] 베엘제붑"
+    world: DEMON
+    job: DEMON_LORD
+    faction: beelzebub_realm
+    stats: { DEMON_KI: 6000, ENDURANCE: 3500, STRENGTH: 1500 }
+  marwang_asmodeus:
+    name: "&d&l[색욕의 마왕] 아스모데우스"
+    world: DEMON
+    job: DEMON_LORD
+    faction: asmodeus_realm
+    stats: { DEMON_KI: 5000, CHARM: 4500, INTELLIGENCE: 2000 }
+
+  # ─── 천계: 4대천사 ────────────────────────
+  archangel_michael:
+    name: "&e&l[4대천사] 미카엘"
+    world: HEAVEN
+    job: ARCHANGEL
+    faction: archangel_council
+    stats: { HEAVEN_KI: 4800 }
+  archangel_gabriel:
+    name: "&e&l[4대천사] 가브리엘"
+    world: HEAVEN
+    job: ARCHANGEL
+    faction: archangel_council
+    stats: { HEAVEN_KI: 4500 }
+  archangel_raphael:
+    name: "&e&l[4대천사] 라파엘"
+    world: HEAVEN
+    job: ARCHANGEL
+    faction: archangel_council
+    stats: { HEAVEN_KI: 4200 }
+  archangel_uriel:
+    name: "&e&l[4대천사] 우리엘"
+    world: HEAVEN
+    job: ARCHANGEL
+    faction: archangel_council
+    stats: { HEAVEN_KI: 4000 }
+  cheonje:
+    name: "&6&l[천제]"
+    world: HEAVEN
+    job: GOD
+    faction: cheonje_council
+    stats: { HEAVEN_KI: 9000, DIVINITY: 40000 }
+
+  # ─── 정령계 ────────────────────────
+  spirit_king_iprina:
+    name: "&c&l[정령왕] 이프리나"
+    world: SPIRIT
+    job: SPIRIT_KING
+    stats: { SPIRIT_POWER: 8000 }
+  spirit_king_undinere:
+    name: "&3&l[정령왕] 운디네르"
+    world: SPIRIT
+    job: SPIRIT_KING
+    stats: { SPIRIT_POWER: 7500 }
+  spirit_king_silphidron:
+    name: "&f&l[정령왕] 실피드론"
+    world: SPIRIT
+    job: SPIRIT_KING
+    stats: { SPIRIT_POWER: 7000 }
+  spirit_king_noumgard:
+    name: "&7&l[정령왕] 노움가르드"
+    world: SPIRIT
+    job: SPIRIT_KING
+    stats: { SPIRIT_POWER: 7500 }
+  primordial_lumiel:
+    name: "&f&l태초의 정령 루미엘"
+    world: SPIRIT
+    job: PRIMORDIAL
+    stats: { SPIRIT_POWER: 10000, HEAVEN_KI: 5000 }
+  primordial_ombra:
+    name: "&0&l태초의 정령 옴브라"
+    world: SPIRIT
+    job: PRIMORDIAL
+    stats: { SPIRIT_POWER: 10000, DEMON_KI: 5000 }
+  chaos_spirit:
+    name: "&5&l혼돈의 정령 카오스"
+    world: SPIRIT
+    job: PRIMORDIAL
+    stats: { SPIRIT_POWER: 99999 }
+
+  # ─── 무협 ────────────────────────
+  martial_alliance_master_npc:
+    name: "&6&l[무림맹주]"
+    world: MARTIAL
+    job: ALLIANCE_MASTER
+    faction: sorim_temple
+    stats: { INNER_KI: 3500, STRENGTH: 1000 }
+  cult_master:
+    name: "&5&l[마교 교주]"
+    world: MARTIAL
+    job: CULT_MASTER
+    faction: cult_demonic
+    stats: { INNER_KI: 6500, STRENGTH: 2000 }
+  sorim_abbot:
+    name: "&e&l소림 방장"
+    world: MARTIAL
+    job: ABBOT
+    faction: sorim_temple
+    stats: { INNER_KI: 4000, MENTAL: 3000 }
+  mudang_chief:
+    name: "&b&l무당파 장문인"
+    world: MARTIAL
+    job: SECT_LEADER
+    faction: mudang_school
+    stats: { INNER_KI: 3800, TAO_POWER: 2000 }
+  hermit_old_drunkard:
+    name: "&7술꾼 (외형)"
+    world: MARTIAL
+    job: HERMIT
+    hermit: true
+    stats: { INNER_KI: 8000, STRENGTH: 3000 }  # 천하제일인급
+  geomseon:
+    name: "&b&l검선"
+    world: MARTIAL
+    job: SAGE
+    hermit: true
+    stats: { INNER_KI: 9000, AGILITY: 4000 }
+
+  # ─── 선계 ────────────────────────
+  taeheo_master:
+    name: "&5&l태허선궁 궁주"
+    world: IMMORTAL
+    job: PALACE_MASTER
+    faction: taeheo_palace
+    stats: { IMMORTAL_KI: 7000 }
+  hermit_ancient_immortal:
+    name: "&8노옹 (외형)"
+    world: IMMORTAL
+    job: HERMIT
+    hermit: true
+    stats: { IMMORTAL_KI: 8000 }
+
+  # ─── 요계 ────────────────────────
+  kumiho_palace_master:
+    name: "&5&l구미호 궁주"
+    world: YOKAI
+    job: PALACE_MASTER
+    faction: kumiho_palace
+    stats: { YOKAI_KI: 4500, CHARM: 3000 }
+  hermit_ancient_yokai:
+    name: "&8노여우 (외형)"
+    world: YOKAI
+    job: HERMIT
+    hermit: true
+    stats: { YOKAI_KI: 7000, CHARM: 4000 }
+
+  # ─── 드래곤계: 5대 가주 ────────────────────────
+  dragon_king_aurelius_npc:
+    name: "&6&l[가주] 아우렐리스 3세 (9000년)"
+    world: DRAGON
+    job: DRAGON_LORD
+    faction: aurelius
+    stats: { DRAGON_POWER: 4800 }
+  dragon_king_ignifer_npc:
+    name: "&4&l[가주] 이그니페르 (8500년)"
+    world: DRAGON
+    job: DRAGON_LORD
+    faction: ignifer
+    stats: { DRAGON_POWER: 4600 }
+  dragon_king_nocterna_npc:
+    name: "&0&l[가주] 녹테르나 (7000년)"
+    world: DRAGON
+    job: DRAGON_LORD
+    faction: nocterna
+    stats: { DRAGON_POWER: 4200 }
+  dragon_king_cerylis_npc:
+    name: "&3&l[가주] 세릴리스 (6500년)"
+    world: DRAGON
+    job: DRAGON_LORD
+    faction: cerylis
+    stats: { DRAGON_POWER: 4000 }
+  dragon_king_silvarex_npc:
+    name: "&2&l[가주] 실바렉스 (6000년)"
+    world: DRAGON
+    job: DRAGON_LORD
+    faction: silvarex
+    stats: { DRAGON_POWER: 3800 }
+
+  # ─── 해양제국 ────────────────────────
+  aquarion_emperor:
+    name: "&3&l[아쿠아리온 황제]"
+    world: OCEAN
+    job: EMPEROR
+    faction: aquarion_empire
+    stats: { OCEAN_POWER: 5500 }
+  pirate_king_npc:
+    name: "&6&l[해적왕]"
+    world: OCEAN
+    job: PIRATE_KING
+    faction: free_sea
+    stats: { OCEAN_POWER: 4500, CHARISMA: 2000 }
+
+  # ─── 지구 ────────────────────────
+  korea_guild_master:
+    name: "&f한국 헌터 길드 마스터"
+    world: EARTH
+    job: GUILD_MASTER
+    faction: korea_gate_authority
+    stats: { LEVEL: 5500 }
+
+  # ─── 마도공학 ────────────────────────
+  arcadia_grand_architect:
+    name: "&b그랜드 아키텍트 (아르카디아)"
+    world: MAGITECH
+    job: GRAND_ARCHITECT
+    faction: arcadia
+    stats: { MAGITECH_ENERGY: 5000 }
+  hermit_retired_architect:
+    name: "&7폐허 노인 (외형)"
+    world: MAGITECH
+    job: HERMIT
+    hermit: true
+    stats: { MAGITECH_ENERGY: 6500, INTELLIGENCE: 3000 }
+
+  # ─── 사이버펑크 ────────────────────────
+  akro_ceo:
+    name: "&6AKRO CEO"
+    world: CYBERPUNK
+    job: CEO
+    faction: akro
+    stats: { CYBER_ADAPTATION: 5000 }
+  hermit_legendary_netrunner:
+    name: "&5(이름 모를 해커)"
+    world: CYBERPUNK
+    job: HERMIT
+    hermit: true
+    stats: { CYBER_ADAPTATION: 7000, INTELLIGENCE: 5000 }
+
+  # ─── 아포칼립스 ────────────────────────
+  last_code_leader:
+    name: "&7라스트 코드 지도자"
+    world: APOCALYPSE
+    job: SURVIVOR_LEADER
+    faction: last_code
+    stats: { ENDURANCE: 1500, STRENGTH: 1000, INTELLIGENCE: 800 }
+  hermit_pre_apoc_soldier:
+    name: "&8노군인 (외형)"
+    world: APOCALYPSE
+    job: HERMIT
+    hermit: true
+    stats: { STRENGTH: 4000, ENDURANCE: 3000, AGILITY: 2000 }
+

@@ -1,102 +1,168 @@
-# 등급별 색상
+# ============================================================
+# 등급 색상
+# ============================================================
 grade-colors:
-  COMMON: "&7"
-  UNCOMMON: "&a"
-  RARE: "&9"
-  HEROIC: "&5"
-  LEGENDARY: "&6"
-  MYTHIC: "&c"
-  GENESIS: "&e&l"
+  COMMON: "&7"      # 일반
+  UNCOMMON: "&a"    # 고급
+  RARE: "&9"        # 희귀
+  HEROIC: "&5"      # 영웅
+  LEGENDARY: "&6"   # 전설
+  MYTHIC: "&c"      # 신화
+  GENESIS: "&e&l"   # 창세
 
-grade-glow-from: RARE  # RARE 이상 글로우
+grade-glow-from: RARE
 particle-from: MYTHIC
 
+# ============================================================
 # 커스텀 아이템 정의
+# ============================================================
 items:
-  iron_sword_basic:
-    base: IRON_SWORD
-    model: 2001
-    name: "&a강철 검"
-    grade: UNCOMMON
-    type: WEAPON
-    lore: ["&7기본 강철 검", "&7손에 익은 무게"]
-    stats: { STRENGTH: 5 }
-    durability: 200
-    tradable: true
-    droppable: true
-  flame_sword:
-    base: NETHERITE_SWORD
-    model: 2002
-    name: "&c불꽃의 검"
-    grade: LEGENDARY
-    type: WEAPON
-    lore: ["&7불꽃이 깃든 전설의 검"]
-    stats: { STRENGTH: 50, MANA: 20 }
-    skill: FLAME_SLASH
-    durability: 1000
-  amulet_of_wisdom:
-    base: GOLD_NUGGET
-    model: 2003
-    name: "&5지혜의 부적"
-    grade: HEROIC
-    type: ACCESSORY
-    accessory_slot: NECKLACE
-    stats: { INTELLIGENCE: 30 }
-    durability: -1
-  healing_potion:
-    base: POTION
-    model: 2004
-    name: "&d치유의 영약"
-    grade: COMMON
-    type: CONSUMABLE
-    consume:
-      type: HEAL
-      value: 100.0
-      cooldown: 60
-  martial_manual:
-    base: BOOK
-    model: 2005
-    name: "&6태극권 비급"
-    grade: RARE
-    type: SKILL_BOOK
-    consume:
-      type: LEARN_SKILL
-      value: TAEGEUK_FIST
+  # ─── 무기 (등급별 샘플) ────────────────────────────
+  iron_sword_basic:    { base: IRON_SWORD, model: 2001, name: "&a강철 검", grade: UNCOMMON, type: WEAPON, stats: { STRENGTH: 5 }, durability: 200, tradable: true }
+  flame_sword:         { base: NETHERITE_SWORD, model: 2002, name: "&c불꽃의 검", grade: LEGENDARY, type: WEAPON, stats: { STRENGTH: 50, MANA: 20 }, skill: FLAME_SLASH, durability: 1000 }
+  excalibur:           { base: NETHERITE_SWORD, model: 2003, name: "&e&l엑스칼리버", grade: GENESIS, type: WEAPON, stats: { STRENGTH: 200, AURA: 100, CHARISMA: 50 }, skill: arteon_royal_blade, durability: -1 }
+  cheonma_blade:       { base: NETHERITE_SWORD, model: 2004, name: "&5천마검", grade: MYTHIC, type: WEAPON, stats: { STRENGTH: 100, INNER_KI: 50, DEMON_KI: 30 }, durability: 5000 }
+  dragon_slayer:       { base: DIAMOND_SWORD, model: 2005, name: "&c용살자", grade: LEGENDARY, type: WEAPON, stats: { STRENGTH: 80, AURA: 30 }, skill: dragonslayer_blade, durability: 800 }
 
-# 제작 직업
+  # ─── 갑옷 ─────────────────────────────────────────
+  knight_armor:        { base: IRON_CHESTPLATE, model: 3001, name: "&7기사 갑옷", grade: UNCOMMON, type: ARMOR, stats: { ENDURANCE: 30 }, durability: 500 }
+  cheolposam_armor:    { base: LEATHER_CHESTPLATE, model: 3002, name: "&7철포삼", grade: HEROIC, type: ARMOR, stats: { ENDURANCE: 80, INNER_KI: 30 }, durability: 1500 }
+  geumjongjo_armor:    { base: GOLDEN_CHESTPLATE, model: 3003, name: "&e금종조", grade: LEGENDARY, type: ARMOR, stats: { ENDURANCE: 150 }, durability: 3000 }
+
+  # ─── 장신구 ────────────────────────────────────────
+  amulet_of_wisdom:    { base: GOLD_NUGGET, model: 4001, name: "&5지혜의 부적", grade: HEROIC, type: ACCESSORY, accessory_slot: NECKLACE, stats: { INTELLIGENCE: 30 } }
+  ring_of_aura:        { base: GOLD_NUGGET, model: 4002, name: "&6오러의 반지", grade: LEGENDARY, type: ACCESSORY, accessory_slot: RING, stats: { AURA: 100 } }
+  earring_of_charm:    { base: GOLD_NUGGET, model: 4003, name: "&d매혹의 귀걸이", grade: RARE, type: ACCESSORY, accessory_slot: EARRING, stats: { CHARM: 50 } }
+
+  # ─── 비급·마법서 (스킬 학습 아이템) ────────────────
+  book_arteon_blade:   { base: WRITTEN_BOOK, model: 5001, name: "&f성검술 비급", grade: HEROIC, type: SKILL_BOOK, consume: { type: LEARN_SKILL, value: arteon_royal_blade } }
+  book_dokgo_gugeom:   { base: WRITTEN_BOOK, model: 5002, name: "&f독고구검 비급", grade: LEGENDARY, type: SKILL_BOOK, consume: { type: LEARN_SKILL, value: dokgo_gugeom } }
+  book_cheonma:        { base: WRITTEN_BOOK, model: 5003, name: "&5천마신공 비급", grade: MYTHIC, type: SKILL_BOOK, consume: { type: LEARN_SKILL, value: cheonma_singong } }
+  book_meteor:         { base: WRITTEN_BOOK, model: 5004, name: "&c메테오 마법서", grade: MYTHIC, type: SKILL_BOOK, consume: { type: LEARN_SKILL, value: meteor_strike } }
+  book_resurrection:   { base: WRITTEN_BOOK, model: 5005, name: "&f리절렉션 마법서", grade: MYTHIC, type: SKILL_BOOK, consume: { type: LEARN_SKILL, value: resurrection } }
+  book_pacheon:        { base: WRITTEN_BOOK, model: 5006, name: "&c파천신공 비급", grade: MYTHIC, type: SKILL_BOOK, consume: { type: LEARN_SKILL, value: pacheon_singong } }
+
+  # ============================================================
+  # 무협 영약 40종 (5장 5-5)
+  # ============================================================
+  cheonnyeon_seolsam:  { base: GLOW_BERRIES, model: 6001, name: "&f천년설삼", grade: LEGENDARY, type: CONSUMABLE, consume: { type: ADD_STAT, stat: INNER_KI, value: 200 } }
+  hyeolryeong_ji:      { base: RED_MUSHROOM, model: 6002, name: "&c혈령지", grade: HEROIC, type: CONSUMABLE, consume: { type: ADD_STAT, stat: INNER_KI, value: 150 } }
+  yongyeon_hyang:      { base: AMETHYST_SHARD, model: 6003, name: "&3용연향", grade: LEGENDARY, type: CONSUMABLE, consume: { type: ADD_STAT, stat: TAO_POWER, value: 300 } }
+  cheonhwa_ro:         { base: HONEY_BOTTLE, model: 6004, name: "&e천화로", grade: MYTHIC, type: CONSUMABLE, consume: { type: ADD_ALL_COMMON, value: 50 } }
+  mandok_pill:         { base: GLOW_BERRIES, model: 6005, name: "&2만독단", grade: MYTHIC, type: CONSUMABLE, consume: { type: ADD_STAT, stat: INNER_KI, value: 300 } }
+  gujeon_hwanhonpil:   { base: GHAST_TEAR, model: 6006, name: "&6구전환혼단", grade: GENESIS, type: CONSUMABLE, consume: { type: REVIVE, value: 1 } }
+  sohwangol_pil:       { base: BONE_MEAL, model: 6007, name: "&7소환골단", grade: HEROIC, type: CONSUMABLE, consume: { type: ADD_STAT, stat: ENDURANCE, value: 50 } }
+  daehwan_pil:         { base: GLOW_BERRIES, model: 6008, name: "&6대환단", grade: LEGENDARY, type: CONSUMABLE, consume: { type: HEAL, value: 9999 } }
+  tongmaek_san:        { base: SUGAR, model: 6009, name: "&3통맥산", grade: RARE, type: CONSUMABLE, consume: { type: BUFF, stat: INNER_KI, value: 50, duration: 86400 } }
+  haedok_pil:          { base: SLIME_BALL, model: 6010, name: "&a해독단", grade: UNCOMMON, type: CONSUMABLE, consume: { type: CURE_CURSE, value: poison } }
+  cheolgol_pil:        { base: IRON_NUGGET, model: 6011, name: "&7철골단", grade: HEROIC, type: CONSUMABLE, consume: { type: ADD_MULTI, stats: { ENDURANCE: 30, STRENGTH: 30 } } }
+  yeong_pil:           { base: GLOW_BERRIES, model: 6012, name: "&5영단", grade: HEROIC, type: CONSUMABLE, consume: { type: ADD_MULTI, stats: { TAO_POWER: 100, MENTAL: 50 } } }
+  bingsim_pil:         { base: SNOWBALL, model: 6013, name: "&b빙심단", grade: HEROIC, type: CONSUMABLE, consume: { type: ANTI_PARANOIA, value: 0.3 } }
+  yongho_pil:          { base: NETHER_WART, model: 6014, name: "&6용호교합단", grade: MYTHIC, type: CONSUMABLE, consume: { type: ADD_STAT, stat: INNER_KI, value: 300 } }
+  cheonnyeon_hasuoh:   { base: GLOW_BERRIES, model: 6015, name: "&5천년하수오", grade: LEGENDARY, type: CONSUMABLE, consume: { type: ADD_ALL_COMMON, value: 30 } }
+  gujeon_daebopil:     { base: HONEYCOMB, model: 6016, name: "&e구전대보단", grade: HEROIC, type: CONSUMABLE, consume: { type: ADD_STAT, stat: INNER_KI, value: 50 } }
+  jageum_pil:          { base: PURPLE_DYE, model: 6017, name: "&5자금단", grade: HEROIC, type: CONSUMABLE, consume: { type: CURE_CURSE, value: poison } }
+  yangsim_pil:         { base: APPLE, model: 6018, name: "&e양심단", grade: RARE, type: CONSUMABLE, consume: { type: ADD_STAT, stat: MENTAL, value: 30 } }
+  sokgol_pil:          { base: BONE, model: 6019, name: "&7속골단", grade: RARE, type: CONSUMABLE, consume: { type: HEAL, value: 200 } }
+  heugok_dansok:       { base: BLACK_DYE, model: 6020, name: "&0흑옥단연고", grade: LEGENDARY, type: CONSUMABLE, consume: { type: RESTORE_MERIDIAN, value: 1 } }
+  sipyang_yeon:        { base: SUGAR, model: 6021, name: "&d십향연근단", grade: RARE, type: CONSUMABLE, consume: { type: DEBUFF, stat: STRENGTH, value: -50, duration: 600 } }
+  pyosa_pil:           { base: SLIME_BALL, model: 6022, name: "&2표사단", grade: HEROIC, type: CONSUMABLE, consume: { type: ADD_STAT, stat: INNER_KI, value: 100 } }
+  juhyeol_pil:         { base: REDSTONE, model: 6023, name: "&4주혈단", grade: RARE, type: CONSUMABLE, consume: { type: BUFF, stat: INNER_KI, value: 50, duration: 604800 } }
+  cheonsan_seolryeon:  { base: WHITE_TULIP, model: 6024, name: "&f천산설련", grade: LEGENDARY, type: CONSUMABLE, consume: { type: ADD_ALL_COMMON, value: 80 } }
+  danjang_hwa:         { base: PINK_TULIP, model: 6025, name: "&d단참화", grade: HEROIC, type: CONSUMABLE, consume: { type: CURE_CURSE, value: all_poison } }
+  mugeun_su:           { base: WATER_BUCKET, model: 6026, name: "&b무근수", grade: RARE, type: CONSUMABLE, consume: { type: BUFF_RECIPE, value: 2.0 } }
+  odok_seoncho:        { base: NETHER_WART, model: 6027, name: "&2오독선초", grade: LEGENDARY, type: MATERIAL }
+  gujeol_cho:          { base: SWEET_BERRIES, model: 6028, name: "&a구절초", grade: RARE, type: CONSUMABLE, consume: { type: ADD_ALL_COMMON, value: 50 } }
+  mannyeon_bing_eo:    { base: COD, model: 6029, name: "&b만년빙어", grade: LEGENDARY, type: CONSUMABLE, consume: { type: ADD_STAT, stat: INNER_KI, value: 200 } }
+  hwahyeol_san:        { base: REDSTONE, model: 6030, name: "&4화혈산", grade: COMMON, type: CONSUMABLE, consume: { type: HEAL, value: 50 } }
+  yongdam_cho:         { base: BLUE_DYE, model: 6031, name: "&3용담초", grade: RARE, type: CONSUMABLE, consume: { type: ADD_MULTI, stats: { MENTAL: 30 } } }
+  insam_gwa:           { base: GOLDEN_APPLE, model: 6032, name: "&e인삼과", grade: LEGENDARY, type: CONSUMABLE, consume: { type: ADD_ALL_COMMON, value: 20 } }
+  ohaeng_pil:          { base: PRISMARINE_CRYSTALS, model: 6033, name: "&6오행단", grade: MYTHIC, type: CONSUMABLE, consume: { type: ALL_ELEMENTS, value: 1 } }
+  yongyeon_pil:        { base: AMETHYST_SHARD, model: 6034, name: "&3용연단", grade: MYTHIC, type: CONSUMABLE, consume: { type: ADD_STAT, stat: TAO_POWER, value: 500 } }
+  hyeolgi_pil:         { base: REDSTONE, model: 6035, name: "&4혈기단", grade: HEROIC, type: CONSUMABLE, consume: { type: ADD_MULTI, stats: { INNER_KI: 200, STRENGTH: 50 } } }
+  hasuoh_ju:           { base: HONEY_BOTTLE, model: 6036, name: "&6하수오주", grade: UNCOMMON, type: CONSUMABLE, consume: { type: ADD_STAT, stat: INNER_KI, value: 30 } }
+  guhwa_oksan:         { base: ROSE_BUSH, model: 6037, name: "&d구화옥로환", grade: HEROIC, type: CONSUMABLE, consume: { type: HEAL, value: 500 } }
+  yongdam_pil:         { base: GREEN_DYE, model: 6038, name: "&2독룡담", grade: LEGENDARY, type: CONSUMABLE, consume: { type: ADD_STAT, stat: INNER_KI, value: 300 } }
+  cheonnyeon_yeongji:  { base: BROWN_MUSHROOM, model: 6039, name: "&6천년영지", grade: HEROIC, type: CONSUMABLE, consume: { type: ADD_ALL_COMMON, value: 40 } }
+  taeeul_seonpil:      { base: NETHER_STAR, model: 6040, name: "&5태을선단", grade: GENESIS, type: CONSUMABLE, consume: { type: ADD_STAT, stat: TAO_POWER, value: 500 } }
+
+  # ============================================================
+  # 선계 영약 6종 (5장 5-6)
+  # ============================================================
+  gujeon_geumdan:      { base: ENCHANTED_GOLDEN_APPLE, model: 7001, name: "&6구전금단", grade: GENESIS, type: CONSUMABLE, consume: { type: TIER_UP, value: 1 } }
+  yeongji_seoncho:     { base: BROWN_MUSHROOM, model: 7002, name: "&5영지선초", grade: LEGENDARY, type: CONSUMABLE, consume: { type: ADD_STAT, stat: IMMORTAL_KI, value: 500 } }
+  bullocho:            { base: AZALEA_LEAVES, model: 7003, name: "&a불로초", grade: MYTHIC, type: CONSUMABLE, consume: { type: STOP_AGING, value: 1 } }
+  cheonhwa_sindan:     { base: TOTEM_OF_UNDYING, model: 7004, name: "&e천화신단", grade: MYTHIC, type: CONSUMABLE, consume: { type: TRIBULATION_BOOST, value: 0.2 } }
+  segol_hwansin:       { base: BONE_MEAL, model: 7005, name: "&f세골환신단", grade: LEGENDARY, type: CONSUMABLE, consume: { type: BUFF_TRAIN, value: 1.5 } }
+  in_dan:              { base: NETHER_WART, model: 7006, name: "&4&l인단 (금기)", grade: MYTHIC, type: CONSUMABLE, consume: { type: ADD_STAT, stat: IMMORTAL_KI, value: 1000 }, lore: ["&4&l태허선궁 적발 시 처형"] }
+
+  # ============================================================
+  # 기연 아이템 (5장 각 세계 기연)
+  # ============================================================
+  worldtree_tear:      { base: SLIME_BALL, model: 8001, name: "&a세계수의 눈물", grade: GENESIS, type: CONSUMABLE, consume: { type: ADD_STAT, stat: MANA, value: 500 } }
+  ancient_dragon_scale:{ base: DRAGON_HEAD, model: 8002, name: "&6고룡의 역린", grade: GENESIS, type: CONSUMABLE, consume: { type: ADD_STAT, stat: AURA, value: 300 } }
+  arcane_memory_crystal:{ base: AMETHYST_SHARD, model: 8003, name: "&5고대 마법사 기억결정", grade: MYTHIC, type: CONSUMABLE, consume: { type: TIER_UP_CIRCLE, value: 1 } }
+  meteor_core:         { base: NETHER_STAR, model: 8004, name: "&c운석 핵심", grade: GENESIS, type: CONSUMABLE, consume: { type: ADD_ALL_COMMON, value: 100 } }
+  spirit_king_blessing:{ base: EMERALD, model: 8005, name: "&3정령왕의 축복", grade: MYTHIC, type: CONSUMABLE, consume: { type: LEARN_RANDOM_SPIRIT_SKILL } }
+  demon_throne_shard:  { base: NETHERITE_SCRAP, model: 8006, name: "&5마왕의 왕좌 파편", grade: GENESIS, type: CONSUMABLE, consume: { type: ADD_STAT, stat: DEMON_KI, value: 500 } }
+  fallen_feather:      { base: FEATHER, model: 8007, name: "&8타락 천사의 깃", grade: MYTHIC, type: CONSUMABLE, consume: { type: ADD_MULTI, stats: { HEAVEN_KI: 200, DEMON_KI: 200 } } }
+  god_feather:         { base: FEATHER, model: 8008, name: "&e천신의 깃털", grade: GENESIS, type: CONSUMABLE, consume: { type: ADD_STAT, stat: HEAVEN_KI, value: 500 } }
+  light_crystal:       { base: SEA_LANTERN, model: 8009, name: "&f빛의 결정", grade: MYTHIC, type: CONSUMABLE, consume: { type: ADD_MULTI, stats: { MENTAL: 100, CHARISMA: 100 } } }
+  cheonji_yeoui:       { base: NETHER_STAR, model: 8010, name: "&c용의 여의주", grade: GENESIS, type: CONSUMABLE, consume: { type: ADD_STAT, stat: INNER_KI, value: 1000 } }
+  kumiho_orb:          { base: ENDER_PEARL, model: 8011, name: "&5구미호의 여의주", grade: GENESIS, type: CONSUMABLE, consume: { type: ADD_STAT, stat: YOKAI_KI, value: 1000 } }
+  awaken_stone:        { base: AMETHYST_SHARD, model: 8012, name: "&3각성석", grade: LEGENDARY, type: CONSUMABLE, consume: { type: ADD_RANDOM_COMMON, min: 50, max: 200 } }
+
+  # ============================================================
+  # 화폐 아이템 (RebornEconomy와 연동)
+  # ============================================================
+  gold_coin:           { base: GOLD_NUGGET, model: 9001, name: "&6골드 코인", grade: COMMON, type: CURRENCY_ITEM }
+  soul_stone:          { base: SOUL_SAND, model: 9002, name: "&5영혼석", grade: COMMON, type: CURRENCY_ITEM }
+  faith_crystal:       { base: AMETHYST_SHARD, model: 9003, name: "&e신앙의 결정", grade: COMMON, type: CURRENCY_ITEM }
+  essence:             { base: GLOW_INK_SAC, model: 9004, name: "&3정수", grade: COMMON, type: CURRENCY_ITEM }
+  silver_tael:         { base: IRON_NUGGET, model: 9005, name: "&7은냥", grade: COMMON, type: CURRENCY_ITEM }
+  immortal_stone:      { base: EMERALD, model: 9006, name: "&5선석", grade: COMMON, type: CURRENCY_ITEM }
+  yokai_crystal:       { base: PRISMARINE_CRYSTALS, model: 9007, name: "&dyokai결정", grade: COMMON, type: CURRENCY_ITEM }
+  magitech_core:       { base: REDSTONE_BLOCK, model: 9008, name: "&c마도 코어", grade: COMMON, type: CURRENCY_ITEM }
+  credit_chip:         { base: PAPER, model: 9009, name: "&e크레딧 칩", grade: COMMON, type: CURRENCY_ITEM }
+  dragon_scale:        { base: PHANTOM_MEMBRANE, model: 9010, name: "&c용린편", grade: COMMON, type: CURRENCY_ITEM }
+  pure_water:          { base: WATER_BUCKET, model: 9011, name: "&b정화수", grade: COMMON, type: CURRENCY_ITEM }
+
+# ============================================================
+# 제작 직업 (세계별)
+# ============================================================
 professions:
-  blacksmith:
-    name: "&7대장장이"
-    world: FANTASY
-    master_npc: smith_argus
-  alchemist:
-    name: "&a연금술사"
-    world: FANTASY
-  enchanter:
-    name: "&5마법부여사"
-    world: FANTASY
-  rune_smith:
-    name: "&3룬공방사"
-    world: FANTASY
-  pill_master:
-    name: "&d단약사"
-    world: IMMORTAL
-  cyber_tech:
-    name: "&dCyber Tech"
-    world: CYBERPUNK
+  blacksmith:          { name: "&7대장장이", world: FANTASY, master_npc: smith_argus }
+  alchemist:           { name: "&a연금술사", world: FANTASY, master_npc: alchemy_master }
+  enchanter:           { name: "&5마법부여사", world: FANTASY, master_npc: enchant_master }
+  rune_smith:          { name: "&3룬공방사", world: FANTASY, master_npc: dwarf_rune_master }
+  pill_master:         { name: "&d단약사", world: IMMORTAL, master_npc: pill_grandmaster }
+  immortal_artifact:   { name: "&5선기 제작사", world: IMMORTAL, master_npc: artifact_sage }
+  talisman_writer:     { name: "&e부적사", world: IMMORTAL, master_npc: talisman_master }
+  demon_smith:         { name: "&8마기 대장장이", world: DEMON, master_npc: demon_smith_npc }
+  soul_carver:         { name: "&5영혼 세공사", world: DEMON, master_npc: soul_carver_npc }
+  dokkaebi_carver:     { name: "&d도깨비 세공사", world: YOKAI, master_npc: dokkaebi_master }
+  gun_engineer:        { name: "&7총기 기술자", world: EARTH, master_npc: gun_smith }
+  hunter_engineer:     { name: "&3장비 엔지니어", world: EARTH, master_npc: hunter_engineer_npc }
+  magitech_engineer:   { name: "&b마도 공학자", world: MAGITECH, master_npc: magitech_master }
+  cyber_tech:          { name: "&d사이버 기술자", world: CYBERPUNK, master_npc: cyber_master }
+  hacker:              { name: "&a해커", world: CYBERPUNK, master_npc: netbreaker_master }
+  shipwright:          { name: "&3조선공", world: OCEAN, master_npc: shipwright_master }
+  ocean_gear:          { name: "&b해양 장비 제작자", world: OCEAN, master_npc: ocean_gear_master }
 
 # 제작 숙련도 단계
 proficiency:
   TIERS:
-    [{ name: "견습", min: 0 },
-     { name: "숙련", min: 500 },
-     { name: "장인", min: 2000 },
-     { name: "명장", min: 5000 },
-     { name: "대장장", min: 15000 },
-     { name: "신장", min: 50000 }]
+    - { name: "견습", min: 0 }
+    - { name: "숙련", min: 500 }
+    - { name: "장인", min: 2000 }
+    - { name: "명장", min: 5000 }
+    - { name: "대장장", min: 15000 }
+    - { name: "신장", min: 50000 }
   max-jobs: 3
 
-# 레시피 정의 (간략)
+# ============================================================
+# 레시피 정의 (샘플 — 실제 운영 시 별도 폴더로 분할 추천)
+# ============================================================
 recipes:
   iron_sword_basic_recipe:
     profession: blacksmith
@@ -117,8 +183,30 @@ recipes:
     success_rate: 0.4
     higher_grade_chance: 0.05
     exp_gain: 500
+  daehwan_pil_recipe:
+    profession: pill_master
+    min_proficiency: 5000
+    materials:
+      - { material: GHAST_TEAR, amount: 2 }
+      - { material: GLOW_BERRIES, amount: 5 }
+    result: daehwan_pil
+    cast_seconds: 30
+    success_rate: 0.5
+    exp_gain: 1500
+  taeeul_seonpil_recipe:
+    profession: pill_master
+    min_proficiency: 50000
+    materials:
+      - { material: NETHER_STAR, amount: 1 }
+      - { material: ENCHANTED_GOLDEN_APPLE, amount: 3 }
+    result: taeeul_seonpil
+    cast_seconds: 600
+    success_rate: 0.1
+    exp_gain: 50000
 
+# ============================================================
 # 강화
+# ============================================================
 enchant:
   fail-break-chance:
     LEGENDARY: 0.1

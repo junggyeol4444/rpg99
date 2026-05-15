@@ -14,6 +14,8 @@ commands:
     description: 경지 돌파 시도
   meditate:
     description: 운기조식 (무협)
+  answer:
+    description: 깨달음 미니게임 답변
 permissions:
   rebornstat.use:
     default: true

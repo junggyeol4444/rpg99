@@ -5,6 +5,7 @@ import kr.reborn.core.data.WorldKey;
 import kr.reborn.worldai.ai.WorldAI;
 import kr.reborn.worldai.command.WorldAICommand;
 import kr.reborn.worldai.comm.AIComm;
+import kr.reborn.worldai.sim.NpcSimulator;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.EnumMap;
@@ -15,6 +16,7 @@ public final class RebornWorldAI extends JavaPlugin {
     private static RebornWorldAI instance;
     private final Map<WorldKey, WorldAI> ais = new EnumMap<>(WorldKey.class);
     private AIComm comm;
+    private NpcSimulator simulator;
 
     public static RebornWorldAI get() { return instance; }
 
@@ -23,6 +25,7 @@ public final class RebornWorldAI extends JavaPlugin {
         instance = this;
         saveDefaultConfig();
         this.comm = new AIComm(this);
+        this.simulator = new NpcSimulator(this);
 
         var sec = getConfig().getConfigurationSection("worlds");
         if (sec != null) {
@@ -53,4 +56,5 @@ public final class RebornWorldAI extends JavaPlugin {
     public WorldAI of(WorldKey w) { return ais.get(w); }
     public java.util.Collection<WorldAI> all() { return ais.values(); }
     public AIComm comm() { return comm; }
+    public NpcSimulator simulator() { return simulator; }
 }

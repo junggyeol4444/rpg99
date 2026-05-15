@@ -26,6 +26,142 @@ growth:
   apocalypse:
     radiation-bonus: 1.2
 
+# ============================================================
+# 정령계 12 소정령 숲 + 13번째 혼돈 숲 + 4대 정령왕 영역
+# ============================================================
+spirit-forests:
+  fire_realm:    { element: FIRE,   king: "이프리나",   stat: SPIRIT_POWER, train-bonus: 2.0 }
+  water_realm:   { element: WATER,  king: "운디네르",   stat: SPIRIT_POWER, train-bonus: 2.0 }
+  wind_realm:    { element: WIND,   king: "실피드론",   stat: SPIRIT_POWER, train-bonus: 2.0 }
+  earth_realm:   { element: EARTH,  king: "노움가르드", stat: SPIRIT_POWER, train-bonus: 2.0 }
+  light_forest:    { element: LIGHT,    primordial: "루미엘",  train-bonus: 2.5, restricted: true }
+  dark_forest:     { element: DARK,     primordial: "옴브라",  train-bonus: 2.5, restricted: true }
+  lightning_forest:{ element: LIGHTNING, king: "뇌영선",       train-bonus: 1.7 }
+  ice_forest:      { element: ICE,       king: "빙군선",       train-bonus: 1.7 }
+  poison_forest:   { element: POISON,    king: "독화선",       train-bonus: 1.7 }
+  sound_forest:    { element: SOUND,     king: "음파선",       train-bonus: 1.7 }
+  metal_forest:    { element: METAL,     king: "금석선왕",     train-bonus: 1.3 }
+  crystal_forest:  { element: CRYSTAL,   king: "수정선왕",     train-bonus: 1.3 }
+  lava_forest:     { element: LAVA,      king: "용암선왕",     train-bonus: 1.3 }
+  mist_forest:     { element: MIST,      king: "안개선왕",     train-bonus: 1.3 }
+  sand_forest:     { element: SAND,      king: "모래선왕",     train-bonus: 1.3 }
+  wood_forest:     { element: WOOD,      king: "수목선왕",     train-bonus: 1.3 }
+  chaos_forest:    { element: CHAOS, primordial: "카오스", train-bonus: 5.0, restricted: true, hidden: true }
+
+# ============================================================
+# 천계 9층 구조
+# ============================================================
+heaven-floors:
+  floor_1: { name: "&f영혼의 정원",     min-tier: NONE,        function: "영혼 정화" }
+  floor_2: { name: "&7빛의 훈련장",     min-tier: 견습천사,    function: "신병 천사 훈련" }
+  floor_3: { name: "&3성벽의 도시",     min-tier: 하급천사,    function: "마계 방어 사령부" }
+  floor_4: { name: "&e백광 시가지",     min-tier: 중급천사,    function: "일반 천사 거주·상점·광장" }
+  floor_5: { name: "&b은하의 다리",     min-tier: 중급천사,    function: "수련·도서관·신성 연구" }
+  floor_6: { name: "&5성광 궁전",       min-tier: 상급천사,    function: "신성 재판소·타락 심판" }
+  floor_7: { name: "&6대천사의 전당",   min-tier: 대천사,      function: "10대 천사 집무실" }
+  floor_8: { name: "&e&l4대천사의 왕좌", min-tier: 4대천사,    function: "천계 군사·정치 핵심" }
+  floor_9: { name: "&6&l신의 성좌",     min-tier: 천제,        function: "천제 거주. 천계 근본 법칙" }
+
+# ============================================================
+# 마계 7대 마왕령 세부
+# ============================================================
+demon-realms-detail:
+  lucifer:    { capital: "천공의 역왕좌", location: "마계 최상층", sub: [천공의 역왕좌, 타락 천사 막사, 자존의 옥좌탑] }
+  leviathan:  { capital: "심연의 용궁",   location: "마계 심해",   sub: [심연의 용궁, 음모의 진주방, 간첩 양성소] }
+  satan:      { capital: "영겁의 전장",   location: "마계 화산",   sub: [영겁의 전장, 파괴의 화산 군락, 전사의 골짜기] }
+  belphegor:  { capital: "무의 정원",     location: "마계 안개",   sub: [무의 정원, 망각의 안개 지대, 영원의 잠 호수] }
+  mammon:     { capital: "황금의 나락",   location: "마계 지하",   sub: [황금의 나락, 영혼 거래소, 마법 물품 경매장, 용병 중개소] }
+  beelzebub:  { capital: "포식의 대지",   location: "마계 부패의 숲", sub: [포식의 대지, 부패 거인 군락, 흡수의 늪] }
+  asmodeus:   { capital: "만마전",         location: "마계 환락 도시", sub: [만마전, 매혹의 거리, 서큐버스 양성소, 정보 중개소] }
+
+# ============================================================
+# 메가시티 7개 세부 구역 (사이버펑크)
+# ============================================================
+megacity-zones:
+  neo_seoul:      { upper: "AKRO 본사 + 의료 엘리트", middle: "강화인체 시술소·중산층", under: "언더시티 — 빈민·해커·범죄자" }
+  nova_tokyo:     { upper: "JINTECH AI 연구 + 임원",   middle: "홀로그램 거리·자율 로봇", under: "AI 자유전선 본거지" }
+  iron_newyork:   { upper: "HEXACORP 데이터 거래소",   middle: "금융가·보험사",           under: "데이터 밀거래" }
+  chrome_london:  { upper: "ARCANEWORKS 군사 사령부",  middle: "방어 시스템 제조",       under: "리벨리온 저항군 은신처" }
+  shadow_moscow:  { upper: "FROSTLINE 극지 사령부",    middle: "사이보그 전사 양성",     under: "탈영 사이보그 은닉" }
+  neon_shanghai:  { upper: "DRAGON NEXUS 본사",        middle: "대량생산 공장 단지",     under: "공장 노동자 빈민가" }
+  hyper_lagos:    { upper: "SOLARIS 태양광 발전 본사", middle: "에너지 분배 센터",       under: "전력 도둑·블랙 서킷" }
+
+# ============================================================
+# 무협계 6대 지역
+# ============================================================
+martial-regions:
+  central:    { name: "중앙 평원",     factions: [소림사, 무당파, 화산파, 개방, 무림맹] }
+  north:      { name: "북방 설산",     factions: [곤륜파, 천산동모파, 만년빙잠 산지] }
+  south:      { name: "남방 독림",     factions: [독문, 혈마문, 오독선초 자생지] }
+  east:       { name: "동해 무림",     factions: [동해 검파, 이무기 출몰지] }
+  west:       { name: "서역 사막",     factions: [환마문, 비천신공 봉인지, 인삼과 자생지] }
+  underground:{ name: "동굴 지하 무림", factions: [음마궁, 강시 무덤] }
+
+# ============================================================
+# 마도공학 7대 도시 세부
+# ============================================================
+magitech-cities:
+  arcadia:     { name: "아르카디아", type: "하늘 도시", specialty: "비행 마도 기술·마도 아카데미" }
+  mechanicus:  { name: "메카니쿠스", type: "지하 도시", specialty: "기계 신전·골렘·자동인형" }
+  etherion:    { name: "에테리온",   type: "해상 도시", specialty: "마도 에너지 발전" }
+  cronos:      { name: "크로노스",   type: "시계탑 도시", specialty: "시간 가속·감속 장치" }
+  alkemia:     { name: "알케미아",   type: "연금술 도시", specialty: "마도 약학·물질 변환" }
+  bellatrix:   { name: "벨라트릭스", type: "군사 도시", specialty: "마도 무기·방어 시스템" }
+  nebula:      { name: "네뷸라",     type: "연구 도시", specialty: "이론 마도공학·차원 연구·금기 기술" }
+
+# ============================================================
+# 해양제국 7대 제국 세부
+# ============================================================
+ocean-empires:
+  aquarion:        { name: "아쿠아리온 제국",  capital: "파도의 왕관", trait: "해양 질서의 수호자" }
+  coral:           { name: "코럴 연합",       capital: "산호초 군도", trait: "무역·조선 — 중립" }
+  kraken_temple:   { name: "크라켄 신전국",   capital: "심해 본거지", trait: "크라켄 신앙·심해 탐사" }
+  pearl_abyss:     { name: "펄 아비스",       capital: "해저 인어 왕국", trait: "노래 마법·폐쇄적" }
+  free_sea:        { name: "자유해",          capital: "해적 항구",     trait: "무법 — 해적왕 통치" }
+  storm_empire:    { name: "폭풍 제국",       capital: "폭풍 해역",     trait: "거대 군함 함대 — 해전 최강" }
+  ghost_fleet:     { name: "유령 함대국",     capital: "망자의 해류",   trait: "언데드 선원·저주받은 함대" }
+
+# ============================================================
+# 히든 월드 6개
+# ============================================================
+hidden-worlds:
+  abyss:
+    name: "심연계"
+    description: "모든 세계의 최하층. 태초의 존재(심연수)가 잠들어 있음."
+    enter-condition: "심연의 균열 발견 또는 절대자 의도 진입"
+    rules: { stat-mult-on-enter: 0.5, energy-corruption: true, hostile-mind-erosion: true }
+    inhabitants: [심연수, 심연의 눈]
+  underworld:
+    name: "명계"
+    description: "죽은 자의 세계. 윤회·심판·정화."
+    enter-condition: "사망 후 자동 또는 귀문관 진입"
+    rules: { time-different: true }
+    inhabitants: [명병, 명수, 명왕, 환혼자]
+  time_realm:
+    name: "시간계"
+    description: "시간의 흐름이 공간. 과거·현재·미래 동시 존재."
+    enter-condition: "시간 금기 술법 또는 시간의 균열"
+    rules: { time-flux: true, past-changes-affect-present: true }
+    inhabitants: [시간 수호자]
+  dream:
+    name: "꿈의 세계"
+    description: "모든 존재의 꿈이 모이는 세계."
+    enter-condition: "수면 중 특수 조건"
+    rules: { imagination-is-power: true, mental-stat-key: true }
+    inhabitants: [꿈의 군주]
+  void:
+    name: "허공계"
+    description: "세계와 세계 사이의 빈 공간."
+    enter-condition: "차원 이동 중 이탈 또는 절대자 의도"
+    rules: { time-unstable: true, direction-disorienting: true }
+    inhabitants: [허공 유랑자, 차원 포식자]
+  god_realm:
+    name: "신계"
+    description: "신이 된 자들이 거주."
+    enter-condition: "신 등극 (하급신 이상)"
+    rules: { domain-system: true, god-absolute-in-own-domain: true }
+    inhabitants: [신, 개념신]
+
 minigame:
   meditation:
     base-keys: 4

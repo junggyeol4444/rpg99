@@ -1,6 +1,7 @@
 package kr.reborn.stat;
 
 import kr.reborn.core.RebornCore;
+import kr.reborn.stat.command.AnswerCommand;
 import kr.reborn.stat.command.MeditateCommand;
 import kr.reborn.stat.command.StatsCommand;
 import kr.reborn.stat.command.TierUpCommand;
@@ -26,6 +27,7 @@ public final class RebornStat extends JavaPlugin {
         getCommand("stats").setExecutor(new StatsCommand());
         getCommand("tierup").setExecutor(new TierUpCommand(this));
         getCommand("meditate").setExecutor(new MeditateCommand(this));
+        getCommand("answer").setExecutor(new AnswerCommand(this));
 
         getServer().getPluginManager().registerEvents(growth, this);
 

@@ -106,7 +106,9 @@ public final class WorldAI {
     }
 
     private void directNpcs() {
-        // RebornNPC와 RebornClan에 명령 전달 (현재는 로그만)
+        try {
+            plugin.simulator().cycle(world, state.tension, state.stability, state.mobBalance);
+        } catch (Throwable ignored) {}
     }
 
     public static final class State {

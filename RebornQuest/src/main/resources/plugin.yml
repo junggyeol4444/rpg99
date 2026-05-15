@@ -12,5 +12,11 @@ commands:
   quest:
     description: 퀘스트
     permission: rebornquest.use
+  event:
+    description: 이벤트 트리 시작
+    permission: rebornquest.use
+  eventchoice:
+    description: 이벤트 선택지
+    permission: rebornquest.use
 permissions:
   rebornquest.use: { default: true }

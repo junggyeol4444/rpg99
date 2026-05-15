@@ -264,6 +264,61 @@ npc-clans:
     seere_house:       { name: "&6시에르 가문",   lineage: DEMON_NOBLE, leader-stat-total: 3400, members: 4800 }
     dantalion_house:   { name: "&8단탈리온 가문", lineage: DEMON_NOBLE, leader-stat-total: 4000, members: 11000 }
     andromalius_house: { name: "&4안드로말리우스 가문", lineage: DEMON_NOBLE, leader-stat-total: 3900, members: 9000 }
+    # 나머지 50가문 — 솔로몬 72주 기반
+    aim_house:         { name: "&c아임 가문",         lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6800 }
+    aini_house:        { name: "&3아이니 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5500 }
+    alloces_house:     { name: "&4알로케스 가문",     lineage: DEMON_NOBLE, leader-stat-total: 3800, members: 7500 }
+    amduscias2_house:  { name: "&5암두시아스2 가문",  lineage: DEMON_NOBLE, leader-stat-total: 3600, members: 6000 }
+    andras_house:      { name: "&8안드라스 가문",     lineage: DEMON_NOBLE, leader-stat-total: 4100, members: 11500 }
+    andrealfus_house:  { name: "&6안드레알프스 가문", lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5800 }
+    asmoday2_house:    { name: "&d아스모다이2 가문",  lineage: DEMON_NOBLE, leader-stat-total: 4200, members: 13500 }
+    astaroth_house:    { name: "&5아스타로트 가문",   lineage: DEMON_NOBLE, leader-stat-total: 4500, members: 22000 }
+    balam_house:       { name: "&8발람 가문",         lineage: DEMON_NOBLE, leader-stat-total: 3800, members: 7800 }
+    barbatos_house:    { name: "&3바르바토스 가문",   lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 7000 }
+    bathin_house:      { name: "&5바틴 가문",         lineage: DEMON_NOBLE, leader-stat-total: 3600, members: 6500 }
+    beleth_house:      { name: "&4벨레트 가문",       lineage: DEMON_NOBLE, leader-stat-total: 4000, members: 10000 }
+    berith_house:      { name: "&c베리트 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3800, members: 7800 }
+    bifrons_house:     { name: "&8비프론스 가문",     lineage: DEMON_NOBLE, leader-stat-total: 3400, members: 4500 }
+    botis_house:       { name: "&3보티스 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5200 }
+    buer_house:        { name: "&6부에르 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6500 }
+    caim_house:        { name: "&8카임 가문",         lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5500 }
+    crocell_house:     { name: "&3크로셀 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3600, members: 6000 }
+    eligos_house:      { name: "&5엘리고스 가문",     lineage: DEMON_NOBLE, leader-stat-total: 3800, members: 7500 }
+    flauros_house:     { name: "&4플라우로스 가문",   lineage: DEMON_NOBLE, leader-stat-total: 4100, members: 12000 }
+    foras_house:       { name: "&8포라스 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5500 }
+    furcas_house:      { name: "&7푸르카스 가문",     lineage: DEMON_NOBLE, leader-stat-total: 4000, members: 9500 }
+    furfur_house:      { name: "&4푸르푸르 가문",     lineage: DEMON_NOBLE, leader-stat-total: 3900, members: 8500 }
+    gaap_house:        { name: "&5가아프 가문",       lineage: DEMON_NOBLE, leader-stat-total: 4200, members: 13000 }
+    glasya_house:      { name: "&8글라샤라볼라스 가문", lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6800 }
+    gremory_house:     { name: "&d그레모리 가문",     lineage: DEMON_NOBLE, leader-stat-total: 3800, members: 7500 }
+    gusion_house:      { name: "&3구시온 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3600, members: 6200 }
+    halphas_house:     { name: "&8할파스 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6700 }
+    ipos_house:        { name: "&6이포스 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5500 }
+    leraje_house:      { name: "&4레라예 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 7000 }
+    malphas_house:     { name: "&8말파스 가문",       lineage: DEMON_NOBLE, leader-stat-total: 4000, members: 10500 }
+    marax_house:       { name: "&7마락스 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5300 }
+    murmur_house:      { name: "&3무르무르 가문",     lineage: DEMON_NOBLE, leader-stat-total: 3800, members: 7500 }
+    orias_house:       { name: "&6오리아스 가문",     lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6500 }
+    orobas_house:      { name: "&3오로바스 가문",     lineage: DEMON_NOBLE, leader-stat-total: 3600, members: 6000 }
+    ose_house:         { name: "&8오세 가문",         lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5500 }
+    phenex_house:      { name: "&c페넥스 가문",       lineage: DEMON_NOBLE, leader-stat-total: 4100, members: 12000 }
+    procell_house:     { name: "&3프로켈 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6800 }
+    purson_house:      { name: "&6푸르손 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3800, members: 7500 }
+    raum_house:        { name: "&4라움 가문",         lineage: DEMON_NOBLE, leader-stat-total: 4000, members: 10000 }
+    ronove_house:      { name: "&8로노베 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5500 }
+    sabnock_house:     { name: "&4사브녹 가문",       lineage: DEMON_NOBLE, leader-stat-total: 4000, members: 10500 }
+    sallos_house:      { name: "&d살로스 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5500 }
+    samigina_house:    { name: "&8사미기나 가문",     lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5500 }
+    shax_house:        { name: "&3샥스 가문",         lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6800 }
+    sitri_house:       { name: "&d시트리 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6800 }
+    stolas_house:      { name: "&3스톨라스 가문",     lineage: DEMON_NOBLE, leader-stat-total: 3800, members: 7500 }
+    valac_house:       { name: "&8발락 가문",         lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6800 }
+    vapula_house:      { name: "&5바풀라 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3600, members: 6200 }
+    vassago2_house:    { name: "&6바사고2 가문",      lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6500 }
+    vepar_house:       { name: "&3베파르 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6800 }
+    vual_house:        { name: "&8부알 가문",         lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6800 }
+    zagan_house:       { name: "&6자간 가문",         lineage: DEMON_NOBLE, leader-stat-total: 3900, members: 9000 }
+    zepar_house:       { name: "&d제파르 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5500 }
 
   DRAGON:
     # 5대 드래곤 로드 가문

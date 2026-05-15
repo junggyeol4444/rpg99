@@ -59,6 +59,17 @@ public final class Roulette {
         applyInitialStats(d, result);
 
         Bukkit.getPluginManager().callEvent(new RebornRouletteResultEvent(p, result));
+
+        // RebornHiddenClass INITIAL 클래스 후보 굴림 (있으면)
+        try {
+            var hcPlugin = Bukkit.getPluginManager().getPlugin("RebornHiddenClass");
+            if (hcPlugin != null) {
+                Object engine = hcPlugin.getClass().getMethod("engine").invoke(hcPlugin);
+                engine.getClass().getMethod("rollInitial",
+                        org.bukkit.entity.Player.class, WorldKey.class)
+                        .invoke(engine, p, result);
+            }
+        } catch (Throwable ignored) {}
         p.sendTitle("§6운명이 결정되었다", "§f→ " + result, 5, 60, 20);
 
         int cd = plugin.getConfig().getInt("roulette.count-down-seconds", 30);

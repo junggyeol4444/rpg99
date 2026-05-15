@@ -74,10 +74,18 @@ public final class ExchangeManager {
         return net;
     }
 
-    /** 차원상인 히든 클래스 hook용. RebornHiddenClass에서 호출. */
+    /** 차원상인 히든 클래스 보유자 = 면제. RebornHiddenClass reflection. */
     public boolean isFeeExempt(UUID player) {
-        // TODO: RebornHiddenClass API 연동
-        return false;
+        try {
+            var hcPlugin = Bukkit.getPluginManager().getPlugin("RebornHiddenClass");
+            if (hcPlugin == null) return false;
+            Object progress = hcPlugin.getClass().getMethod("progress").invoke(hcPlugin);
+            Object hasMethod = progress.getClass().getMethod("has", UUID.class, String.class)
+                    .invoke(progress, player, "dimensional_merchant");
+            return hasMethod instanceof Boolean && (Boolean) hasMethod;
+        } catch (Throwable e) {
+            return false;
+        }
     }
 
     /** 동적 환율 변동: WorldAI hook. */

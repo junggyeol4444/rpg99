@@ -44,4 +44,12 @@ public final class PlayerProgress {
     public Set<String> quests(UUID p) {
         return completedQuests.computeIfAbsent(p, k -> new HashSet<>());
     }
+
+    /** Listener에서 호출하는 별칭 메서드. */
+    public void incKills(UUID p) { incrementKill(p); }
+    public void incTrades(UUID p) { incrementTrade(p); }
+    public void markQuestComplete(UUID p, String questId) { quests(p).add(questId); }
+    public void addFavor(UUID p, String npc, int delta) {
+        setFavor(p, npc, favor(p, npc) + delta);
+    }
 }

@@ -1,6 +1,7 @@
 package kr.reborn.death;
 
 import kr.reborn.core.RebornCore;
+import kr.reborn.death.abyss.AbyssWorld;
 import kr.reborn.death.command.BountyCommand;
 import kr.reborn.death.command.DeathCommand;
 import kr.reborn.death.command.UnderworldCommand;
@@ -29,6 +30,7 @@ public final class RebornDeath extends JavaPlugin {
         getCommand("bounty").setExecutor(new BountyCommand(this));
 
         getServer().getPluginManager().registerEvents(new DeathListener(this), this);
+        getServer().getPluginManager().registerEvents(new AbyssWorld(this), this);
 
         // 범죄 시간 감쇠
         RebornCore.get().scheduler().runTimer(crime::tickHourlyDecay, 20L * 60 * 60, 20L * 60 * 60);

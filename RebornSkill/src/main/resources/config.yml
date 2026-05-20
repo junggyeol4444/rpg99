@@ -52,7 +52,7 @@ skills:
   absolute_zero:        { name: "&b❅ 앱솔루트 제로", world: FANTASY, category: MAGIC, min-tier-stats: 2000, cost: { type: MANA, amount: 2200 }, damage: "intelligence * 9", element: ICE, aoe-radius: 20, learn: BOOK }
   space_distortion:     { name: "&5◈ 스페이스 디스토션", world: FANTASY, category: MAGIC, min-tier-stats: 2000, cost: { type: MANA, amount: 1800 }, damage: "intelligence * 8", element: ARCANE, learn: BOOK }
   life_drain:           { name: "&4♥ 라이프 드레인", world: FANTASY, category: MAGIC, min-tier-stats: 700, cost: { type: MANA, amount: 400 }, damage: "intelligence * 3", element: DARK, learn: BOOK }
-  summon_elemental_lord:{ name: "&3◈ 서먼 엘리멘탈 로드", world: FANTASY, category: MAGIC, min-tier-stats: 2000, cost: { type: MANA, amount: 2500 }, cooldown-seconds: 1800, learn: NPC }
+  summon_elemental_lord: { name: "&3◈ 서먼 엘리멘탈 로드", world: FANTASY, category: MAGIC, min-tier-stats: 2000, cost: { type: MANA, amount: 2500 }, cooldown-seconds: 1800, learn: NPC }
   create_golem:         { name: "&8⚒ 크리에이트 골렘", world: FANTASY, category: MAGIC, min-tier-stats: 500, cost: { type: MANA, amount: 300 }, cooldown-seconds: 60, learn: BOOK }
   illusion_world:       { name: "&d✦ 일루전 월드", world: FANTASY, category: MAGIC, min-tier-stats: 1000, cost: { type: MANA, amount: 800 }, element: ARCANE, learn: BOOK }
   curse_of_eternity:    { name: "&0✘ 커스 오브 이터니티", world: FANTASY, category: MAGIC, min-tier-stats: 3000, cost: { type: MANA, amount: 6000 }, cooldown-seconds: 86400, element: DARK, learn: BOOK }
@@ -119,7 +119,7 @@ skills:
   yeoraesinjang:        { name: "&6✋ 여래신장", world: MARTIAL, category: MARTIAL, min-tier-stats: 1200, cost: { type: INNER_KI, amount: 150 }, damage: "inner_ki * 8", learn: NPC }
   sorim_72jeolgi:       { name: "&e卍 소림72절기", world: MARTIAL, category: MARTIAL, min-tier-stats: 700, cost: { type: INNER_KI, amount: 50 }, damage: "inner_ki * 3", learn: NPC }
   cheonsu_gwaneumjang:  { name: "&d🙌 천수관음장", world: MARTIAL, category: MARTIAL, min-tier-stats: 300, cost: { type: INNER_KI, amount: 40 }, damage: "agility * 2 + inner_ki * 1", learn: NPC }
-  tagyeok_36ro_bongbeop:{ name: "&7🥢 타격삼십육로봉법", world: MARTIAL, category: MARTIAL, min-tier-stats: 500, cost: { type: INNER_KI, amount: 40 }, damage: "inner_ki * 2 + strength * 1", learn: NPC }
+  tagyeok_36ro_bongbeop: { name: "&7🥢 타격삼십육로봉법", world: MARTIAL, category: MARTIAL, min-tier-stats: 500, cost: { type: INNER_KI, amount: 40 }, damage: "inner_ki * 2 + strength * 1", learn: NPC }
   mi_in_gwon:           { name: "&d💃 미인권", world: MARTIAL, category: MARTIAL, min-tier-stats: 300, cost: { type: INNER_KI, amount: 30 }, damage: "agility * 2 + inner_ki * 2", learn: NPC }
   hyeonmyung_igigeom:   { name: "&3🗡 현명이기검", world: MARTIAL, category: MARTIAL, min-tier-stats: 700, cost: { type: INNER_KI, amount: 70 }, damage: "inner_ki * 3", element: ICE, learn: BOOK }
   chilsanggwon:         { name: "&4✊ 칠상권", world: MARTIAL, category: MARTIAL, min-tier-stats: 1200, cost: { type: INNER_KI, amount: 100 }, damage: "inner_ki * 5", learn: BOOK }
@@ -156,7 +156,7 @@ skills:
   # ============================================================
   cheonhwa_bongsin_gyeol: { name: "&5✦ 천화봉신결", world: IMMORTAL, category: TAO, min-tier-stats: 4000, cost: { type: IMMORTAL_KI, amount: 300 }, damage: "immortal_ki * 6", learn: ACHIEVEMENT }
   gujeon_hyeongong:       { name: "&6🔁 구전현공", world: IMMORTAL, category: TAO, min-tier-stats: 1500, cost: { type: IMMORTAL_KI, amount: 200 }, learn: ACHIEVEMENT }
-  taeeul_noebeop_immortal:{ name: "&3⚡ 태을뇌법 (선계)", world: IMMORTAL, category: TAO, min-tier-stats: 1500, cost: { type: IMMORTAL_KI, amount: 150 }, damage: "immortal_ki * 5", element: LIGHTNING, learn: BOOK }
+  taeeul_noebeop_immortal: { name: "&3⚡ 태을뇌법 (선계)", world: IMMORTAL, category: TAO, min-tier-stats: 1500, cost: { type: IMMORTAL_KI, amount: 150 }, damage: "immortal_ki * 5", element: LIGHTNING, learn: BOOK }
   hondol_simbeop:         { name: "&8☯ 혼돈심법", world: IMMORTAL, category: TAO, min-tier-stats: 800, cost: { type: IMMORTAL_KI, amount: 100 }, damage: "immortal_ki * 3", element: DARK, learn: BOOK }
 
   # ============================================================

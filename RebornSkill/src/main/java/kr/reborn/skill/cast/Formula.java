@@ -59,7 +59,35 @@ public final class Formula {
             if (c == '(') { p++; double v0 = expr(); skip(); if (p < s.length() && s.charAt(p) == ')') p++; return v0; }
             if (c == '-') { p++; return -factor(); }
             if (Character.isDigit(c) || c == '.') return num();
-            return ident();
+            return identOrCall();
+        }
+
+        double identOrCall() {
+            int start = p;
+            while (p < s.length() && (Character.isLetterOrDigit(s.charAt(p)) || s.charAt(p) == '_')) p++;
+            String n = s.substring(start, p);
+            skip();
+            if (p < s.length() && s.charAt(p) == '(') {
+                p++;
+                double a = expr();
+                double b = 0;
+                if (p < s.length() && s.charAt(p) == ',') { p++; b = expr(); }
+                skip();
+                if (p < s.length() && s.charAt(p) == ')') p++;
+                switch (n.toLowerCase()) {
+                    case "sqrt":  return Math.sqrt(a);
+                    case "abs":   return Math.abs(a);
+                    case "min":   return Math.min(a, b);
+                    case "max":   return Math.max(a, b);
+                    case "pow":   return Math.pow(a, b);
+                    case "log":   return Math.log(a);
+                    case "floor": return Math.floor(a);
+                    case "ceil":  return Math.ceil(a);
+                    case "round": return Math.round(a);
+                    default: return a;
+                }
+            }
+            return v.getOrDefault(n.toLowerCase(), 0.0);
         }
 
         double num() {

@@ -45,15 +45,15 @@ lineages:
   GREEN_DRAGON: { stat: CHARISMA, percent: 8, skill: breath_basic }
   DEMON_LORD:   { stat: DEMON_KI, percent: 10 }
   DEMON_NOBLE:  { stat: DEMON_KI, percent: 7 }
-  TAINTED_ANGEL:{ stat: HEAVEN_KI, percent: 5, skill: holy_ray }
+  TAINTED_ANGEL: { stat: HEAVEN_KI, percent: 5, skill: holy_ray }
   ANGEL:        { stat: HEAVEN_KI, percent: 8, skill: holy_light }
   KITSUNE:      { stat: CHARM, percent: 20, skill: fox_fire }
   ONI:          { stat: STRENGTH, percent: 10 }
   TENGU:        { stat: AGILITY, percent: 12, skill: flight }
-  IMMORTAL_BORN:{ stat: IMMORTAL_KI, percent: 10 }
+  IMMORTAL_BORN: { stat: IMMORTAL_KI, percent: 10 }
   TAOIST_LINE:  { stat: TAO_POWER, percent: 10, skill: talisman_basic }
   MERMAID:      { stat: OCEAN_POWER, percent: 15, skill: water_breathing }
-  SEA_KING_LINE:{ stat: OCEAN_POWER, percent: 25, skill: water_breathing }
+  SEA_KING_LINE: { stat: OCEAN_POWER, percent: 25, skill: water_breathing }
   HUNTER_LINE:  { stat: STRENGTH, percent: 8 }
   BUDDHIST:     { stat: MENTAL, percent: 20 }
   SHADOW_ELF:   { stat: AGILITY, percent: 10, skill: night_fang }
@@ -374,7 +374,7 @@ npc-clans:
 
   IMMORTAL:
     taeheo_palace:    { name: "&5태허선궁",      lineage: IMMORTAL_BORN, leader-stat-total: 7000, domain: "태허봉" }
-    seonjong_alliance:{ name: "&6선종 연합",     lineage: TAOIST_LINE,   leader-stat-total: 5500, domain: "선산 연봉" }
+    seonjong_alliance: { name: "&6선종 연합",     lineage: TAOIST_LINE,   leader-stat-total: 5500, domain: "선산 연봉" }
     pill_alliance:    { name: "&d단약 연합",     lineage: "",            leader-stat-total: 4000, domain: "선궁 도시군" }
     cheongi_temple:   { name: "&b천기관",        lineage: TAOIST_LINE,   leader-stat-total: 5000, domain: "선산" }
     sanhae_hunter:    { name: "&8산해수렵단",    lineage: "",            leader-stat-total: 4500, domain: "선계 외곽" }
@@ -401,7 +401,7 @@ npc-clans:
     holy_court:       { name: "&f신성 재판소",    lineage: ANGEL,      leader-stat-total: 4500, domain: "6층 성광 궁전" }
     light_church:     { name: "&e빛의 교단",      lineage: ANGEL,      leader-stat-total: 4000, domain: "4층 백광" }
     purify_knights:   { name: "&b정화 기사단",    lineage: ANGEL,      leader-stat-total: 5000, domain: "3층" }
-    archangel_council:{ name: "&e&l4대천사 회의", lineage: ANGEL,      leader-stat-total: 5000, domain: "8층" }
+    archangel_council: { name: "&e&l4대천사 회의", lineage: ANGEL,      leader-stat-total: 5000, domain: "8층" }
     cheonje_council:  { name: "&6&l천제의 성좌",  lineage: ANGEL,      leader-stat-total: 9000, domain: "9층" }
 
   EARTH:
@@ -448,7 +448,7 @@ npc-clans:
     wind_palace:      { name: "&f실피드론 궁전",     leader-stat-total: 7000, lineage: "" }
     earth_palace:     { name: "&7노움가르드 궁전",   leader-stat-total: 7500, lineage: "" }
     contractor_guild: { name: "&a계약자 길드",       leader-stat-total: 3500, lineage: "" }
-    ancient_forest_guard:{ name: "&2고대 정령 숲 수호단", leader-stat-total: 5000, lineage: "" }
+    ancient_forest_guard: { name: "&2고대 정령 숲 수호단", leader-stat-total: 5000, lineage: "" }
 
   APOCALYPSE:
     last_code:        { name: "&7라스트 코드 (생존자 연합)",  leader-stat-total: 3500, lineage: "" }

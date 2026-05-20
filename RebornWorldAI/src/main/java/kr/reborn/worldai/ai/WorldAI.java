@@ -101,8 +101,67 @@ public final class WorldAI {
         if (now - last < cd * 1000) return;
         questCooldowns.put(key, now);
         Bukkit.getPluginManager().callEvent(new RebornWorldAIDecisionEvent(world, key, label));
-        // RebornQuest plugin에 hook (만약 활성화되어 있으면)
         Bukkit.broadcastMessage("§6[" + world + " AI] §f" + label + " 발동");
+
+        // RebornQuest hook — 같은 세계 플레이어 전원에게 월드 퀘스트 자동 부여
+        try {
+            var qPlugin = Bukkit.getPluginManager().getPlugin("RebornQuest");
+            if (qPlugin == null) return;
+            Object engine = qPlugin.getClass().getMethod("engine").invoke(qPlugin);
+            // 키 → 퀘스트 ID 매핑
+            String questId = mapKeyToQuestId(key);
+            if (questId == null) return;
+            for (var p : Bukkit.getOnlinePlayers()) {
+                var data = kr.reborn.core.RebornCore.get().api().getPlayerData(p.getUniqueId());
+                if (data == null) continue;
+                if (data.worldKey() == world) {
+                    engine.getClass().getMethod("accept", org.bukkit.entity.Player.class, String.class)
+                            .invoke(engine, p, questId);
+                }
+            }
+            // 다세계 연동 — comm 채널로 알림
+            kr.reborn.worldai.comm.AIComm comm = plugin.comm();
+            for (kr.reborn.core.data.WorldKey other : kr.reborn.core.data.WorldKey.values()) {
+                if (other == world) continue;
+                if (isLinkedRealm(world, other)) {
+                    comm.send(world, other, kr.reborn.worldai.comm.AIComm.Type.QUEST_LINK,
+                            "linked:" + key);
+                }
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    private String mapKeyToQuestId(String key) {
+        switch (key) {
+            case "WAR":
+                switch (world) {
+                    case FANTASY: return "marwang_invasion";
+                    case DEMON: return "marwang_intermid_invasion";
+                    case MARTIAL: return "cult_appearance";
+                    case OCEAN: return "great_sea_battle";
+                    default: return null;
+                }
+            case "ECON_CRISIS": return null;
+            case "MOB_INVASION":
+                if (world == kr.reborn.core.data.WorldKey.YOKAI) return "yokai_king_revival";
+                return null;
+            case "PEACE_FESTIVAL": return null;
+            default: return null;
+        }
+    }
+
+    /** 연결권 내 세계는 자동 연동. */
+    private boolean isLinkedRealm(kr.reborn.core.data.WorldKey a, kr.reborn.core.data.WorldKey b) {
+        java.util.Set<kr.reborn.core.data.WorldKey> g1 = java.util.Set.of(
+                kr.reborn.core.data.WorldKey.FANTASY,
+                kr.reborn.core.data.WorldKey.DEMON,
+                kr.reborn.core.data.WorldKey.HEAVEN,
+                kr.reborn.core.data.WorldKey.SPIRIT);
+        java.util.Set<kr.reborn.core.data.WorldKey> g2 = java.util.Set.of(
+                kr.reborn.core.data.WorldKey.MARTIAL,
+                kr.reborn.core.data.WorldKey.IMMORTAL,
+                kr.reborn.core.data.WorldKey.YOKAI);
+        return (g1.contains(a) && g1.contains(b)) || (g2.contains(a) && g2.contains(b));
     }
 
     private void directNpcs() {

@@ -36,7 +36,7 @@ spirit-forests:
   earth_realm:   { element: EARTH,  king: "노움가르드", stat: SPIRIT_POWER, train-bonus: 2.0 }
   light_forest:    { element: LIGHT,    primordial: "루미엘",  train-bonus: 2.5, restricted: true }
   dark_forest:     { element: DARK,     primordial: "옴브라",  train-bonus: 2.5, restricted: true }
-  lightning_forest:{ element: LIGHTNING, king: "뇌영선",       train-bonus: 1.7 }
+  lightning_forest: { element: LIGHTNING, king: "뇌영선",       train-bonus: 1.7 }
   ice_forest:      { element: ICE,       king: "빙군선",       train-bonus: 1.7 }
   poison_forest:   { element: POISON,    king: "독화선",       train-bonus: 1.7 }
   sound_forest:    { element: SOUND,     king: "음파선",       train-bonus: 1.7 }
@@ -95,7 +95,7 @@ martial-regions:
   south:      { name: "남방 독림",     factions: [독문, 혈마문, 오독선초 자생지] }
   east:       { name: "동해 무림",     factions: [동해 검파, 이무기 출몰지] }
   west:       { name: "서역 사막",     factions: [환마문, 비천신공 봉인지, 인삼과 자생지] }
-  underground:{ name: "동굴 지하 무림", factions: [음마궁, 강시 무덤] }
+  underground: { name: "동굴 지하 무림", factions: [음마궁, 강시 무덤] }
 
 # ============================================================
 # 마도공학 7대 도시 세부

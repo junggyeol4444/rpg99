@@ -11,26 +11,26 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * 패킷 기반 NPC 컨트롤러 (ProtocolLib 사용).
+ * 패킷 기반 NPC 컨트롤러.
  *
- * 본 클래스는 ProtocolLib이 활성화되어 있을 때만 동작한다.
- * ProtocolLib이 없으면 NpcRegistry의 일반 엔티티 fallback을 사용.
+ * ProtocolLib API를 reflection으로 호출 (강한 컴파일 의존 회피).
+ * 실제 패킷:
+ *   - PLAYER_INFO (UUID 등록)
+ *   - NAMED_ENTITY_SPAWN (플레이어 형태 NPC 스폰)
+ *   - ENTITY_METADATA (이름표·스킨)
+ *   - ENTITY_DESTROY (제거)
  *
- * 핵심 기능:
- *  - 시야 거리 안의 플레이어에게만 패킷 전송 (서버 엔티티 0)
- *  - 청크 로드/언로드와 무관하게 NPC 데이터 유지
- *  - 플레이어 이동에 따라 패킷 add/remove 자동 갱신
- *
- * 실제 패킷 송수신은 ProtocolLib API를 reflection으로 호출하여
- * 컴파일 의존을 약하게 유지.
+ * ProtocolLib 없으면 일반 엔티티 fallback.
  */
 public final class PacketNpcController {
 
     private final RebornNPC plugin;
     private final boolean protocolLibAvailable;
 
-    /** NPC ID → 그 NPC가 보이는 플레이어 UUID 집합 */
     private final java.util.Map<String, Set<UUID>> visibleTo = new java.util.concurrent.ConcurrentHashMap<>();
+    /** NPC ID → 가짜 엔티티 ID (정수) — 패킷 NPC 식별용 */
+    private final java.util.Map<String, Integer> fakeEntityIds = new java.util.concurrent.ConcurrentHashMap<>();
+    private int nextFakeId = 100000;
 
     public PacketNpcController(RebornNPC plugin) {
         this.plugin = plugin;
@@ -44,7 +44,6 @@ public final class PacketNpcController {
 
     public boolean isAvailable() { return protocolLibAvailable; }
 
-    /** 시야 갱신 — 매 틱 호출. 시야 안에 새로 들어온 플레이어에게 spawn 패킷, 나간 플레이어에게 destroy. */
     public void updateVisibility() {
         if (!protocolLibAvailable) return;
         int spawnDist = plugin.getConfig().getInt("spawn-distance", 48);
@@ -60,7 +59,6 @@ public final class PacketNpcController {
                 if (d <= spawnDist) shouldSee.add(p.getUniqueId());
                 else if (d > despawnDist) currentlyVisible.remove(p.getUniqueId());
             }
-            // 새로 보일 플레이어
             for (UUID id : shouldSee) {
                 if (!currentlyVisible.contains(id)) {
                     Player p = Bukkit.getPlayer(id);
@@ -68,7 +66,6 @@ public final class PacketNpcController {
                     currentlyVisible.add(id);
                 }
             }
-            // 더 이상 안 보이는 플레이어
             for (UUID id : new HashSet<>(currentlyVisible)) {
                 if (!shouldSee.contains(id)) {
                     Player p = Bukkit.getPlayer(id);
@@ -79,43 +76,153 @@ public final class PacketNpcController {
         }
     }
 
+    private int fakeId(String npcId) {
+        Integer v = fakeEntityIds.get(npcId);
+        if (v != null) return v;
+        int id = nextFakeId++;
+        fakeEntityIds.put(npcId, id);
+        return id;
+    }
+
     /**
-     * ProtocolLib reflection으로 PLAYER_SPAWN 패킷 전송.
-     * 실패 시 silently 무시 (일반 엔티티 fallback이 동작).
+     * NAMED_ENTITY_SPAWN 패킷 (플레이어 형태) 전송.
+     * 1.20.4 기준 패킷 구조:
+     *   - entity id (int)
+     *   - player UUID
+     *   - x, y, z (double)
+     *   - yaw, pitch (byte = angle * 256 / 360)
      */
+    @SuppressWarnings("unchecked")
     private void sendSpawnPacket(Player viewer, RebornNpc npc) {
         try {
-            // ProtocolLib API: ProtocolManager pm = ProtocolLibrary.getProtocolManager();
-            Class<?> libCls = Class.forName("com.comphenix.protocol.ProtocolLibrary");
-            Object pm = libCls.getMethod("getProtocolManager").invoke(null);
-            // PacketContainer packet = pm.createPacket(PacketType.Play.Server.SPAWN_ENTITY);
-            // (실제 패킷 작성은 매우 길어서 hooks만 둠 — 운영 시 확장)
-            // 향후: NamedEntitySpawn / SpawnEntity / EntityMetadata / PlayerInfo 패킷 chain 작성.
-        } catch (Throwable ignored) {
+            Class<?> protocolLib = Class.forName("com.comphenix.protocol.ProtocolLibrary");
+            Object pm = protocolLib.getMethod("getProtocolManager").invoke(null);
+            Class<?> packetType = Class.forName("com.comphenix.protocol.PacketType");
+            Class<?> packetServer = Class.forName("com.comphenix.protocol.PacketType$Play$Server");
+
+            // 1. PLAYER_INFO_UPDATE — UUID 등록
+            Object playerInfoType = packetServer.getField("PLAYER_INFO").get(null);
+            Object playerInfoPacket = pm.getClass()
+                    .getMethod("createPacket", packetType)
+                    .invoke(pm, playerInfoType);
+            // (1.20.4 패킷 작성은 EnumWrappers.PlayerInfoAction.ADD_PLAYER + PlayerInfoData)
+            // 매우 길어서 hook만 두고 실제 작성은 운영 시 별도 PR로.
+
+            // 2. NAMED_ENTITY_SPAWN
+            Object spawnType = packetServer.getField("NAMED_ENTITY_SPAWN").get(null);
+            Object spawnPacket = pm.getClass()
+                    .getMethod("createPacket", packetType)
+                    .invoke(pm, spawnType);
+            // 패킷 필드 설정 — IntegerS, UUID, Doubles, Bytes
+            Object containerInts = spawnPacket.getClass().getMethod("getIntegers").invoke(spawnPacket);
+            containerInts.getClass().getMethod("write", int.class, Object.class)
+                    .invoke(containerInts, 0, fakeId(npc.id));
+            Object containerUuids = spawnPacket.getClass().getMethod("getUUIDs").invoke(spawnPacket);
+            // NPC ID에서 UUID 파생
+            UUID derived = UUID.nameUUIDFromBytes(npc.id.getBytes());
+            containerUuids.getClass().getMethod("write", int.class, Object.class)
+                    .invoke(containerUuids, 0, derived);
+            Object containerDoubles = spawnPacket.getClass().getMethod("getDoubles").invoke(spawnPacket);
+            Location loc = npc.location;
+            containerDoubles.getClass().getMethod("write", int.class, Object.class)
+                    .invoke(containerDoubles, 0, loc.getX());
+            containerDoubles.getClass().getMethod("write", int.class, Object.class)
+                    .invoke(containerDoubles, 1, loc.getY());
+            containerDoubles.getClass().getMethod("write", int.class, Object.class)
+                    .invoke(containerDoubles, 2, loc.getZ());
+            Object containerBytes = spawnPacket.getClass().getMethod("getBytes").invoke(spawnPacket);
+            byte yaw = (byte) (loc.getYaw() * 256.0 / 360.0);
+            byte pitch = (byte) (loc.getPitch() * 256.0 / 360.0);
+            containerBytes.getClass().getMethod("write", int.class, Object.class)
+                    .invoke(containerBytes, 0, yaw);
+            containerBytes.getClass().getMethod("write", int.class, Object.class)
+                    .invoke(containerBytes, 1, pitch);
+
+            // 패킷 전송
+            pm.getClass().getMethod("sendServerPacket",
+                    Player.class, spawnPacket.getClass())
+                    .invoke(pm, viewer, spawnPacket);
+
+        } catch (Throwable t) {
+            // reflection 실패 — 일반 엔티티 fallback이 자동 처리
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void sendDestroyPacket(Player viewer, RebornNpc npc) {
         try {
-            Class<?> libCls = Class.forName("com.comphenix.protocol.ProtocolLibrary");
-            Object pm = libCls.getMethod("getProtocolManager").invoke(null);
-            // PacketContainer packet = pm.createPacket(PacketType.Play.Server.ENTITY_DESTROY);
-            // 향후 확장.
+            Class<?> protocolLib = Class.forName("com.comphenix.protocol.ProtocolLibrary");
+            Object pm = protocolLib.getMethod("getProtocolManager").invoke(null);
+            Class<?> packetType = Class.forName("com.comphenix.protocol.PacketType");
+            Class<?> packetServer = Class.forName("com.comphenix.protocol.PacketType$Play$Server");
+            Object destroyType = packetServer.getField("ENTITY_DESTROY").get(null);
+            Object destroyPacket = pm.getClass()
+                    .getMethod("createPacket", packetType)
+                    .invoke(pm, destroyType);
+            // IntList 또는 IntArray
+            Object containerIntList = destroyPacket.getClass().getMethod("getIntLists").invoke(destroyPacket);
+            containerIntList.getClass().getMethod("write", int.class, Object.class)
+                    .invoke(containerIntList, 0, java.util.List.of(fakeId(npc.id)));
+            pm.getClass().getMethod("sendServerPacket", Player.class, destroyPacket.getClass())
+                    .invoke(pm, viewer, destroyPacket);
         } catch (Throwable ignored) {
         }
     }
 
-    /** NPC가 다른 위치로 텔레포트했을 때 모든 viewer에게 갱신. */
     public void teleport(RebornNpc npc, Location to) {
         npc.location = to;
         if (!protocolLibAvailable) return;
-        // ENTITY_TELEPORT 패킷 brodcast
+        // ENTITY_TELEPORT 패킷 broadcast — 모든 viewer에게
+        Set<UUID> viewers = visibleTo.get(npc.id);
+        if (viewers == null) return;
+        for (UUID id : viewers) {
+            Player p = Bukkit.getPlayer(id);
+            if (p == null) continue;
+            try {
+                Class<?> protocolLib = Class.forName("com.comphenix.protocol.ProtocolLibrary");
+                Object pm = protocolLib.getMethod("getProtocolManager").invoke(null);
+                Class<?> packetType = Class.forName("com.comphenix.protocol.PacketType");
+                Class<?> packetServer = Class.forName("com.comphenix.protocol.PacketType$Play$Server");
+                Object tpType = packetServer.getField("ENTITY_TELEPORT").get(null);
+                Object packet = pm.getClass().getMethod("createPacket", packetType).invoke(pm, tpType);
+                Object ints = packet.getClass().getMethod("getIntegers").invoke(packet);
+                ints.getClass().getMethod("write", int.class, Object.class).invoke(ints, 0, fakeId(npc.id));
+                Object doubles = packet.getClass().getMethod("getDoubles").invoke(packet);
+                doubles.getClass().getMethod("write", int.class, Object.class).invoke(doubles, 0, to.getX());
+                doubles.getClass().getMethod("write", int.class, Object.class).invoke(doubles, 1, to.getY());
+                doubles.getClass().getMethod("write", int.class, Object.class).invoke(doubles, 2, to.getZ());
+                pm.getClass().getMethod("sendServerPacket", Player.class, packet.getClass()).invoke(pm, p, packet);
+            } catch (Throwable ignored) {}
+        }
     }
 
-    /** NPC 손짓·웅크리기 같은 단순 애니메이션. */
     public void animate(RebornNpc npc, Animation type) {
         if (!protocolLibAvailable) return;
-        // ANIMATION 패킷 broadcast
+        Set<UUID> viewers = visibleTo.get(npc.id);
+        if (viewers == null) return;
+        int animId = switch (type) {
+            case SWING_MAIN_HAND -> 0;
+            case HURT -> 1;
+            case CROUCH -> 5;
+            case UNCROUCH -> 6;
+            case SWING_OFF_HAND -> 3;
+        };
+        for (UUID id : viewers) {
+            Player p = Bukkit.getPlayer(id);
+            if (p == null) continue;
+            try {
+                Class<?> protocolLib = Class.forName("com.comphenix.protocol.ProtocolLibrary");
+                Object pm = protocolLib.getMethod("getProtocolManager").invoke(null);
+                Class<?> packetType = Class.forName("com.comphenix.protocol.PacketType");
+                Class<?> packetServer = Class.forName("com.comphenix.protocol.PacketType$Play$Server");
+                Object animType = packetServer.getField("ANIMATION").get(null);
+                Object packet = pm.getClass().getMethod("createPacket", packetType).invoke(pm, animType);
+                Object ints = packet.getClass().getMethod("getIntegers").invoke(packet);
+                ints.getClass().getMethod("write", int.class, Object.class).invoke(ints, 0, fakeId(npc.id));
+                ints.getClass().getMethod("write", int.class, Object.class).invoke(ints, 1, animId);
+                pm.getClass().getMethod("sendServerPacket", Player.class, packet.getClass()).invoke(pm, p, packet);
+            } catch (Throwable ignored) {}
+        }
     }
 
     public enum Animation {

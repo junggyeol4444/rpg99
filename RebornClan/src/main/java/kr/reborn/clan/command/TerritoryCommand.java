@@ -28,7 +28,10 @@ public final class TerritoryCommand implements CommandExecutor {
                 Msg.send(p, t == null ? "&7중립 지대" : "&6소유자: " + t.owner + " 가문: " + t.clanId);
                 break;
             case "war":
-                Msg.warn(p, "영토 전쟁 선포 — 준비 시간 1시간 (TODO: 실시간 PvP 활성 처리)");
+                var t = plugin.territories().at(p.getLocation().getChunk());
+                if (t == null) { Msg.error(p, "여기에 영토가 없다."); break; }
+                if (t.owner.equals(p.getUniqueId())) { Msg.error(p, "자기 영토는 침공 불가."); break; }
+                plugin.territories().declareWar(p, t);
                 break;
         }
         return true;

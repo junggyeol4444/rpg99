@@ -67,6 +67,9 @@ public final class NpcRegistry {
     }
 
     public void loadAll() {
+        // 0) 플러그인 jar 내장 기본 좌표 (npcs-lobby.yml) 추출
+        plugin.saveResource("npcs-lobby.yml", false);
+
         // 1) config.yml의 npcs: 섹션을 사전 정의 NPC로 등록 (좌표는 임시, 운영 시 /rnpc spawn으로 배치)
         var npcSec = plugin.getConfig().getConfigurationSection("npcs");
         if (npcSec != null) {
@@ -93,8 +96,12 @@ public final class NpcRegistry {
             plugin.getLogger().info("config 사전 정의 NPC " + byId.size() + "개 등록");
         }
 
-        // 2) 운영 중 저장된 npcs.yml — 좌표 포함, 실제 스폰
-        File f = new File(plugin.getDataFolder(), "npcs.yml");
+        // 2) 좌표 포함 NPC 파일들 로드 (npcs-lobby.yml, npcs.yml)
+        loadCoordsFromFile(new File(plugin.getDataFolder(), "npcs-lobby.yml"));
+        loadCoordsFromFile(new File(plugin.getDataFolder(), "npcs.yml"));
+    }
+
+    private void loadCoordsFromFile(File f) {
         if (!f.exists()) return;
         YamlConfiguration y = YamlConfiguration.loadConfiguration(f);
         for (String id : y.getKeys(false)) {

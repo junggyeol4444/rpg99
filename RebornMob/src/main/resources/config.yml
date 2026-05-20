@@ -33,7 +33,7 @@ monsters:
   fantasy_cockatrice:    { base: CHICKEN, name: "&5코카트리스", world: FANTASY, hp: 50, damage: 15, ai: BASIC }
   fantasy_gargoyle:      { base: VEX, name: "&8가고일", world: FANTASY, hp: 100, damage: 14, ai: FLYING }
   fantasy_wyvern:        { base: PHANTOM, name: "&5와이번", world: FANTASY, hp: 300, damage: 30, ai: FLYING }
-  fantasy_skeleton_knight:{ base: WITHER_SKELETON, name: "&f스켈레톤 나이트", world: FANTASY, hp: 150, damage: 25, ai: BASIC }
+  fantasy_skeleton_knight: { base: WITHER_SKELETON, name: "&f스켈레톤 나이트", world: FANTASY, hp: 150, damage: 25, ai: BASIC }
   fantasy_wraith:        { base: VEX, name: "&8레이스", world: FANTASY, hp: 80, damage: 18, ai: FLYING }
   fantasy_magic_golem:   { base: IRON_GOLEM, name: "&7마법 골렘", world: FANTASY, hp: 400, damage: 30, ai: BASIC }
 
@@ -69,7 +69,7 @@ monsters:
   heaven_angel_novice:   { base: VEX, name: "&f견습 천사", world: HEAVEN, hp: 30, damage: 8, ai: FLYING }
   heaven_angel:          { base: ALLAY, name: "&e천사", world: HEAVEN, hp: 100, damage: 20, ai: FLYING }
   heaven_archangel:      { base: VEX, name: "&e&l대천사", world: HEAVEN, hp: 1500, damage: 100, ai: BOSS, phases: 3 }
-  heaven_corrupted_angel:{ base: VEX, name: "&8타락 천사", world: HEAVEN, hp: 800, damage: 70, ai: FLYING }
+  heaven_corrupted_angel: { base: VEX, name: "&8타락 천사", world: HEAVEN, hp: 800, damage: 70, ai: FLYING }
   heaven_chaos_beast:    { base: WARDEN, name: "&5혼돈의 괴물", world: HEAVEN, hp: 2500, damage: 120, ai: BOSS, phases: 3 }
 
   # ─── 정령계 ────────────────────────────────────
@@ -101,12 +101,12 @@ monsters:
   martial_cheonma_descend: { base: WITHER, name: "&5&l[천마] 강림체", world: MARTIAL, hp: 60000, damage: 600, ai: BOSS, phases: 7 }
 
   # ─── 선계 ────────────────────────────────────
-  immortal_demon_immortal:{ base: WITHER_SKELETON, name: "&5마선", world: IMMORTAL, hp: 1500, damage: 80, ai: BASIC }
+  immortal_demon_immortal: { base: WITHER_SKELETON, name: "&5마선", world: IMMORTAL, hp: 1500, damage: 80, ai: BASIC }
   immortal_geopsoo:      { base: BLAZE, name: "&3겁수", world: IMMORTAL, hp: 800, damage: 60, ai: FLYING }
   immortal_seongwi:      { base: VEX, name: "&8선귀", world: IMMORTAL, hp: 400, damage: 40, ai: FLYING }
-  immortal_panacea_guard:{ base: IRON_GOLEM, name: "&a영약 수호수", world: IMMORTAL, hp: 5000, damage: 150, ai: BOSS, phases: 3 }
+  immortal_panacea_guard: { base: IRON_GOLEM, name: "&a영약 수호수", world: IMMORTAL, hp: 5000, damage: 150, ai: BOSS, phases: 3 }
   immortal_human_alchemist: { base: ZOMBIE_VILLAGER, name: "&4인약사", world: IMMORTAL, hp: 1000, damage: 60, ai: BASIC }
-  immortal_taeheo_master:{ base: WITHER, name: "&5&l태허선궁 궁주", world: IMMORTAL, hp: 70000, damage: 700, ai: BOSS, phases: 7 }
+  immortal_taeheo_master: { base: WITHER, name: "&5&l태허선궁 궁주", world: IMMORTAL, hp: 70000, damage: 700, ai: BOSS, phases: 7 }
 
   # ─── 요계 ────────────────────────────────────
   yokai_oni:             { base: PIGLIN_BRUTE, name: "&c오니", world: YOKAI, hp: 250, damage: 30, ai: BASIC }
@@ -132,8 +132,8 @@ monsters:
   earth_labyrinth_100f:  { base: ENDER_DRAGON, name: "&0&l미궁 100층", world: EARTH, hp: 100000, damage: 1000, ai: BOSS, phases: 10 }
 
   # ─── 마도공학계 ──────────────────────────────────
-  magitech_runaway_drone:{ base: VEX, name: "&c폭주 마도 드론", world: MAGITECH, hp: 80, damage: 18, ai: FLYING }
-  magitech_runaway_golem:{ base: IRON_GOLEM, name: "&7폭주 골렘", world: MAGITECH, hp: 500, damage: 40, ai: BASIC }
+  magitech_runaway_drone: { base: VEX, name: "&c폭주 마도 드론", world: MAGITECH, hp: 80, damage: 18, ai: FLYING }
+  magitech_runaway_golem: { base: IRON_GOLEM, name: "&7폭주 골렘", world: MAGITECH, hp: 500, damage: 40, ai: BASIC }
   magitech_arcane_virus: { base: SLIME, name: "&5마법 바이러스", world: MAGITECH, hp: 60, damage: 10, ai: SWARM }
 
   # ─── 아포칼립스 ──────────────────────────────────

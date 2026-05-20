@@ -1,0 +1,13 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "item/glow_berries"
+  },
+  "overrides": [
+    { "predicate": { "custom_model_data": 6001 }, "model": "item/reborn/cheonnyeon_seolsam" },
+    { "predicate": { "custom_model_data": 6005 }, "model": "item/reborn/mandok_pill" },
+    { "predicate": { "custom_model_data": 6008 }, "model": "item/reborn/daehwan_pil" },
+    { "predicate": { "custom_model_data": 6012 }, "model": "item/reborn/yeong_pil" },
+    { "predicate": { "custom_model_data": 6015 }, "model": "item/reborn/cheonnyeon_hasuoh" }
+  ]
+}

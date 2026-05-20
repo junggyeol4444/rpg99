@@ -1,0 +1,11 @@
+{
+  "parent": "item/handheld",
+  "textures": {
+    "layer0": "item/netherite_sword"
+  },
+  "overrides": [
+    { "predicate": { "custom_model_data": 2002 }, "model": "item/reborn/flame_sword" },
+    { "predicate": { "custom_model_data": 2003 }, "model": "item/reborn/excalibur" },
+    { "predicate": { "custom_model_data": 2004 }, "model": "item/reborn/cheonma_blade" }
+  ]
+}

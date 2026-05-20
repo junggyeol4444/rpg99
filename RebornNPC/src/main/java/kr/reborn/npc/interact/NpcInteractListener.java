@@ -27,6 +27,18 @@ public final class NpcInteractListener implements Listener {
         npc.emotion.add(Emotion.Kind.CURIOSITY, 1.0);
         e.getPlayer().sendMessage("§6[" + npc.displayName + "] §f무슨 일이오?");
 
+        // 환생의 여신 클릭 시 룰렛 발동
+        if ("reincarnation_goddess".equals(npc.id)) {
+            try {
+                var spawnPlugin = Bukkit.getPluginManager().getPlugin("RebornSpawn");
+                if (spawnPlugin != null) {
+                    Object roulette = spawnPlugin.getClass().getMethod("roulette").invoke(spawnPlugin);
+                    roulette.getClass().getMethod("spin", org.bukkit.entity.Player.class)
+                            .invoke(roulette, e.getPlayer());
+                }
+            } catch (Throwable ignored) {}
+        }
+
         // 은둔고수 정체 공개 체크
         if (npc.hermit && !npc.revealed) {
             int reveal = plugin.getConfig().getInt("hermit.reveal-favor", 80);

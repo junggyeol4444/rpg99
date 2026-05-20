@@ -17,12 +17,35 @@ public final class KingdomCommand implements CommandExecutor {
                              @NotNull String l, @NotNull String[] a) {
         if (!(s instanceof Player p)) return true;
         if (a.length == 0) {
-            Msg.send(p, "&7/kingdom create <id> <name> | info | law | ally | war"); return true;
+            Msg.send(p, "&7/kingdom create <id> <name> | ally <id> | war <id> | treaty <id> | marry <id> <npc>");
+            return true;
         }
-        if ("create".equalsIgnoreCase(a[0]) && a.length >= 3) {
-            plugin.kingdoms().create(p, a[1], a[2]);
-        } else {
-            Msg.warn(p, "왕국 명령 (TODO: 외교·법률·정략 결혼 확장)");
+        switch (a[0].toLowerCase()) {
+            case "create":
+                if (a.length < 3) return true;
+                plugin.kingdoms().create(p, a[1], a[2]);
+                break;
+            case "ally":
+                if (a.length < 2) return true;
+                plugin.kingdoms().ally(p, a[1]);
+                break;
+            case "war":
+                if (a.length < 2) return true;
+                plugin.kingdoms().declareWar(p, a[1]);
+                break;
+            case "treaty":
+                if (a.length < 2) return true;
+                plugin.kingdoms().treaty(p, a[1]);
+                break;
+            case "marry":
+                if (a.length < 3) return true;
+                plugin.kingdoms().politicalMarriage(p, a[1], a[2]);
+                break;
+            case "info":
+                var k = plugin.kingdoms().ofPlayer(p.getUniqueId());
+                if (k == null) Msg.warn(p, "왕국 소속 없음");
+                else Msg.send(p, "&6왕국: " + k.name + " (가문 " + k.clans.size() + "개)");
+                break;
         }
         return true;
     }

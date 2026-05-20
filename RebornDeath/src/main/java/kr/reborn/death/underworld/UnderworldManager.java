@@ -78,6 +78,16 @@ public final class UnderworldManager {
         if (System.currentTimeMillis() - arrived < min) {
             Msg.warn(p, "윤회 대기 시간 부족."); return;
         }
+        // 명왕 심판 — 명기 100 이상 또는 명계 체류 60분 이상이면 통과
+        PlayerData chk = RebornCore.get().api().getPlayerData(p.getUniqueId());
+        boolean passedJudgment = chk.getStat(kr.reborn.core.data.StatType.UNDERWORLD_KI) >= 100
+                || System.currentTimeMillis() - arrived >= 3_600_000L;
+        if (!passedJudgment) {
+            Msg.warn(p, "&8명왕의 심판이 너를 인정하지 않는다. 명기 100 또는 1시간 체류 필요.");
+            return;
+        }
+        org.bukkit.Bukkit.broadcastMessage("§8§l[명왕 심판] §f" + p.getName()
+                + "의 영혼이 윤회를 인정받았다.");
         PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
         // 이전 경지 보너스
         var bonusMap = plugin.getConfig().getConfigurationSection("reincarnation.bonus-by-tier");

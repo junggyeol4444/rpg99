@@ -22,7 +22,7 @@ skills:
   divine_shield:    { tier: 하급신, cost: 50,  effect: SHIELD_10S }
   miracle_heal:     { tier: 하급신, cost: 100, effect: AOE_HEAL_30 }
   world_decree:     { tier: 중급신, cost: 500, effect: WORLD_RULE_1H }
-  divine_punishment:{ tier: 상급신, cost: 1000, effect: DAMAGE_X10 }
+  divine_punishment: { tier: 상급신, cost: 1000, effect: DAMAGE_X10 }
   avatar_descent:   { tier: 주신,   cost: 5000, effect: AVATAR_30M }
   concept_dominion: { tier: 개념신, cost: 10000, effect: ABSOLUTE }
 
@@ -42,7 +42,7 @@ npc-gods:
   # 정령계
   spirit_root:    { world: SPIRIT,  divinity: 50000, name: "&a&l태초의 정령신",       concept: NATURE }
   # 무협
-  martial_warrior:{ world: MARTIAL, divinity: 25000, name: "&6무신",                  concept: WAR }
+  martial_warrior: { world: MARTIAL, divinity: 25000, name: "&6무신",                  concept: WAR }
   martial_dao:    { world: MARTIAL, divinity: 28000, name: "&5도의 신",               concept: DAO }
   # 선계
   immortal_root:  { world: IMMORTAL, divinity: 45000, name: "&5선계 시조신",          concept: IMMORTALITY }

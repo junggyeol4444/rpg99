@@ -30,6 +30,8 @@ public final class RebornStat extends JavaPlugin {
         getCommand("answer").setExecutor(new AnswerCommand(this));
 
         getServer().getPluginManager().registerEvents(growth, this);
+        getServer().getPluginManager().registerEvents(
+                new kr.reborn.stat.minigame.InputListener(this), this);
 
         getLogger().info("RebornStat 활성화 (Core 연결: " + (RebornCore.get() != null) + ")");
     }

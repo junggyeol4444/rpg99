@@ -100,10 +100,10 @@ items:
   # 기연 아이템 (5장 각 세계 기연)
   # ============================================================
   worldtree_tear:      { base: SLIME_BALL, model: 8001, name: "&a세계수의 눈물", grade: GENESIS, type: CONSUMABLE, consume: { type: ADD_STAT, stat: MANA, value: 500 } }
-  ancient_dragon_scale:{ base: DRAGON_HEAD, model: 8002, name: "&6고룡의 역린", grade: GENESIS, type: CONSUMABLE, consume: { type: ADD_STAT, stat: AURA, value: 300 } }
-  arcane_memory_crystal:{ base: AMETHYST_SHARD, model: 8003, name: "&5고대 마법사 기억결정", grade: MYTHIC, type: CONSUMABLE, consume: { type: TIER_UP_CIRCLE, value: 1 } }
+  ancient_dragon_scale: { base: DRAGON_HEAD, model: 8002, name: "&6고룡의 역린", grade: GENESIS, type: CONSUMABLE, consume: { type: ADD_STAT, stat: AURA, value: 300 } }
+  arcane_memory_crystal: { base: AMETHYST_SHARD, model: 8003, name: "&5고대 마법사 기억결정", grade: MYTHIC, type: CONSUMABLE, consume: { type: TIER_UP_CIRCLE, value: 1 } }
   meteor_core:         { base: NETHER_STAR, model: 8004, name: "&c운석 핵심", grade: GENESIS, type: CONSUMABLE, consume: { type: ADD_ALL_COMMON, value: 100 } }
-  spirit_king_blessing:{ base: EMERALD, model: 8005, name: "&3정령왕의 축복", grade: MYTHIC, type: CONSUMABLE, consume: { type: LEARN_RANDOM_SPIRIT_SKILL } }
+  spirit_king_blessing: { base: EMERALD, model: 8005, name: "&3정령왕의 축복", grade: MYTHIC, type: CONSUMABLE, consume: { type: LEARN_RANDOM_SPIRIT_SKILL } }
   demon_throne_shard:  { base: NETHERITE_SCRAP, model: 8006, name: "&5마왕의 왕좌 파편", grade: GENESIS, type: CONSUMABLE, consume: { type: ADD_STAT, stat: DEMON_KI, value: 500 } }
   fallen_feather:      { base: FEATHER, model: 8007, name: "&8타락 천사의 깃", grade: MYTHIC, type: CONSUMABLE, consume: { type: ADD_MULTI, stats: { HEAVEN_KI: 200, DEMON_KI: 200 } } }
   god_feather:         { base: FEATHER, model: 8008, name: "&e천신의 깃털", grade: GENESIS, type: CONSUMABLE, consume: { type: ADD_STAT, stat: HEAVEN_KI, value: 500 } }

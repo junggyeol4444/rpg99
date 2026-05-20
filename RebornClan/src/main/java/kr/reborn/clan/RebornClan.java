@@ -33,7 +33,16 @@ public final class RebornClan extends JavaPlugin {
         getCommand("territory").setExecutor(new TerritoryCommand(this));
         getCommand("kingdom").setExecutor(new KingdomCommand(this));
 
+        getServer().getPluginManager().registerEvents(marriages, this);
+        getServer().getPluginManager().registerEvents(territories, this);
+
         getLogger().info("RebornClan 활성화");
+    }
+
+    @Override
+    public void onDisable() {
+        if (marriages != null) marriages.save();
+        if (territories != null) territories.save();
     }
 
     public ClanManager clans() { return clans; }

@@ -35,7 +35,7 @@ public final class MinigameManager {
     public MinigameManager(RebornStat plugin) { this.plugin = plugin; }
 
     // ============================================================
-    // 운기조식 (기존 유지 + 약간 강화)
+    // 운기조식 — 바닐라 입력 (Sneak/Sprint/Jump) 시퀀스
     // ============================================================
     public void startMeditation(Player p, int tier) {
         var c = plugin.getConfig();
@@ -44,11 +44,57 @@ public final class MinigameManager {
         double seconds = Math.max(c.getInt("minigame.meditation.min-time", 3),
                 c.getInt("minigame.meditation.base-time", 5) - tier * 0.5);
         List<String> seq = new ArrayList<>();
-        String pool = "wasdqe";
-        for (int i = 0; i < keys; i++) seq.add(String.valueOf(pool.charAt(Rand.range(0, pool.length() - 1))));
-        meditation.put(p.getUniqueId(), new MeditationSession(seq, System.currentTimeMillis() + (long)(seconds * 1000), tier));
-        Msg.send(p, "&e운기조식 시작! 채팅에 다음 키를 정확히 입력하라 (" + (int)seconds + "초): &f" + String.join(" ", seq));
+        // Sneak(S), Sprint(R), Jump(J) — 바닐라 입력으로 매핑
+        String[] actions = {"S", "R", "J"};
+        for (int i = 0; i < keys; i++) seq.add(actions[Rand.range(0, actions.length - 1)]);
+        meditation.put(p.getUniqueId(), new MeditationSession(seq,
+                System.currentTimeMillis() + (long)(seconds * 1000), tier));
+        Msg.send(p, "&e운기조식 시작! 다음 동작 시퀀스를 수행하라 (" + (int)seconds + "초):");
+        StringBuilder pretty = new StringBuilder("&f");
+        for (String s : seq) {
+            switch (s) {
+                case "S" -> pretty.append("&7[웅크리기] ");
+                case "R" -> pretty.append("&a[달리기] ");
+                case "J" -> pretty.append("&b[점프] ");
+            }
+        }
+        Msg.send(p, pretty.toString());
         p.playSound(p.getLocation(), Sound.BLOCK_BEACON_AMBIENT, 1f, 1f);
+    }
+
+    /** Sneak/Sprint/Jump 이벤트에서 호출. action: "S" | "R" | "J" */
+    public void recordMeditationInput(Player p, String action) {
+        MeditationSession s = meditation.get(p.getUniqueId());
+        if (s == null) return;
+        if (System.currentTimeMillis() > s.deadline) {
+            meditation.remove(p.getUniqueId());
+            Msg.error(p, "시간 초과 — 주화입마 위험!");
+            if (Rand.chance(0.15)) applyQiDeviation(p);
+            return;
+        }
+        s.inputs.add(action);
+        if (s.inputs.size() >= s.sequence.size()) {
+            evaluateMeditation(p, s);
+            meditation.remove(p.getUniqueId());
+        }
+    }
+
+    private void evaluateMeditation(Player p, MeditationSession s) {
+        int matches = 0;
+        for (int i = 0; i < s.sequence.size(); i++) {
+            if (i < s.inputs.size() && s.sequence.get(i).equals(s.inputs.get(i))) matches++;
+        }
+        double q = (double) matches / s.sequence.size();
+        if (q >= 0.99) {
+            int streak = s.tier > 0 ? s.tier : 1;
+            Msg.send(p, "&a완벽 성공! 내공 +" + (5 * streak));
+            plugin.growth().meditate(p, 1.0 * streak);
+            p.playSound(p.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_CHIME, 1f, 1.5f);
+        } else {
+            Msg.warn(p, "부분 성공 (" + (int)(q * 100) + "%) 내공 +" + (int)(5 * q));
+            plugin.growth().meditate(p, q);
+            if (q < 0.3 && Rand.chance(0.1)) applyQiDeviation(p);
+        }
     }
 
     public void onMeditationInput(Player p, String input) {
@@ -268,6 +314,7 @@ public final class MinigameManager {
     // ============================================================
     private static final class MeditationSession {
         final List<String> sequence;
+        final List<String> inputs = new ArrayList<>();
         final long deadline;
         final int tier;
         MeditationSession(List<String> s, long d, int tier) { sequence = s; deadline = d; this.tier = tier; }

@@ -128,18 +128,36 @@ public final class NpcSimulator {
     private void trySimulateChildbirth(Object npcs, WorldKey world) {
         long now = System.currentTimeMillis();
         try {
+            Plugin npcPlugin = Bukkit.getPluginManager().getPlugin("RebornNPC");
+            if (npcPlugin == null) return;
+            Object registry = npcPlugin.getClass().getMethod("registry").invoke(npcPlugin);
             for (Object n : (Iterable<?>) npcs) {
                 if (!world.equals(n.getClass().getField("world").get(n))) continue;
                 String id = String.valueOf(n.getClass().getField("id").get(n));
                 Long married = lastMarriageMs.get(id);
-                if (married == null || now - married < 86_400_000L * 7) continue; // 결혼 7일 후
+                if (married == null || now - married < 86_400_000L * 7) continue;
                 Long lastChild = lastChildMs.get(id);
-                if (lastChild != null && now - lastChild < 86_400_000L * 30) continue; // 30일 쿨
+                if (lastChild != null && now - lastChild < 86_400_000L * 30) continue;
                 if (!Rand.chance(0.02)) continue;
                 String name = String.valueOf(n.getClass().getField("displayName").get(n));
+                String faction = String.valueOf(n.getClass().getField("faction").get(n));
+                Object location = n.getClass().getField("location").get(n);
+
+                // 실제 자녀 NPC 생성 — registry.spawn(id, name, world, loc, faction, job)
+                String childId = id + "_child_" + (now % 100000);
+                String childName = "§d" + name.replaceAll("§.", "") + "의 자녀";
+                if (location != null) {
+                    try {
+                        registry.getClass().getMethod("spawn",
+                                String.class, String.class, WorldKey.class,
+                                Class.forName("org.bukkit.Location"), String.class, String.class)
+                                .invoke(registry, childId, childName, world, location, faction, "VILLAGER");
+                    } catch (Throwable ignored) {}
+                }
+
                 Bukkit.broadcastMessage("§d§l[" + world + "] " + name + "이(가) 자녀를 얻었다!");
                 lastChildMs.put(id, now);
-                // TODO: 실제 자녀 NPC 생성은 RebornNPC.registry().spawn() 호출
+                // 한 사이클당 1쌍만
                 break;
             }
         } catch (Throwable ignored) {}

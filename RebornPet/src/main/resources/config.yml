@@ -1,0 +1,28 @@
+tame:
+  hp-threshold-percent: 10
+  base-success: 0.30
+  charisma-bonus: 0.005
+  enraged-attack-mult: 1.5
+  enraged-duration-seconds: 10
+
+pet:
+  max-active: 1
+  max-active-absolute: 3
+  exp-share-percent: 50
+  level-cap: 100
+  bond-thresholds: [30, 60, 90, 100]
+
+mount:
+  speed-base: 1.5
+
+mounts:
+  horse:           { entity: HORSE, speed: 1.5, fly: false, combat: false }
+  wyvern:          { entity: PHANTOM, speed: 2.0, fly: true, combat: true }
+  dragon:          { entity: ENDER_DRAGON, speed: 3.0, fly: true, combat: true }
+  magitech_bike:   { entity: PIG, speed: 2.5, fly: false, combat: false, fuel: MAGITECH_CORE }
+  ghost_horse:     { entity: SKELETON_HORSE, speed: 2.0, fly: false, combat: false, night-only: true }
+  cyber_vehicle:   { entity: PIG, speed: 2.8, fly: false, combat: true, fuel: CREDIT }
+
+contract:
+  break-stat-loss-percent: 10
+  spirit-spirit-power-loss-percent: 50

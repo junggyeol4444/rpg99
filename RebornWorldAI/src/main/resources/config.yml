@@ -1,0 +1,44 @@
+analysis-tick-interval: 6000   # 5분
+
+thresholds:
+  inflation:
+    warn: 150
+    severe: 200
+  trade-activity:
+    stagnant: 0.5
+    overheat: 2.0
+  political:
+    war-tension: 80
+    festival-stability: 80
+  mob:
+    overflow-multiplier: 2.0
+  disaster-percent-per-cycle: 1.5
+
+quest-cooldowns:
+  WAR: 604800     # 7일
+  ECON_CRISIS: 259200  # 3일
+  MOB_INVASION: 86400
+  PEACE_FESTIVAL: 604800
+
+# 세계별 활성화 여부
+worlds:
+  FANTASY: true
+  DEMON: true
+  HEAVEN: true
+  SPIRIT: true
+  MARTIAL: true
+  IMMORTAL: true
+  YOKAI: true
+  EARTH: true
+  MAGITECH: true
+  APOCALYPSE: true
+  CYBERPUNK: true
+  DRAGON: true
+  OCEAN: true
+
+weathers:
+  마기_폭풍:    { world: DEMON, duration-min: 10 }
+  독무:         { world: MARTIAL, duration-min: 8 }
+  정령_만개:    { world: SPIRIT, duration-min: 15 }
+  핏빛_비:      { world: DEMON, duration-min: 5 }
+  방사능_폭풍:  { world: APOCALYPSE, duration-min: 10 }

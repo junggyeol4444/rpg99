@@ -1,0 +1,195 @@
+timezone: Asia/Seoul
+sync-interval-seconds: 60
+
+# 시간 예외 월드: 별도 처리
+exception-worlds:
+  time_realm: { mode: FLUX }
+  underworld: { mode: FIXED, time: 14000 }
+  abyss:     { mode: FIXED, time: 18000 }
+  void:      { mode: FIXED, time: 12500 }
+  dream:     { mode: FIXED, time: 13000 }
+  god_realm: { mode: FIXED, time: 0 }
+  # 드래곤계 5대 가문 시간의 방 (가주별 환경)
+  dragon_chamber_aurelius: { mode: SCALE, ratio: 10, environment: HOLY }
+  dragon_chamber_ignifer:  { mode: SCALE, ratio: 10, environment: FIRE }
+  dragon_chamber_nocterna: { mode: SCALE, ratio: 10, environment: ACID }
+  dragon_chamber_cerylis:  { mode: SCALE, ratio: 10, environment: LIGHTNING }
+  dragon_chamber_silvarex: { mode: SCALE, ratio: 10, environment: POISON }
+  # 선계 36동천 — 각 동천 시간 비율 다름
+  caveheaven_1:  { mode: SCALE, ratio: 2 }
+  caveheaven_2:  { mode: SCALE, ratio: 0.5 }
+  caveheaven_3:  { mode: SCALE, ratio: 5 }
+  caveheaven_4:  { mode: SCALE, ratio: 1.5 }
+  caveheaven_5:  { mode: SCALE, ratio: 3 }
+  caveheaven_6:  { mode: SCALE, ratio: 0.3 }
+  caveheaven_7:  { mode: SCALE, ratio: 7 }
+  caveheaven_8:  { mode: SCALE, ratio: 1 }
+  caveheaven_9:  { mode: SCALE, ratio: 4 }
+  caveheaven_10: { mode: SCALE, ratio: 2.5 }
+  caveheaven_11: { mode: SCALE, ratio: 6 }
+  caveheaven_12: { mode: SCALE, ratio: 0.8 }
+  caveheaven_13: { mode: SCALE, ratio: 8 }
+  caveheaven_14: { mode: SCALE, ratio: 0.4 }
+  caveheaven_15: { mode: SCALE, ratio: 5.5 }
+  caveheaven_16: { mode: SCALE, ratio: 1.2 }
+  caveheaven_17: { mode: SCALE, ratio: 3.3 }
+  caveheaven_18: { mode: SCALE, ratio: 9 }
+  caveheaven_19: { mode: SCALE, ratio: 0.6 }
+  caveheaven_20: { mode: SCALE, ratio: 4.4 }
+  caveheaven_21: { mode: SCALE, ratio: 2.2 }
+  caveheaven_22: { mode: SCALE, ratio: 6.5 }
+  caveheaven_23: { mode: SCALE, ratio: 1.7 }
+  caveheaven_24: { mode: SCALE, ratio: 3.8 }
+  caveheaven_25: { mode: SCALE, ratio: 0.9 }
+  caveheaven_26: { mode: SCALE, ratio: 5.2 }
+  caveheaven_27: { mode: SCALE, ratio: 7.5 }
+  caveheaven_28: { mode: SCALE, ratio: 1.3 }
+  caveheaven_29: { mode: SCALE, ratio: 4.7 }
+  caveheaven_30: { mode: SCALE, ratio: 2.8 }
+  caveheaven_31: { mode: SCALE, ratio: 6.8 }
+  caveheaven_32: { mode: SCALE, ratio: 0.7 }
+  caveheaven_33: { mode: SCALE, ratio: 5.7 }
+  caveheaven_34: { mode: SCALE, ratio: 3.6 }
+  caveheaven_35: { mode: SCALE, ratio: 1.8 }
+  caveheaven_36: { mode: SCALE, ratio: 10 }  # 가장 강력한 동천
+
+# 연결권
+realm-groups:
+  group1: [FANTASY, DEMON, HEAVEN, SPIRIT]
+  group2: [MARTIAL, IMMORTAL, YOKAI]
+  independent: [EARTH, MAGITECH, APOCALYPSE, CYBERPUNK, DRAGON, OCEAN]
+
+# 포탈
+fixed-portals:
+  - { id: fantasy_demon_border, from: { world: fantasy, x: 100, y: 65, z: 100 }, to: DEMON, requires-tier-stats: 0 }
+  - { id: martial_immortal_ascend, from: { world: martial, x: 200, y: 100, z: 200 }, to: IMMORTAL, requires-tier-stats: 5000 }
+
+# 시간의 방
+time-chamber:
+  enter-tier-stats: 200
+  enter-dragon-power: 500
+  ratio: 10            # 내부 10년 = 외부 1년
+  max-internal-years: 100
+  reentry-cooldown-real-hours: 24
+
+# 보름달 주기 (현실 30일)
+full-moon-cycle-days: 30
+
+# ============================================================
+# 선계 36동천 — 각각 독립 소세계
+# ============================================================
+cave-heavens:
+  cave_1:  { name: "&3태청동천",       master: "장생진인",     train-bonus: 1.5 }
+  cave_2:  { name: "&5상청동천",       master: "묘진진인",     train-bonus: 0.7 }
+  cave_3:  { name: "&6옥청동천",       master: "현원선군",     train-bonus: 2.0 }
+  cave_4:  { name: "&b자미동천",       master: "자미대제",     train-bonus: 1.3 }
+  cave_5:  { name: "&e북두동천",       master: "북두칠성",     train-bonus: 1.7 }
+  cave_6:  { name: "&7남극동천",       master: "남극선옹",     train-bonus: 0.4 }
+  cave_7:  { name: "&c동화동천",       master: "동화제군",     train-bonus: 2.2 }
+  cave_8:  { name: "&3서왕동천",       master: "서왕모",       train-bonus: 1.0 }
+  cave_9:  { name: "&5천선동천",       master: "원시천존",     train-bonus: 1.9 }
+  cave_10: { name: "&6태청금모동천",   master: "태청금모",     train-bonus: 1.5 }
+  cave_11: { name: "&8무극동천",       master: "무극도인",     train-bonus: 2.1 }
+  cave_12: { name: "&7기연동천",       master: "기연도사",     train-bonus: 0.9 }
+  cave_13: { name: "&5혼돈동천",       master: "혼돈진인",     train-bonus: 2.5, danger: true }
+  cave_14: { name: "&3음양동천",       master: "음양진인",     train-bonus: 0.5 }
+  cave_15: { name: "&6오행동천",       master: "오행도사",     train-bonus: 2.0 }
+  cave_16: { name: "&b일월동천",       master: "일월대선",     train-bonus: 1.4 }
+  cave_17: { name: "&e성광동천",       master: "성광선존",     train-bonus: 1.6 }
+  cave_18: { name: "&5천뢰동천",       master: "천뢰선군",     train-bonus: 2.3, element: LIGHTNING }
+  cave_19: { name: "&7지수동천",       master: "지수진인",     train-bonus: 0.8 }
+  cave_20: { name: "&3현빙동천",       master: "현빙도사",     train-bonus: 1.8, element: ICE }
+  cave_21: { name: "&c염화동천",       master: "염화선군",     train-bonus: 1.5, element: FIRE }
+  cave_22: { name: "&6풍림동천",       master: "풍림진인",     train-bonus: 2.0, element: WIND }
+  cave_23: { name: "&2초목동천",       master: "초목도사",     train-bonus: 1.3, element: NATURE }
+  cave_24: { name: "&8금석동천",       master: "금석진인",     train-bonus: 1.7, element: METAL }
+  cave_25: { name: "&5자수동천",       master: "자수선존",     train-bonus: 1.0 }
+  cave_26: { name: "&3옥녀동천",       master: "옥녀진인",     train-bonus: 1.9 }
+  cave_27: { name: "&6선녀동천",       master: "선녀선궁",     train-bonus: 2.2 }
+  cave_28: { name: "&7비천동천",       master: "비천진인",     train-bonus: 1.2 }
+  cave_29: { name: "&b수경동천",       master: "수경선존",     train-bonus: 1.7 }
+  cave_30: { name: "&e선화동천",       master: "선화선군",     train-bonus: 1.5 }
+  cave_31: { name: "&5명천동천",       master: "명천도사",     train-bonus: 2.1 }
+  cave_32: { name: "&7무명동천",       master: "(주인 없음)",  train-bonus: 0.6 }
+  cave_33: { name: "&6태원동천",       master: "태원진인",     train-bonus: 1.9 }
+  cave_34: { name: "&3자미정천",       master: "자미정군",     train-bonus: 1.6 }
+  cave_35: { name: "&8귀운동천",       master: "귀운선존",     train-bonus: 1.4 }
+  cave_36: { name: "&e&l태허정천 (최고)", master: "태허궁주",   train-bonus: 3.0, restricted: true }
+
+# ============================================================
+# 선계 72복지 — 영기 풍부한 축복받은 땅
+# ============================================================
+blessed-lands:
+  bless_1:  { name: "&a청구산", herb: 영지선초, density: HIGH }
+  bless_2:  { name: "&3선풍곡", herb: 천년하수오, density: HIGH }
+  bless_3:  { name: "&6금화원", herb: 인삼과, density: MEDIUM }
+  bless_4:  { name: "&5자운곡", herb: 영지선초, density: MEDIUM }
+  bless_5:  { name: "&b수정봉", herb: 만년빙어, density: HIGH }
+  bless_6:  { name: "&e월화산", herb: 천산설련, density: MEDIUM }
+  bless_7:  { name: "&7옥수원", herb: 단참화, density: LOW }
+  bless_8:  { name: "&3홍옥계", herb: 영지선초, density: MEDIUM }
+  bless_9:  { name: "&6황금봉", herb: 인삼과, density: HIGH }
+  bless_10: { name: "&5자수동", herb: 천년영지, density: MEDIUM }
+  bless_11: { name: "&3푸른바다", herb: 만년빙어, density: HIGH }
+  bless_12: { name: "&8흑운봉", herb: 오독선초, density: LOW }
+  bless_13: { name: "&6운하원", herb: 인삼과, density: MEDIUM }
+  bless_14: { name: "&a녹림곡", herb: 단참화, density: HIGH }
+  bless_15: { name: "&e햇살골", herb: 영지선초, density: MEDIUM }
+  bless_16: { name: "&b이슬강", herb: 무근수, density: HIGH }
+  bless_17: { name: "&5진보각", herb: 천년영지, density: MEDIUM }
+  bless_18: { name: "&3옥계곡", herb: 영지선초, density: HIGH }
+  bless_19: { name: "&6금사봉", herb: 천산설련, density: LOW }
+  bless_20: { name: "&7회운대", herb: 천년하수오, density: MEDIUM }
+  bless_21: { name: "&5자하동", herb: 영지선초, density: HIGH }
+  bless_22: { name: "&b벽화곡", herb: 단참화, density: MEDIUM }
+  bless_23: { name: "&e상서원", herb: 인삼과, density: MEDIUM }
+  bless_24: { name: "&3비취봉", herb: 천년영지, density: LOW }
+  bless_25: { name: "&6명광대", herb: 영지선초, density: MEDIUM }
+  bless_26: { name: "&a청산곡", herb: 천산설련, density: HIGH }
+  bless_27: { name: "&7월하정", herb: 무근수, density: MEDIUM }
+  bless_28: { name: "&5신령굴", herb: 천년하수오, density: HIGH }
+  bless_29: { name: "&b수룡담", herb: 영지선초, density: MEDIUM }
+  bless_30: { name: "&e금광원", herb: 인삼과, density: HIGH }
+  bless_31: { name: "&6혼원봉", herb: 천년영지, density: MEDIUM }
+  bless_32: { name: "&3창해골", herb: 만년빙어, density: HIGH }
+  bless_33: { name: "&7회연원", herb: 단참화, density: MEDIUM }
+  bless_34: { name: "&5은선동", herb: 영지선초, density: HIGH }
+  bless_35: { name: "&a녹수원", herb: 천산설련, density: LOW }
+  bless_36: { name: "&e태양봉", herb: 인삼과, density: MEDIUM }
+  bless_37: { name: "&b영월담", herb: 영지선초, density: HIGH }
+  bless_38: { name: "&3푸른계곡", herb: 무근수, density: MEDIUM }
+  bless_39: { name: "&5천화원", herb: 천년하수오, density: HIGH }
+  bless_40: { name: "&7고고산", herb: 천산설련, density: LOW }
+  bless_41: { name: "&6황룡봉", herb: 영지선초, density: MEDIUM }
+  bless_42: { name: "&a청룡곡", herb: 단참화, density: HIGH }
+  bless_43: { name: "&3흑호산", herb: 천년영지, density: LOW }
+  bless_44: { name: "&5주작봉", herb: 인삼과, density: MEDIUM }
+  bless_45: { name: "&7신화원", herb: 영지선초, density: HIGH }
+  bless_46: { name: "&b자룡담", herb: 만년빙어, density: MEDIUM }
+  bless_47: { name: "&e운림산", herb: 천년하수오, density: LOW }
+  bless_48: { name: "&5자영골", herb: 영지선초, density: HIGH }
+  bless_49: { name: "&6금화봉", herb: 인삼과, density: MEDIUM }
+  bless_50: { name: "&a벽운계", herb: 단참화, density: HIGH }
+  bless_51: { name: "&3유선동", herb: 천산설련, density: MEDIUM }
+  bless_52: { name: "&7운우원", herb: 무근수, density: HIGH }
+  bless_53: { name: "&5천금봉", herb: 천년영지, density: MEDIUM }
+  bless_54: { name: "&b해월담", herb: 만년빙어, density: HIGH }
+  bless_55: { name: "&e상선원", herb: 영지선초, density: MEDIUM }
+  bless_56: { name: "&3옥봉계", herb: 단참화, density: LOW }
+  bless_57: { name: "&6신주원", herb: 인삼과, density: HIGH }
+  bless_58: { name: "&5자죽림", herb: 천년하수오, density: MEDIUM }
+  bless_59: { name: "&7현무봉", herb: 영지선초, density: HIGH }
+  bless_60: { name: "&a푸른들판", herb: 천산설련, density: MEDIUM }
+  bless_61: { name: "&b청천담", herb: 만년빙어, density: HIGH }
+  bless_62: { name: "&e운선대", herb: 인삼과, density: MEDIUM }
+  bless_63: { name: "&5자혜산", herb: 영지선초, density: HIGH }
+  bless_64: { name: "&3금파호", herb: 무근수, density: MEDIUM }
+  bless_65: { name: "&6원봉골", herb: 천년영지, density: HIGH }
+  bless_66: { name: "&a벽록계", herb: 단참화, density: MEDIUM }
+  bless_67: { name: "&7신광원", herb: 영지선초, density: HIGH }
+  bless_68: { name: "&5자루봉", herb: 천년하수오, density: MEDIUM }
+  bless_69: { name: "&b해운담", herb: 만년빙어, density: HIGH }
+  bless_70: { name: "&e금성원", herb: 인삼과, density: MEDIUM }
+  bless_71: { name: "&3옥하봉", herb: 영지선초, density: HIGH }
+  bless_72: { name: "&5&l태허복지 (최고)", herb: 태을선단, density: SUPREME }
+

@@ -1,0 +1,31 @@
+name: RebornClan
+version: '${project.version}'
+main: kr.reborn.clan.RebornClan
+api-version: '1.20'
+folia-supported: true
+authors: [ReincarnationWorld]
+description: 가문·혈통·결혼·자녀·영토·왕국
+depend: [RebornCore]
+softdepend: [RebornNPC, RebornStat, RebornSkill, RebornEconomy]
+load: POSTWORLD
+commands:
+  clan:
+    description: 가문
+    permission: rebornclan.use
+  marry:
+    description: 결혼
+    permission: rebornclan.use
+  divorce:
+    description: 이혼
+    permission: rebornclan.use
+  child:
+    description: 자녀
+    permission: rebornclan.use
+  territory:
+    description: 영토
+    permission: rebornclan.use
+  kingdom:
+    description: 왕국
+    permission: rebornclan.use
+permissions:
+  rebornclan.use: { default: true }

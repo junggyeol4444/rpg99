@@ -1,0 +1,402 @@
+# 히든 클래스 40종 — INITIAL 10 + ACHIEVEMENT 30
+classes:
+  divine_heir:
+    type: INITIAL
+    name: "&e&l신의 후계자"
+    description: "신성 스탯 초기 1, 신 전환 조건 완화"
+    chance: 0.0001
+    world: ANY
+    effects:
+      stats_override: { DIVINITY: 1 }
+      passive: GOD_ASCENT_RELAX
+  chaos_child:
+    type: INITIAL
+    name: "&d혼돈의 아이"
+    description: "정령력 30%↑, 모든 원소 동시 사용"
+    chance: 0.001
+    world: SPIRIT
+    effects:
+      stats: { SPIRIT_POWER: 30 }
+      passive: ALL_ELEMENTS
+  natural_demon_bone:
+    type: INITIAL
+    name: "&5천생마골"
+    description: "마기 흡수 3배"
+    chance: 0.001
+    world: DEMON
+    effects:
+      passive: DEMON_KI_X3
+  immortal:
+    type: INITIAL
+    name: "&6불멸자"
+    description: "최초 사망 시 부활 + 전 스탯 10% 영구↑"
+    chance: 0.0005
+    world: ANY
+    effects:
+      passive: FIRST_DEATH_REVIVE
+  dragon_blood:
+    type: INITIAL
+    name: "&c용의 피"
+    description: "초기 용력 30, 성장 2배"
+    chance: 0.001
+    world: DRAGON
+    effects:
+      stats: { DRAGON_POWER: 30 }
+      passive: DRAGON_GROW_X2
+  nameless:
+    type: INITIAL
+    name: "&7무명인"
+    description: "랭킹 미표시, 암살단 퀘스트"
+    chance: 0.001
+    world: MARTIAL
+    effects:
+      passive: HIDDEN_FROM_RANK
+  gate_adaptor:
+    type: INITIAL
+    name: "&3게이트 적응자"
+    description: "게이트 내 스탯 +20%"
+    chance: 0.001
+    world: EARTH
+    effects:
+      passive: GATE_BOOST_20
+  heaven_eye:
+    type: INITIAL
+    name: "&b천안통"
+    description: "수련 효율 3배, 타인 경지 파악"
+    chance: 0.001
+    world: IMMORTAL
+    effects:
+      passive: TRAIN_X3
+  yokai_essence:
+    type: INITIAL
+    name: "&5요왕의 자질"
+    description: "변신 완벽, 요기 축적 2배"
+    chance: 0.001
+    world: YOKAI
+    effects:
+      passive: YOKAI_X2
+  machine_kin:
+    type: INITIAL
+    name: "&d기계와의 친화"
+    description: "사이버 사이코 면역, 무제한 인체 개조"
+    chance: 0.001
+    world: CYBERPUNK
+    effects:
+      resistance: [cyber_psychosis]
+      passive: UNLIMITED_CYBERWARE
+
+  # 달성 조건형 (예시 3종 — 30종 중)
+  magic_swordsman:
+    type: ACHIEVEMENT
+    name: "&d마검사"
+    description: "마법과 검술의 길이 하나로"
+    conditions:
+      - { type: STAT_MIN, stat: MANA, value: 1000 }
+      - { type: STAT_MIN, stat: AURA, value: 1000 }
+      - { type: TIER_REACHED, tier: "5서클" }
+      - { type: TIER_REACHED, tier: "소드 마스터" }
+    effects:
+      skills: [magic_sword_fusion]
+  world_traveler:
+    type: ACHIEVEMENT
+    name: "&b세계여행자"
+    description: "절대자 + 3세계 이상"
+    conditions:
+      - { type: TIER_REACHED, tier: "절대자" }
+      - { type: WORLDS_VISITED, value: 3 }
+    effects:
+      passive: WORLD_HOP_COOL_DOWN
+  dimensional_merchant:
+    type: ACHIEVEMENT
+    name: "&6차원상인"
+    description: "3세계 방문 + 거래 100회"
+    conditions:
+      - { type: WORLDS_VISITED, value: 3 }
+      - { type: TRADE_COUNT, value: 100 }
+    effects:
+      passive: EXCHANGE_FEE_EXEMPT
+
+  dragon_knight:
+    type: ACHIEVEMENT
+    name: "&c용기사"
+    description: "드래곤 계약 + 소드엑스퍼트 이상"
+    conditions:
+      - { type: TIER_REACHED, tier: "소드 엑스퍼트" }
+      - { type: ITEM_OWNED, item: dragon_contract_seal, count: 1 }
+    effects:
+      skills: [breath_basic, flight]
+      passive: DRAGON_MOUNT
+  dungeon_master:
+    type: ACHIEVEMENT
+    name: "&5던전 마스터"
+    description: "던전 코어 정복 + 지능 500"
+    conditions:
+      - { type: STAT_MIN, stat: INTELLIGENCE, value: 500 }
+      - { type: QUEST_COMPLETE, quest: dungeon_core_conquest }
+    effects:
+      passive: DUNGEON_AUTHORITY
+  necromancer:
+    type: ACHIEVEMENT
+    name: "&0사령술사"
+    description: "흑마법 + 네크로폴리스 연줄"
+    conditions:
+      - { type: STAT_MIN, stat: MANA, value: 1500 }
+      - { type: NPC_FAVOR, npc: necropolis_lich, value: 80 }
+    effects:
+      skills: [necromancy_codex, soul_bind]
+  paladin:
+    type: ACHIEVEMENT
+    name: "&e성기사"
+    description: "천계 신앙 + 소드마스터 이상"
+    conditions:
+      - { type: TIER_REACHED, tier: "소드 마스터" }
+      - { type: STAT_MIN, stat: HEAVEN_KI, value: 500 }
+    effects:
+      skills: [holy_ray, arteon_royal_blade]
+      passive: ANTI_DARK_BOOST
+  sword_immortal:
+    type: ACHIEVEMENT
+    name: "&b검선"
+    description: "검술 화경 + 도력 진인"
+    conditions:
+      - { type: TIER_REACHED, tier: "화경" }
+      - { type: TIER_REACHED, tier: "진인" }
+    effects:
+      skills: [igieogeomsul, mangeom_gyijong, flight]
+  poison_king:
+    type: ACHIEVEMENT
+    name: "&2독왕"
+    description: "빙잠독경 완성 또는 만독단 생존"
+    conditions:
+      - { type: ITEM_OWNED, item: mandok_pill_survivor, count: 1 }
+    effects:
+      passive: POISON_IMMUNITY
+      skills: [bingjam_dokgyeong]
+  medical_immortal:
+    type: ACHIEVEMENT
+    name: "&a의선"
+    description: "의술 최고 + 화경 이상"
+    conditions:
+      - { type: TIER_REACHED, tier: "화경" }
+      - { type: STAT_MIN, stat: INTELLIGENCE, value: 800 }
+    effects:
+      passive: COMBAT_HEAL_AURA
+  martial_alliance_master:
+    type: ACHIEVEMENT
+    name: "&6무림맹주"
+    description: "무림맹주 자리"
+    conditions:
+      - { type: QUEST_COMPLETE, quest: martial_alliance_election }
+    effects:
+      stats: { CHARISMA: 200 }
+      passive: ORTHODOX_FAVOR_BUFF
+  heavenly_demon:
+    type: ACHIEVEMENT
+    name: "&5천마"
+    description: "마교 교주 + 천마신공 + 천마 경지"
+    conditions:
+      - { type: QUEST_COMPLETE, quest: cult_master_election }
+      - { type: TIER_REACHED, tier: "천하제일인" }
+    effects:
+      stats: { STRENGTH: 100, INNER_KI: 500 }
+      skills: [cheonma_singong, cheonma_talhonsoo]
+  demon_immortal:
+    type: ACHIEVEMENT
+    name: "&8마선"
+    description: "금단기 + 마기 보유"
+    conditions:
+      - { type: TIER_REACHED, tier: "금단기" }
+      - { type: STAT_MIN, stat: DEMON_KI, value: 100 }
+    effects:
+      skills: [hondol_simbeop]
+      passive: TAEHEO_HOSTILE
+  pill_grandmaster:
+    type: ACHIEVEMENT
+    name: "&6단약 대종사"
+    description: "단약 제조 신장급 + 합체기"
+    conditions:
+      - { type: TIER_REACHED, tier: "합체기" }
+    effects:
+      passive: LEGENDARY_PILL_RECIPES
+  demon_lord_candidate:
+    type: ACHIEVEMENT
+    name: "&4마왕 후보"
+    description: "대악마·공작급 + 마왕 도전장"
+    conditions:
+      - { type: TIER_REACHED, tier: "대악마·공작" }
+    effects:
+      quest_trigger: demon_lord_challenge
+  demon_lord:
+    type: ACHIEVEMENT
+    name: "&4&l마왕"
+    description: "기존 마왕 타도. 영역 절대 지배"
+    conditions:
+      - { type: QUEST_COMPLETE, quest: demon_lord_challenge }
+    effects:
+      stats: { DEMON_KI: 500, CHARISMA: 100 }
+      passive: DEMON_LEGION_COMMAND
+  yokai_immortal:
+    type: ACHIEVEMENT
+    name: "&5요선"
+    description: "대요 + 선기 수련"
+    conditions:
+      - { type: TIER_REACHED, tier: "대요" }
+      - { type: STAT_MIN, stat: IMMORTAL_KI, value: 100 }
+    effects:
+      passive: ASCEND_TO_IMMORTAL_REALM
+  yokai_emperor:
+    type: ACHIEVEMENT
+    name: "&5&l요제"
+    description: "요성급 + 요왕 의회 인정"
+    conditions:
+      - { type: TIER_REACHED, tier: "요성" }
+    effects:
+      stats: { YOKAI_KI: 1000 }
+      passive: YOKAI_REALM_RULER
+  gate_keeper:
+    type: ACHIEVEMENT
+    name: "&3게이트 키퍼"
+    description: "S급 + 게이트 퀘스트"
+    conditions:
+      - { type: TIER_REACHED, tier: "S급" }
+      - { type: QUEST_COMPLETE, quest: gate_master_trial }
+    effects:
+      passive: GATE_CONTROL
+  labyrinth_lord:
+    type: ACHIEVEMENT
+    name: "&5미궁의 주인"
+    description: "미궁 100층 정복"
+    conditions:
+      - { type: QUEST_COMPLETE, quest: labyrinth_100f }
+    effects:
+      stats: { STRENGTH: 200, INTELLIGENCE: 200 }
+      passive: LABYRINTH_AUTHORITY
+  ghost_in_machine:
+    type: ACHIEVEMENT
+    name: "&d고스트 인 더 머신"
+    description: "넷러너 + AI 자유전선"
+    conditions:
+      - { type: TIER_REACHED, tier: "넷러너" }
+      - { type: QUEST_COMPLETE, quest: ai_liberation }
+    effects:
+      passive: BODYLESS_DIGITAL
+  megacorp_emperor:
+    type: ACHIEVEMENT
+    name: "&6메가코프 황제"
+    description: "메가코프 CEO + 2개 흡수"
+    conditions:
+      - { type: QUEST_COMPLETE, quest: megacorp_takeover }
+    effects:
+      passive: CYBERPUNK_ECONOMY_RULER
+  sea_king_heir:
+    type: ACHIEVEMENT
+    name: "&3해왕의 후예"
+    description: "제독급 + 심해 궁전"
+    conditions:
+      - { type: TIER_REACHED, tier: "제독" }
+      - { type: QUEST_COMPLETE, quest: deep_sea_palace }
+    effects:
+      stats: { OCEAN_POWER: 500 }
+      passive: SEA_LIFE_COMMUNION
+  apocalypse_king:
+    type: ACHIEVEMENT
+    name: "&2종말의 왕"
+    description: "절대자 + 3대 세력 통합"
+    conditions:
+      - { type: TIER_REACHED, tier: "종말의 왕" }
+    effects:
+      stats: { CHARISMA: 300 }
+      passive: APOCALYPSE_RULER
+  tech_god:
+    type: ACHIEVEMENT
+    name: "&b기술 신"
+    description: "기술 절대자 + 3개 도시 장악"
+    conditions:
+      - { type: TIER_REACHED, tier: "기술 절대자" }
+    effects:
+      stats: { MAGITECH_ENERGY: 1000 }
+      passive: MAGITECH_PEAK
+  dragon_king:
+    type: ACHIEVEMENT
+    name: "&c용왕"
+    description: "용왕급 + 가문 가주 또는 독자 가문"
+    conditions:
+      - { type: TIER_REACHED, tier: "용왕급" }
+    effects:
+      stats: { DRAGON_POWER: 1000 }
+      passive: DRAGON_REALM_PEAK
+  abyss_apostle:
+    type: ACHIEVEMENT
+    name: "&0심연의 사도"
+    description: "심연수의 힘 흡수 생존"
+    conditions:
+      - { type: QUEST_COMPLETE, quest: abyss_survival }
+    effects:
+      skills: [necromancy_codex]
+      passive: ABYSS_AVATAR
+  returned_soul:
+    type: ACHIEVEMENT
+    name: "&8환혼자"
+    description: "명계 탈출 성공"
+    conditions:
+      - { type: STAT_MIN, stat: UNDERWORLD_KI, value: 100 }
+    effects:
+      passive: UNDERWORLD_FAVOR
+  time_guardian_apprentice:
+    type: ACHIEVEMENT
+    name: "&e시간 수호자 견습생"
+    description: "시간계 진입 + 인정"
+    conditions:
+      - { type: QUEST_COMPLETE, quest: time_warden_trial }
+    effects:
+      passive: TIME_PERCEPTION
+  god_successor:
+    type: ACHIEVEMENT
+    name: "&6&l신 후계자 (성장형)"
+    description: "특정 신 시험 통과"
+    conditions:
+      - { type: QUEST_COMPLETE, quest: god_trial }
+    effects:
+      stats: { DIVINITY: 100 }
+      passive: GOD_DELEGATION
+  genesis_bearer:
+    type: ACHIEVEMENT
+    name: "&6&l창세신기 소유자"
+    description: "창세(금색) 등급 아이템 소유"
+    conditions:
+      - { type: ITEM_OWNED, item: genesis_grade, count: 1 }
+    effects:
+      passive: GENESIS_BOND
+  master_of_all_crafts:
+    type: ACHIEVEMENT
+    name: "&6만물의 장인"
+    description: "3개 분야 명장급+"
+    conditions:
+      - { type: CRAFT_MASTERY, fields: 3 }
+    effects:
+      passive: ALL_RECIPES_30_PCT_DISCOUNT
+  primordial_successor:
+    type: ACHIEVEMENT
+    name: "&f태초의 계승자"
+    description: "태초 정령 (루미엘/옴브라) 인정"
+    conditions:
+      - { type: NPC_FAVOR, npc: lumiel, value: 100 }
+    effects:
+      passive: PRIMORDIAL_LIGHT_DARK
+  pirate_king:
+    type: ACHIEVEMENT
+    name: "&6&l해적왕"
+    description: "자유해 해적왕"
+    conditions:
+      - { type: QUEST_COMPLETE, quest: pirate_king_election }
+    effects:
+      stats: { CHARISMA: 200, OCEAN_POWER: 300 }
+      passive: PIRATE_COMMAND
+  dream_lord:
+    type: ACHIEVEMENT
+    name: "&d꿈의 지배자"
+    description: "꿈 군주 꺾음 또는 인정"
+    conditions:
+      - { type: QUEST_COMPLETE, quest: dream_lord_trial }
+    effects:
+      passive: DREAM_TRAIN_WHILE_SLEEP

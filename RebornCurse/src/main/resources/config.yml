@@ -1,0 +1,219 @@
+# 축복·저주 정의
+blessings:
+  goddess_blessing:
+    name: "&b여신의 축복"
+    description: "행운이 영원히 함께한다"
+    duration: -1  # 영구
+    stackable: false
+    effects:
+      stats: { LUCK: 30 }
+  spirit_king:
+    name: "&a정령왕의 가호"
+    description: "원소 스킬 50% 강화"
+    duration: -1
+    effects:
+      stats: { SPIRIT_POWER: 100 }
+      special: ELEMENT_SKILL_BOOST_50
+  dragon_recognition:
+    name: "&c드래곤의 인정"
+    description: "맷집과 근력 +50"
+    duration: -1
+    effects:
+      stats: { ENDURANCE: 50, STRENGTH: 50 }
+  martial_lord:
+    name: "&6무림맹주의 격"
+    description: "카리스마 +100"
+    duration: -1
+    effects:
+      stats: { CHARISMA: 100 }
+  hermit_teaching:
+    name: "&7은둔고수의 가르침"
+    description: "내공 회복 2배, 깨달음 확률 증가"
+    duration: -1
+    effects:
+      stats: { INNER_KI: 200, MENTAL: 30 }
+  unmoving_pillar:
+    name: "&6부동의 기둥"
+    description: "맷집·근력 영구 +30"
+    duration: -1
+    effects:
+      stats: { ENDURANCE: 30, STRENGTH: 30 }
+  cheonje_grace:
+    name: "&e천제의 가호"
+    description: "천기·정신력 영구 +200"
+    duration: -1
+    effects:
+      stats: { HEAVEN_KI: 200, MENTAL: 50 }
+  full_moon_yokai:
+    name: "&5보름달의 축복"
+    description: "요기 회복 2배, 변신 쿨타임 -50%"
+    duration: -1
+    effects:
+      stats: { YOKAI_KI: 100 }
+  primordial_light:
+    name: "&f태초의 빛"
+    description: "빛의 태초 정령 루미엘의 인정"
+    duration: -1
+    effects:
+      stats: { SPIRIT_POWER: 500, HEAVEN_KI: 200 }
+  primordial_dark:
+    name: "&0태초의 어둠"
+    description: "어둠의 태초 정령 옴브라의 인정"
+    duration: -1
+    effects:
+      stats: { SPIRIT_POWER: 500, DEMON_KI: 200 }
+  sea_god_blessing:
+    name: "&3해왕의 축복"
+    description: "해양력 +500, 수중 무한 호흡"
+    duration: -1
+    effects:
+      stats: { OCEAN_POWER: 500 }
+  netbreaker_renown:
+    name: "&d넷브레이커 명성"
+    description: "사이버 적응도 +100, 해킹 효율 +50%"
+    duration: -1
+    effects:
+      stats: { CYBER_ADAPTATION: 100, INTELLIGENCE: 50 }
+  abyssal_bond:
+    name: "&0심연의 인장"
+    description: "심연 내성 +100. 모든 세계 NPC 경계 대상."
+    duration: -1
+    effects:
+      stats: { ABYSS_RESISTANCE: 100 }
+
+curses:
+  qi_deviation:
+    name: "&5주화입마"
+    description: "정신력 -5/30초, 5% 광폭화"
+    duration: -1
+    max_stacks: 1
+    tick_interval_seconds: 30
+    effects:
+      stats_tick: { MENTAL: -5 }
+      berserk_chance: 0.05
+    cure_methods: [SOLIM_ABBOT_NPC, BING_SIM_DAN, HEAL_QUEST]
+    world: MARTIAL
+  demon_erosion:
+    name: "&8마기 침식"
+    description: "지능·정신력 -3/분, 1시간 후 자동 해제"
+    duration: 3600
+    max_stacks: 5
+    tick_interval_seconds: 60
+    effects:
+      stats_tick: { INTELLIGENCE: -3, MENTAL: -3 }
+    cure_methods: [PURIFY_ORB, HARMONY_FOUNTAIN, AUTO_EXPIRE]
+    world: DEMON
+  divine_punishment:
+    name: "&c천벌"
+    description: "천기 -500 + 신성 스킬 봉인"
+    duration: 604800  # 7일
+    effects:
+      stats: { HEAVEN_KI: -500 }
+      lock_skill_school: HOLY
+    cure_methods: [ARCHANGEL_REPENT_QUEST, AUTO_EXPIRE]
+    world: HEAVEN
+  cyber_psychosis:
+    name: "&dCyber Psychosis"
+    description: "정신력 -100, 10% 확률 광폭화"
+    duration: -1
+    tick_interval_seconds: 30
+    effects:
+      stats: { MENTAL: -100 }
+      berserk_chance: 0.10
+    cure_methods: [THERAPIST_NPC, NEURAL_STABILIZER, REMOVE_CYBERNETICS_3]
+    world: CYBERPUNK
+  radiation:
+    name: "&2방사능 오염"
+    description: "전 스탯 -1/2분 (30분)"
+    duration: 1800
+    max_stacks: 10
+    tick_interval_seconds: 120
+    effects:
+      stats_tick_common: -1
+    cure_methods: [ANTI_RAD_SERUM, MED_BAY]
+    world: APOCALYPSE
+  pact_break_penalty:
+    name: "&5계약 파기의 대가"
+    description: "정령력 영구 50% 감소"
+    duration: -1
+    effects:
+      stats_percent: { SPIRIT_POWER: -0.5 }
+    cure_methods: []  # 해제 불가
+    world: SPIRIT
+  pirate_curse:
+    name: "&3해적의 저주"
+    description: "배에서 떨어지면 HP 지속 감소"
+    duration: 86400
+    effects:
+      out_of_ship_hp_drain: 1.0
+    cure_methods: [SEA_WITCH_NPC]
+    world: OCEAN
+  poison:
+    name: "&2일반 독"
+    description: "HP 1/3초 감소"
+    duration: 60
+    tick_interval_seconds: 3
+    effects:
+      hp_tick: -1
+    cure_methods: [HAEDOK_PIL, JAGUEM_PIL]
+  yokai_curse:
+    name: "&5요괴의 저주"
+    description: "낮 동안 매 분 정신력 감소"
+    duration: 1800
+    tick_interval_seconds: 60
+    effects:
+      stats_tick_day_only: { MENTAL: -2 }
+    cure_methods: [TAOIST_NPC, AUTO_EXPIRE]
+    world: YOKAI
+  immortal_heavenly_punishment:
+    name: "&5선계 천벌"
+    description: "수련 효율 -80% (천겁 실패 후)"
+    duration: 86400
+    effects:
+      train_efficiency: -0.8
+    cure_methods: [TAEHEO_REPENT_QUEST, AUTO_EXPIRE]
+    world: IMMORTAL
+  bloodlust:
+    name: "&4피의 갈증"
+    description: "혈마공·수라마공 부작용"
+    duration: -1
+    tick_interval_seconds: 120
+    effects:
+      berserk_chance: 0.03
+    cure_methods: [SOLIM_ABBOT_NPC, GUYANG_PILL]
+  shadow_taint:
+    name: "&8그림자 침식"
+    description: "다크엘프 그림자 검법 부작용"
+    duration: 7200
+    tick_interval_seconds: 60
+    effects:
+      stats_tick: { CHARM: -1 }
+    cure_methods: [LIGHT_RITUAL, AUTO_EXPIRE]
+  sleep_curse:
+    name: "&1영원한 잠"
+    description: "이터널 슬립 마법 피격. 시전자만 해제 가능."
+    duration: -1
+    cure_methods: [CASTER_RELEASE, GREATER_SAGE_DISPEL]
+    world: FANTASY
+  dragon_disrespect:
+    name: "&c용의 분노"
+    description: "드래곤 모욕 후 부여. 공격력 -30%"
+    duration: 604800
+    effects:
+      stats_percent: { STRENGTH: -0.3 }
+    cure_methods: [DRAGON_APOLOGY_QUEST, AUTO_EXPIRE]
+    world: DRAGON
+  apocalypse_starvation:
+    name: "&8폐허의 굶주림"
+    description: "맷집 -10/시간 (기아)"
+    duration: 86400
+    tick_interval_seconds: 3600
+    effects:
+      stats_tick: { ENDURANCE: -10 }
+    cure_methods: [FOOD, MED_BAY]
+    world: APOCALYPSE
+
+berserk:
+  duration-seconds: 10
+  radius-blocks: 10
+  pk-crime-reduction-percent: 50

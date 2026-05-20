@@ -1,0 +1,26 @@
+# 로비 NPC 좌표 (운영 시 RebornNPC.registry().loadAll()이 이 파일을 자동 로드)
+# 환생의 여신 + 수호 천사 10명 사전 배치.
+#
+# 운영 시 이 파일을 plugins/RebornNPC/npcs.yml로 복사하여 사용.
+
+reincarnation_goddess:
+  name: "&6&l환생의 여신"
+  world: LOBBY
+  bukkit-world: lobby
+  x: 5.5
+  y: 100.0
+  z: 0.5
+  faction: COSMIC
+  job: GODDESS
+  stats: { CHARISMA: 50000.0, INTELLIGENCE: 50000.0, MENTAL: 50000.0 }
+
+guardian_angel_1: { name: "&f수호 천사 #1", world: LOBBY, bukkit-world: lobby, x: 3.0,  y: 100.0, z: 3.0,  faction: HEAVEN, job: GUARDIAN, stats: { CHARISMA: 5000.0 } }
+guardian_angel_2: { name: "&f수호 천사 #2", world: LOBBY, bukkit-world: lobby, x: -3.0, y: 100.0, z: 3.0,  faction: HEAVEN, job: GUARDIAN, stats: { CHARISMA: 5000.0 } }
+guardian_angel_3: { name: "&f수호 천사 #3", world: LOBBY, bukkit-world: lobby, x: 3.0,  y: 100.0, z: -3.0, faction: HEAVEN, job: GUARDIAN, stats: { CHARISMA: 5000.0 } }
+guardian_angel_4: { name: "&f수호 천사 #4", world: LOBBY, bukkit-world: lobby, x: -3.0, y: 100.0, z: -3.0, faction: HEAVEN, job: GUARDIAN, stats: { CHARISMA: 5000.0 } }
+guardian_angel_5: { name: "&f수호 천사 #5", world: LOBBY, bukkit-world: lobby, x: 5.0,  y: 100.0, z: 0.0,  faction: HEAVEN, job: GUARDIAN, stats: { CHARISMA: 5000.0 } }
+guardian_angel_6: { name: "&f수호 천사 #6", world: LOBBY, bukkit-world: lobby, x: -5.0, y: 100.0, z: 0.0,  faction: HEAVEN, job: GUARDIAN, stats: { CHARISMA: 5000.0 } }
+guardian_angel_7: { name: "&f수호 천사 #7", world: LOBBY, bukkit-world: lobby, x: 0.0,  y: 100.0, z: 5.0,  faction: HEAVEN, job: GUARDIAN, stats: { CHARISMA: 5000.0 } }
+guardian_angel_8: { name: "&f수호 천사 #8", world: LOBBY, bukkit-world: lobby, x: 0.0,  y: 100.0, z: -5.0, faction: HEAVEN, job: GUARDIAN, stats: { CHARISMA: 5000.0 } }
+guardian_angel_9: { name: "&f수호 천사 #9", world: LOBBY, bukkit-world: lobby, x: 7.0,  y: 100.0, z: 2.0,  faction: HEAVEN, job: GUARDIAN, stats: { CHARISMA: 5000.0 } }
+guardian_angel_10: { name: "&f수호 천사 #10", world: LOBBY, bukkit-world: lobby, x: 7.0,  y: 100.0, z: -2.0, faction: HEAVEN, job: GUARDIAN, stats: { CHARISMA: 5000.0 } }

@@ -1,0 +1,40 @@
+lobby:
+  world: lobby
+  spawn: { x: 0.5, y: 100, z: 0.5 }
+  goddess-location: { x: 5.5, y: 100, z: 0.5 }
+  gym-area:
+    min: { x: 50, y: 90, z: 50 }
+    max: { x: 80, y: 110, z: 80 }
+  gym-points-required: 100
+
+roulette:
+  count-down-seconds: 30
+  worlds: [FANTASY, DEMON, HEAVEN, SPIRIT, MARTIAL, IMMORTAL, YOKAI,
+           EARTH, MAGITECH, APOCALYPSE, CYBERPUNK, DRAGON, OCEAN]
+  luck-bias: 0.0001  # luck 1포인트당 가중치
+  duration-seconds: 7
+
+initial-stats:
+  normal-bonus: { min: 1, max: 10 }
+  special-bonus: { min: 10, max: 15 }
+  dragon-bonus: { min: 15, max: 25 }
+  dragon-power: 10
+  special-stat-default: 5
+  gym-bonus: { min: 1, max: 15 }
+
+child-start:
+  base-chance: 0.005
+  max-chance: 0.02
+  luck-scale: 0.0001
+  parent-stat-percent: 5
+  npc-clans:  # 세계별 NPC 가문 (id, name, parent-stat, lineage)
+    FANTASY:
+      - { id: aerion-royal,  name: "아르테온 왕가",   parent: 4500, lineage: ROYAL }
+      - { id: silvania-elf,  name: "실바니아 엘프 가문", parent: 3800, lineage: ELF }
+    DEMON:
+      - { id: baal-house,    name: "바알 가문",        parent: 6000, lineage: DEMON_LORD }
+      - { id: agares-house,  name: "아가레스 가문",    parent: 5500, lineage: DEMON_NOBLE }
+    YOKAI:
+      - { id: kumiho-palace, name: "구미호 궁",        parent: 4500, lineage: KITSUNE }
+    DRAGON:
+      - { id: aurelius,      name: "아우렐리스 가문",  parent: 4800, lineage: GOLD_DRAGON }

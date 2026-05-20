@@ -1,0 +1,16 @@
+name: RebornWorldAI
+version: '${project.version}'
+main: kr.reborn.worldai.RebornWorldAI
+api-version: '1.20'
+folia-supported: true
+authors: [ReincarnationWorld]
+description: 13세계 자율 AI (경제·정치·몬스터·날씨·월드 퀘스트·NPC 지시)
+depend: [RebornCore]
+softdepend: [RebornNPC, RebornMob, RebornQuest, RebornEconomy, RebornStat, RebornClan, RebornTime, RebornSkill]
+load: POSTWORLD
+commands:
+  worldai:
+    description: 세계 AI 관리
+    permission: rebornworldai.admin
+permissions:
+  rebornworldai.admin: { default: op }

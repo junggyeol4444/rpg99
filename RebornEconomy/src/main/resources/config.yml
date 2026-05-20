@@ -1,0 +1,297 @@
+# 13세계 통화 정의 (id: 표시명/색상/CustomModelData/소속세계)
+currencies:
+  GOLD_COIN:
+    name: "&6골드코인"
+    world: FANTASY
+    icon: GOLD_INGOT
+    model: 1001
+  SOUL_STONE:
+    name: "&5영혼석"
+    world: DEMON
+    icon: AMETHYST_SHARD
+    model: 1002
+  FAITH_CRYSTAL:
+    name: "&b신앙의결정"
+    world: HEAVEN
+    icon: PRISMARINE_CRYSTALS
+    model: 1003
+  ESSENCE:
+    name: "&a정수"
+    world: SPIRIT
+    icon: GHAST_TEAR
+    model: 1004
+  SILVER_TAEL:
+    name: "&7은냥"
+    world: MARTIAL
+    icon: IRON_NUGGET
+    model: 1005
+  IMMORTAL_STONE:
+    name: "&d선석"
+    world: IMMORTAL
+    icon: END_CRYSTAL
+    model: 1006
+  YOKAI_CRYSTAL:
+    name: "&5요기결정"
+    world: YOKAI
+    icon: PURPLE_DYE
+    model: 1007
+  WON:
+    name: "&f원"
+    world: EARTH
+    icon: PAPER
+    model: 1008
+  MANA_STONE:
+    name: "&9마석"
+    world: EARTH
+    icon: LAPIS_LAZULI
+    model: 1009
+  MAGITECH_CORE:
+    name: "&3마도코어"
+    world: MAGITECH
+    icon: HEART_OF_THE_SEA
+    model: 1010
+  PURIFIED_WATER:
+    name: "&b정화수"
+    world: APOCALYPSE
+    icon: POTION
+    model: 1011
+  CREDIT:
+    name: "&e크레딧"
+    world: CYBERPUNK
+    icon: GOLD_NUGGET
+    model: 1012
+  DRAGON_SCALE:
+    name: "&c용린편"
+    world: DRAGON
+    icon: NETHERITE_SCRAP
+    model: 1013
+  OCEAN_GOLD:
+    name: "&6해양금화"
+    world: OCEAN
+    icon: GOLD_NUGGET
+    model: 1014
+
+# 환율: from -> to: rate (1 from = rate to)
+exchange-rates:
+  GOLD_COIN:
+    SILVER_TAEL: 10.0
+    WON: 100.0
+    OCEAN_GOLD: 1.5
+    SOUL_STONE: 5.0
+    FAITH_CRYSTAL: 8.0
+    ESSENCE: 3.0
+    IMMORTAL_STONE: 50.0
+    YOKAI_CRYSTAL: 4.0
+    MAGITECH_CORE: 20.0
+    CREDIT: 200.0
+    DRAGON_SCALE: 100.0
+    PURIFIED_WATER: 1.0
+  SILVER_TAEL:
+    GOLD_COIN: 0.1
+    WON: 10.0
+    IMMORTAL_STONE: 5.0
+    YOKAI_CRYSTAL: 0.4
+  IMMORTAL_STONE:
+    GOLD_COIN: 0.02
+    SILVER_TAEL: 0.2
+    YOKAI_CRYSTAL: 0.1
+  YOKAI_CRYSTAL:
+    GOLD_COIN: 0.25
+    SILVER_TAEL: 2.5
+    IMMORTAL_STONE: 10.0
+  SOUL_STONE:
+    GOLD_COIN: 0.2
+    FAITH_CRYSTAL: 0.5  # 마계↔천계 환전은 위험
+  FAITH_CRYSTAL:
+    GOLD_COIN: 0.125
+    SOUL_STONE: 2.0
+  ESSENCE:
+    GOLD_COIN: 0.33
+  CREDIT:
+    GOLD_COIN: 0.005
+    WON: 0.5
+    MAGITECH_CORE: 0.1
+
+exchange-fee-percent: 5.0
+exchange-fluctuation-percent: 30.0  # WorldAI ±30% 동적 조정
+
+# 상점
+shops:
+  fantasy_general:
+    name: "&6판타지 잡화상"
+    world: FANTASY
+    items:
+      - id: COMMON_BREAD
+        material: BREAD
+        currency: GOLD_COIN
+        buy: 5
+        sell: 1
+        stock: -1   # 무한
+      - id: STEEL_SWORD
+        material: IRON_SWORD
+        currency: GOLD_COIN
+        buy: 200
+        sell: 50
+        stock: 5
+        restock-minutes: 60
+      - id: HEALING_POTION
+        material: POTION
+        currency: GOLD_COIN
+        buy: 80
+        sell: 20
+        stock: -1
+  martial_apothecary:
+    name: "&7무협 약방"
+    world: MARTIAL
+    items:
+      - id: HAEDOK_PIL
+        material: SLIME_BALL
+        currency: SILVER_TAEL
+        buy: 50
+        sell: 10
+        stock: -1
+      - id: TONGMAEK_SAN
+        material: SUGAR
+        currency: SILVER_TAEL
+        buy: 200
+        sell: 50
+        stock: 10
+        restock-minutes: 120
+      - id: HASUOH_JU
+        material: HONEY_BOTTLE
+        currency: SILVER_TAEL
+        buy: 100
+        sell: 25
+        stock: 20
+        restock-minutes: 60
+  immortal_pill_shop:
+    name: "&5선계 단약 상점"
+    world: IMMORTAL
+    items:
+      - id: YEONG_PIL
+        material: GLOW_BERRIES
+        currency: IMMORTAL_STONE
+        buy: 30
+        sell: 5
+        stock: 5
+        restock-minutes: 360
+      - id: BINGSIM_PIL
+        material: SNOWBALL
+        currency: IMMORTAL_STONE
+        buy: 100
+        sell: 20
+        stock: 3
+        restock-minutes: 720
+  yokai_night_market:
+    name: "&5요계 야시"
+    world: YOKAI
+    items:
+      - id: FOX_FUR
+        material: ORANGE_DYE
+        currency: YOKAI_CRYSTAL
+        buy: 20
+        sell: 5
+        stock: -1
+      - id: DOKKAEBI_HAT
+        material: LEATHER_HELMET
+        currency: YOKAI_CRYSTAL
+        buy: 150
+        sell: 30
+        stock: 3
+        restock-minutes: 240
+  earth_hunter_shop:
+    name: "&8헌터 길드 상점"
+    world: EARTH
+    items:
+      - id: TACTICAL_VEST
+        material: LEATHER_CHESTPLATE
+        currency: WON
+        buy: 50000
+        sell: 10000
+        stock: 5
+        restock-minutes: 120
+      - id: BASIC_FIREARM
+        material: CROSSBOW
+        currency: WON
+        buy: 100000
+        sell: 25000
+        stock: 3
+        restock-minutes: 360
+  magitech_workshop:
+    name: "&3마도공학 공방"
+    world: MAGITECH
+    items:
+      - id: ARCANE_BATTERY
+        material: REDSTONE_BLOCK
+        currency: MAGITECH_CORE
+        buy: 50
+        sell: 10
+        stock: -1
+      - id: DRONE_PARTS
+        material: REPEATER
+        currency: MAGITECH_CORE
+        buy: 200
+        sell: 50
+        stock: 10
+        restock-minutes: 180
+  cyberpunk_blackmarket:
+    name: "&d블랙 서킷 (언더시티)"
+    world: CYBERPUNK
+    items:
+      - id: NEURAL_BOOSTER
+        material: BLAZE_POWDER
+        currency: CREDIT
+        buy: 5000
+        sell: 1000
+        stock: 5
+        restock-minutes: 240
+      - id: CYBERWARE_LIMB
+        material: PISTON
+        currency: CREDIT
+        buy: 25000
+        sell: 5000
+        stock: 2
+        restock-minutes: 720
+  ocean_port_shop:
+    name: "&3항구 상점"
+    world: OCEAN
+    items:
+      - id: BREAD
+        material: BREAD
+        currency: OCEAN_GOLD
+        buy: 5
+        sell: 1
+        stock: -1
+      - id: SHIP_SAIL
+        material: WHITE_BANNER
+        currency: OCEAN_GOLD
+        buy: 500
+        sell: 100
+        stock: 10
+        restock-minutes: 60
+  apocalypse_survivor:
+    name: "&8생존자 거래소 (물물교환)"
+    world: APOCALYPSE
+    items:
+      - id: CANNED_FOOD
+        material: CARROT
+        currency: PURIFIED_WATER
+        buy: 3
+        sell: 1
+        stock: -1
+
+# 경매
+auction:
+  registration-fee-percent: 2.0
+  sale-fee-percent: 3.0
+  default-duration-hours: 24
+  max-listings-per-player: 10
+
+# 거래
+trade:
+  countdown-seconds: 5
+  apocalypse-barter-only: true   # 아포칼립스는 화폐 거래 불가
+
+# 우편함
+mailbox:
+  expire-days: 30

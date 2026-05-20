@@ -1,0 +1,16 @@
+name: RebornGod
+version: '${project.version}'
+main: kr.reborn.god.RebornGod
+api-version: '1.20'
+folia-supported: true
+authors: [ReincarnationWorld]
+description: 신·신성·신역·신앙·신전쟁
+depend: [RebornCore]
+softdepend: [RebornStat, RebornSkill, RebornQuest, RebornHiddenClass, RebornTime]
+load: POSTWORLD
+commands:
+  god:
+    description: 신 시스템
+    permission: reborngod.use
+permissions:
+  reborngod.use: { default: true }

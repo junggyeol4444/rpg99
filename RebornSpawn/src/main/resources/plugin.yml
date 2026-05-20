@@ -1,0 +1,19 @@
+name: RebornSpawn
+version: '${project.version}'
+main: kr.reborn.spawn.RebornSpawn
+api-version: '1.20'
+folia-supported: true
+authors: [ReincarnationWorld]
+description: 환생·룰렛·초기스탯·헬스장·NPC자녀
+depend: [RebornCore]
+softdepend: [RebornNPC, RebornClan]
+load: POSTWORLD
+commands:
+  reroll:
+    description: 환생 룰렛 (여신 NPC 대체용 디버그)
+    permission: rebornspawn.use
+  gym:
+    description: 신들의 헬스장 운동 마무리
+    permission: rebornspawn.use
+permissions:
+  rebornspawn.use: { default: true }

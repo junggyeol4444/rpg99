@@ -1,0 +1,19 @@
+name: RebornPet
+version: '${project.version}'
+main: kr.reborn.pet.RebornPet
+api-version: '1.20'
+folia-supported: true
+authors: [ReincarnationWorld]
+description: 펫·탈것·계약
+depend: [RebornCore]
+softdepend: [RebornMob, RebornNPC, RebornSkill, RebornStat, RebornCurse]
+load: POSTWORLD
+commands:
+  pet:
+    description: 펫 관리
+    permission: rebornpet.use
+  mount:
+    description: 탈것 소환
+    permission: rebornpet.use
+permissions:
+  rebornpet.use: { default: true }

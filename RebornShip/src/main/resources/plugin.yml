@@ -1,0 +1,16 @@
+name: RebornShip
+version: '${project.version}'
+main: kr.reborn.ship.RebornShip
+api-version: '1.20'
+folia-supported: true
+authors: [ReincarnationWorld]
+description: 해양제국 배 시스템
+depend: [RebornCore]
+softdepend: [RebornCraft, RebornNPC, RebornStat, RebornEconomy]
+load: POSTWORLD
+commands:
+  ship:
+    description: 배 관리
+    permission: rebornship.use
+permissions:
+  rebornship.use: { default: true }

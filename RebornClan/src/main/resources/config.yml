@@ -1,0 +1,458 @@
+clan:
+  create-min-total-stats: 300
+  create-cost-currency: GOLD_COIN
+  create-cost-amount: 10000
+  level-thresholds: [0, 100, 300, 700, 1500, 3000, 6000, 12000, 25000, 50000, 100000]
+
+marriage:
+  fantasy-ritual: church
+  martial-ritual: heaven_earth_bow
+  demon-ritual: blood_contract
+  yokai-ritual: full_moon_lake
+  buff-radius: 30
+  buff-stat-percent: 5
+
+child:
+  request-success-chance: 0.30
+  cooldown-hours: 24
+  parent-stat-percent: 5
+
+territory:
+  size: 16
+  cost-currency: GOLD_COIN
+  cost-amount: 1000
+  upkeep-per-day: 100
+  bonus-stat-percent: 5
+
+kingdom:
+  required-clan-level: 7
+  required-territories: 3
+  cost: 100000
+
+# ============================================================
+# 혈통 정의 (5장 5-1, 5-2, 5-7, 5-12 + 23장 가문·혈통)
+# ============================================================
+lineages:
+  ROYAL:        { stat: CHARISMA, percent: 30, skill: "" }
+  ELF:          { stat: AGILITY,  percent: 10, skill: silvania_green_blade }
+  HIGH_ELF:     { stat: INTELLIGENCE, percent: 15, skill: summon_elemental_lord }
+  DWARF:        { stat: ENDURANCE, percent: 15, skill: iron_breaker }
+  DRAGON:       { stat: STRENGTH, percent: 5, skill: breath_basic }
+  GOLD_DRAGON:  { stat: STRENGTH, percent: 8, skill: breath_basic }
+  RED_DRAGON:   { stat: STRENGTH, percent: 7, skill: breath_basic }
+  BLACK_DRAGON: { stat: AGILITY, percent: 8, skill: breath_basic }
+  BLUE_DRAGON:  { stat: INTELLIGENCE, percent: 8, skill: breath_basic }
+  GREEN_DRAGON: { stat: CHARISMA, percent: 8, skill: breath_basic }
+  DEMON_LORD:   { stat: DEMON_KI, percent: 10 }
+  DEMON_NOBLE:  { stat: DEMON_KI, percent: 7 }
+  TAINTED_ANGEL: { stat: HEAVEN_KI, percent: 5, skill: holy_ray }
+  ANGEL:        { stat: HEAVEN_KI, percent: 8, skill: holy_light }
+  KITSUNE:      { stat: CHARM, percent: 20, skill: fox_fire }
+  ONI:          { stat: STRENGTH, percent: 10 }
+  TENGU:        { stat: AGILITY, percent: 12, skill: flight }
+  IMMORTAL_BORN: { stat: IMMORTAL_KI, percent: 10 }
+  TAOIST_LINE:  { stat: TAO_POWER, percent: 10, skill: talisman_basic }
+  MERMAID:      { stat: OCEAN_POWER, percent: 15, skill: water_breathing }
+  SEA_KING_LINE: { stat: OCEAN_POWER, percent: 25, skill: water_breathing }
+  HUNTER_LINE:  { stat: STRENGTH, percent: 8 }
+  BUDDHIST:     { stat: MENTAL, percent: 20 }
+  SHADOW_ELF:   { stat: AGILITY, percent: 10, skill: night_fang }
+  decay-per-generation: 10
+
+# ============================================================
+# NPC 가문 데이터 — 13세계
+# ============================================================
+npc-clans:
+
+  FANTASY:
+    # 3대 왕국 + 1대 황국 + 자유도시연합 + 5대 소왕국 + 비인간 종족
+    arteon_royal:
+      name: "&6아르테온 왕가"
+      capital: "루미나스"
+      lineage: ROYAL
+      leader-stat-total: 4500
+      members: 3000000
+      domain: "대륙 중앙 평원"
+    silvania_royal:
+      name: "&a실바니아 왕가"
+      capital: "에베를란"
+      lineage: ELF
+      leader-stat-total: 4200
+      members: 1500000
+      domain: "대륙 서쪽 숲"
+    perros_royal:
+      name: "&8페르로스 왕가"
+      capital: "하메른"
+      lineage: DWARF
+      leader-stat-total: 4500
+      members: 2000000
+      domain: "대륙 동쪽 산악"
+    kaiser_imperial:
+      name: "&e카이젤 황가"
+      capital: "아우렐리아"
+      lineage: ROYAL
+      leader-stat-total: 5000
+      members: 5000000
+      domain: "대륙 북부 고원"
+    free-cities-league:
+      name: "&3에텔리아 자유도시 연합"
+      capital: "12개 항구"
+      lineage: ""
+      leader-stat-total: 2500
+      members: 800000
+    morgan_duchy:
+      name: "&5모르간 공국"
+      capital: "흑무늪"
+      lineage: ""
+      leader-stat-total: 3000
+      members: 200000
+    velion_duchy:
+      name: "&6벨리온 후국"
+      capital: "마평원"
+      lineage: ""
+      leader-stat-total: 2200
+      members: 300000
+    astra_duchy:
+      name: "&b아스트라 공국"
+      capital: "성탑"
+      lineage: ""
+      leader-stat-total: 2400
+      members: 250000
+    seiran_duchy:
+      name: "&2세이란 후국"
+      capital: "독림"
+      lineage: ""
+      leader-stat-total: 2300
+      members: 350000
+    dios_duchy:
+      name: "&7디오스 공국"
+      capital: "교역도"
+      lineage: ""
+      leader-stat-total: 1800
+      members: 150000
+    silvaran_elves:
+      name: "&a실바란 깊은숲 엘프"
+      capital: "세계수 장로 회의당"
+      lineage: ELF
+      leader-stat-total: 5000
+      members: 50000
+    eter_high_elves:
+      name: "&b에텔의 왕관 (하이엘프)"
+      capital: "성역"
+      lineage: HIGH_ELF
+      leader-stat-total: 7000
+      members: 1000
+    karondel_dwarves:
+      name: "&8카론델 (드워프 대도시)"
+      capital: "지하 도시"
+      lineage: DWARF
+      leader-stat-total: 5500
+      members: 200000
+    moon_nest_beastfolk:
+      name: "&6달의 둥지 (수인족)"
+      capital: "부족 회의소"
+      lineage: ""
+      leader-stat-total: 3500
+      members: 80000
+    nakros_darkelves:
+      name: "&8나크로스 (다크엘프)"
+      capital: "지하도시"
+      lineage: SHADOW_ELF
+      leader-stat-total: 4500
+      members: 30000
+    halflings_windmill:
+      name: "&e풍차 언덕 (하프링)"
+      capital: "마을 광장"
+      lineage: ""
+      leader-stat-total: 1000
+      members: 20000
+    red_skull_orcs:
+      name: "&c붉은 해골 오크"
+      capital: "성채"
+      lineage: ""
+      leader-stat-total: 4000
+      members: 100000
+    necropolis_undead:
+      name: "&0네크로폴리스 (언데드 지하국)"
+      capital: "리치 왕좌"
+      lineage: ""
+      leader-stat-total: 6500
+      members: 500000
+
+  DEMON:
+    # 7대 마왕령 + 72 귀족 가문 (상위 10가문 + 나머지 62)
+    lucifer_realm:    { name: "&5교만의 마왕령", lineage: TAINTED_ANGEL, leader-stat-total: 15000, members: 5000000, sin: PRIDE }
+    leviathan_realm:  { name: "&3질투의 마왕령", lineage: DEMON_LORD, leader-stat-total: 12000, members: 3000000, sin: ENVY }
+    satan_realm:      { name: "&4분노의 마왕령", lineage: DEMON_LORD, leader-stat-total: 13000, members: 6000000, sin: WRATH }
+    belphegor_realm:  { name: "&7나태의 마왕령", lineage: DEMON_LORD, leader-stat-total: 11000, members: 2000000, sin: SLOTH }
+    mammon_realm:     { name: "&6탐욕의 마왕령", lineage: DEMON_LORD, leader-stat-total: 10000, members: 8000000, sin: GREED }
+    beelzebub_realm:  { name: "&2폭식의 마왕령", lineage: DEMON_LORD, leader-stat-total: 11500, members: 4000000, sin: GLUTTONY }
+    asmodeus_realm:   { name: "&d색욕의 마왕령", lineage: DEMON_LORD, leader-stat-total: 10500, members: 3500000, sin: LUST }
+
+    # 72 귀족 가문 — 상위 10가문 (고유 권능 5개씩)
+    baal_house:
+      name: "&4바알 가문"
+      lineage: DEMON_NOBLE
+      leader-stat-total: 5000
+      members: 50000
+      powers: ["지배의 왕좌", "전쟁의 불꽃", "마왕의 시선", "군단 소환", "왕의 선언"]
+    agares_house:
+      name: "&8아가레스 가문"
+      lineage: DEMON_NOBLE
+      leader-stat-total: 4800
+      members: 30000
+      powers: ["도주 불가", "지진", "언어 지배", "시간 지연", "충성의 사슬"]
+    vassago_house:
+      name: "&5바사고 가문"
+      lineage: DEMON_NOBLE
+      leader-stat-total: 4500
+      members: 20000
+      powers: ["보물 탐지", "은밀의 장막", "투시안", "우호의 가면", "계약의 인"]
+    amon_house:
+      name: "&c아몬 가문"
+      lineage: DEMON_NOBLE
+      leader-stat-total: 4900
+      members: 35000
+      powers: ["화염 군주", "지옥의 숨결", "분노 전이", "불사의 재", "화산 소환"]
+    marbas_house:
+      name: "&2마르바스 가문"
+      lineage: DEMON_NOBLE
+      leader-stat-total: 4600
+      members: 25000
+      powers: ["역병 살포", "치유 봉쇄", "변이 촉진", "독의 혈맥", "해부학의 눈"]
+    valefor_house:
+      name: "&8발레포르 가문"
+      lineage: DEMON_NOBLE
+      leader-stat-total: 4400
+      members: 15000
+      powers: ["도적의 손", "기만의 안개", "웃음의 저주", "도주의 달인", "거래의 왕"]
+    ami_house:
+      name: "&6아미 가문"
+      lineage: DEMON_NOBLE
+      leader-stat-total: 4700
+      members: 28000
+      powers: ["화염 보루", "군략의 눈", "소각 명령", "충성의 불꽃", "전소"]
+    naberius_house:
+      name: "&e나베리우스 가문"
+      lineage: DEMON_NOBLE
+      leader-stat-total: 4500
+      members: 22000
+      powers: ["명예 회복", "웅변의 힘", "지식의 샘", "언어 혼란", "마기 강의"]
+    focalor_house:
+      name: "&3포칼로르 가문"
+      lineage: DEMON_NOBLE
+      leader-stat-total: 4800
+      members: 30000
+      powers: ["대홍수", "익사의 손", "바다의 지배", "선원 학살", "심해 소환"]
+    veles_house:
+      name: "&7벨레스 가문"
+      lineage: DEMON_NOBLE
+      leader-stat-total: 4300
+      members: 18000
+      powers: ["나태의 속삭임", "무한 회피", "정체의 시간", "꿈의 감옥", "게으른 천재"]
+    # 나머지 62 가문은 10대 가문 산하 분가/독립 소가문 (인스턴스만 정의)
+    bune_house:        { name: "&8부네 가문",     lineage: DEMON_NOBLE, leader-stat-total: 3800, members: 8000 }
+    forneus_house:     { name: "&3포르네우스 가문",lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 6000 }
+    asmoday_house:     { name: "&d아스모데이 가문",lineage: DEMON_NOBLE, leader-stat-total: 4000, members: 12000 }
+    paimon_house:      { name: "&5파이몬 가문",   lineage: DEMON_NOBLE, leader-stat-total: 4200, members: 14000 }
+    haures_house:      { name: "&4하우레스 가문", lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 7000 }
+    andrealphus_house: { name: "&7안드레알푸스 가문", lineage: DEMON_NOBLE, leader-stat-total: 3600, members: 5500 }
+    cimejes_house:     { name: "&8키메이에스 가문", lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6500 }
+    amduscias_house:   { name: "&e암두시아스 가문", lineage: DEMON_NOBLE, leader-stat-total: 3800, members: 7500 }
+    belial_house:      { name: "&5벨리알 가문",   lineage: DEMON_NOBLE, leader-stat-total: 4100, members: 13000 }
+    decarabia_house:   { name: "&3데카라비아 가문", lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5000 }
+    seere_house:       { name: "&6시에르 가문",   lineage: DEMON_NOBLE, leader-stat-total: 3400, members: 4800 }
+    dantalion_house:   { name: "&8단탈리온 가문", lineage: DEMON_NOBLE, leader-stat-total: 4000, members: 11000 }
+    andromalius_house: { name: "&4안드로말리우스 가문", lineage: DEMON_NOBLE, leader-stat-total: 3900, members: 9000 }
+    # 나머지 50가문 — 솔로몬 72주 기반
+    aim_house:         { name: "&c아임 가문",         lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6800 }
+    aini_house:        { name: "&3아이니 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5500 }
+    alloces_house:     { name: "&4알로케스 가문",     lineage: DEMON_NOBLE, leader-stat-total: 3800, members: 7500 }
+    amduscias2_house:  { name: "&5암두시아스2 가문",  lineage: DEMON_NOBLE, leader-stat-total: 3600, members: 6000 }
+    andras_house:      { name: "&8안드라스 가문",     lineage: DEMON_NOBLE, leader-stat-total: 4100, members: 11500 }
+    andrealfus_house:  { name: "&6안드레알프스 가문", lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5800 }
+    asmoday2_house:    { name: "&d아스모다이2 가문",  lineage: DEMON_NOBLE, leader-stat-total: 4200, members: 13500 }
+    astaroth_house:    { name: "&5아스타로트 가문",   lineage: DEMON_NOBLE, leader-stat-total: 4500, members: 22000 }
+    balam_house:       { name: "&8발람 가문",         lineage: DEMON_NOBLE, leader-stat-total: 3800, members: 7800 }
+    barbatos_house:    { name: "&3바르바토스 가문",   lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 7000 }
+    bathin_house:      { name: "&5바틴 가문",         lineage: DEMON_NOBLE, leader-stat-total: 3600, members: 6500 }
+    beleth_house:      { name: "&4벨레트 가문",       lineage: DEMON_NOBLE, leader-stat-total: 4000, members: 10000 }
+    berith_house:      { name: "&c베리트 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3800, members: 7800 }
+    bifrons_house:     { name: "&8비프론스 가문",     lineage: DEMON_NOBLE, leader-stat-total: 3400, members: 4500 }
+    botis_house:       { name: "&3보티스 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5200 }
+    buer_house:        { name: "&6부에르 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6500 }
+    caim_house:        { name: "&8카임 가문",         lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5500 }
+    crocell_house:     { name: "&3크로셀 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3600, members: 6000 }
+    eligos_house:      { name: "&5엘리고스 가문",     lineage: DEMON_NOBLE, leader-stat-total: 3800, members: 7500 }
+    flauros_house:     { name: "&4플라우로스 가문",   lineage: DEMON_NOBLE, leader-stat-total: 4100, members: 12000 }
+    foras_house:       { name: "&8포라스 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5500 }
+    furcas_house:      { name: "&7푸르카스 가문",     lineage: DEMON_NOBLE, leader-stat-total: 4000, members: 9500 }
+    furfur_house:      { name: "&4푸르푸르 가문",     lineage: DEMON_NOBLE, leader-stat-total: 3900, members: 8500 }
+    gaap_house:        { name: "&5가아프 가문",       lineage: DEMON_NOBLE, leader-stat-total: 4200, members: 13000 }
+    glasya_house:      { name: "&8글라샤라볼라스 가문", lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6800 }
+    gremory_house:     { name: "&d그레모리 가문",     lineage: DEMON_NOBLE, leader-stat-total: 3800, members: 7500 }
+    gusion_house:      { name: "&3구시온 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3600, members: 6200 }
+    halphas_house:     { name: "&8할파스 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6700 }
+    ipos_house:        { name: "&6이포스 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5500 }
+    leraje_house:      { name: "&4레라예 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 7000 }
+    malphas_house:     { name: "&8말파스 가문",       lineage: DEMON_NOBLE, leader-stat-total: 4000, members: 10500 }
+    marax_house:       { name: "&7마락스 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5300 }
+    murmur_house:      { name: "&3무르무르 가문",     lineage: DEMON_NOBLE, leader-stat-total: 3800, members: 7500 }
+    orias_house:       { name: "&6오리아스 가문",     lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6500 }
+    orobas_house:      { name: "&3오로바스 가문",     lineage: DEMON_NOBLE, leader-stat-total: 3600, members: 6000 }
+    ose_house:         { name: "&8오세 가문",         lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5500 }
+    phenex_house:      { name: "&c페넥스 가문",       lineage: DEMON_NOBLE, leader-stat-total: 4100, members: 12000 }
+    procell_house:     { name: "&3프로켈 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6800 }
+    purson_house:      { name: "&6푸르손 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3800, members: 7500 }
+    raum_house:        { name: "&4라움 가문",         lineage: DEMON_NOBLE, leader-stat-total: 4000, members: 10000 }
+    ronove_house:      { name: "&8로노베 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5500 }
+    sabnock_house:     { name: "&4사브녹 가문",       lineage: DEMON_NOBLE, leader-stat-total: 4000, members: 10500 }
+    sallos_house:      { name: "&d살로스 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5500 }
+    samigina_house:    { name: "&8사미기나 가문",     lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5500 }
+    shax_house:        { name: "&3샥스 가문",         lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6800 }
+    sitri_house:       { name: "&d시트리 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6800 }
+    stolas_house:      { name: "&3스톨라스 가문",     lineage: DEMON_NOBLE, leader-stat-total: 3800, members: 7500 }
+    valac_house:       { name: "&8발락 가문",         lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6800 }
+    vapula_house:      { name: "&5바풀라 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3600, members: 6200 }
+    vassago2_house:    { name: "&6바사고2 가문",      lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6500 }
+    vepar_house:       { name: "&3베파르 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6800 }
+    vual_house:        { name: "&8부알 가문",         lineage: DEMON_NOBLE, leader-stat-total: 3700, members: 6800 }
+    zagan_house:       { name: "&6자간 가문",         lineage: DEMON_NOBLE, leader-stat-total: 3900, members: 9000 }
+    zepar_house:       { name: "&d제파르 가문",       lineage: DEMON_NOBLE, leader-stat-total: 3500, members: 5500 }
+
+  DRAGON:
+    # 5대 드래곤 로드 가문
+    aurelius:
+      name: "&6&l아우렐리스 (골드)"
+      lineage: GOLD_DRAGON
+      leader-stat-total: 4800
+      domain: "태양의 왕좌"
+      adult: 12
+      mid: 40
+      hatchling: 100
+    ignifer:
+      name: "&4&l이그니페르 (레드)"
+      lineage: RED_DRAGON
+      leader-stat-total: 4600
+      domain: "영원의 화염"
+      adult: 15
+      mid: 50
+      hatchling: 130
+    nocterna:
+      name: "&0&l녹테르나 (블랙)"
+      lineage: BLACK_DRAGON
+      leader-stat-total: 4200
+      domain: "심연의 둥지"
+      adult: 8
+      mid: 25
+      hatchling: 60
+    cerylis:
+      name: "&3&l세릴리스 (블루)"
+      lineage: BLUE_DRAGON
+      leader-stat-total: 4000
+      domain: "뇌전의 바다"
+      adult: 10
+      mid: 35
+      hatchling: 80
+    silvarex:
+      name: "&2&l실바렉스 (그린)"
+      lineage: GREEN_DRAGON
+      leader-stat-total: 3800
+      domain: "용수림"
+      adult: 7
+      mid: 30
+      hatchling: 70
+
+  YOKAI:
+    kumiho_palace:    { name: "&5구미호 궁",     lineage: KITSUNE, leader-stat-total: 4500, domain: "백야성 외곽" }
+    grand_tengu:      { name: "&8대텐구 가문",   lineage: TENGU,   leader-stat-total: 4200, domain: "만요봉" }
+    dragon_king:      { name: "&3용왕 가문 (요계)", lineage: SEA_KING_LINE, leader-stat-total: 4000, domain: "월영담" }
+    grand_dokkaebi:   { name: "&5대도깨비 가문", lineage: ONI,     leader-stat-total: 3800, domain: "도깨비 광산" }
+    yacha_corps:      { name: "&4야차단",        lineage: ONI,     leader-stat-total: 3500, domain: "백야성" }
+    kangshi_corps:    { name: "&0강시 군단",     lineage: "",      leader-stat-total: 3000, domain: "강시 무덤" }
+    fox_fire_cult:    { name: "&5여우불 교단",   lineage: KITSUNE, leader-stat-total: 2500, domain: "백귀야행 거리" }
+
+  IMMORTAL:
+    taeheo_palace:    { name: "&5태허선궁",      lineage: IMMORTAL_BORN, leader-stat-total: 7000, domain: "태허봉" }
+    seonjong_alliance: { name: "&6선종 연합",     lineage: TAOIST_LINE,   leader-stat-total: 5500, domain: "선산 연봉" }
+    pill_alliance:    { name: "&d단약 연합",     lineage: "",            leader-stat-total: 4000, domain: "선궁 도시군" }
+    cheongi_temple:   { name: "&b천기관",        lineage: TAOIST_LINE,   leader-stat-total: 5000, domain: "선산" }
+    sanhae_hunter:    { name: "&8산해수렵단",    lineage: "",            leader-stat-total: 4500, domain: "선계 외곽" }
+    chaos_market:     { name: "&0혼돈방 (암시장)", lineage: "",          leader-stat-total: 6000, domain: "은닉 도시" }
+
+  MARTIAL:
+    # 정파
+    sorim_temple:     { name: "&e소림사",        lineage: BUDDHIST,   leader-stat-total: 4500, domain: "숭산" }
+    mudang_school:    { name: "&b무당파",        lineage: TAOIST_LINE, leader-stat-total: 4200, domain: "무당산" }
+    hwasan_school:    { name: "&c화산파",        lineage: TAOIST_LINE, leader-stat-total: 3800, domain: "화산" }
+    gaebang:          { name: "&7개방",          lineage: "",         leader-stat-total: 3500, domain: "강호 전역" }
+    gonryun_school:   { name: "&3곤륜파",        lineage: TAOIST_LINE, leader-stat-total: 4000, domain: "곤륜산" }
+    ami_school:       { name: "&d아미파",        lineage: BUDDHIST,    leader-stat-total: 3800, domain: "아미산" }
+    # 사파
+    blood_demon_gate: { name: "&4혈마문",        lineage: "",         leader-stat-total: 4500, domain: "남방" }
+    poison_gate:      { name: "&2독문",          lineage: "",         leader-stat-total: 4000, domain: "남방 독림" }
+    eum_ma_palace:    { name: "&5음마궁",        lineage: "",         leader-stat-total: 4200, domain: "동굴 지하" }
+    illusion_demon:   { name: "&8환마문",        lineage: "",         leader-stat-total: 3800, domain: "서역" }
+    # 마교 (별개 거대 교단)
+    cult_demonic:     { name: "&5&l마교",        lineage: "",         leader-stat-total: 6500, domain: "마교 본진" }
+
+  HEAVEN:
+    angel_legion:     { name: "&e천사 군단",      lineage: ANGEL,      leader-stat-total: 5500, domain: "3층 성벽" }
+    holy_court:       { name: "&f신성 재판소",    lineage: ANGEL,      leader-stat-total: 4500, domain: "6층 성광 궁전" }
+    light_church:     { name: "&e빛의 교단",      lineage: ANGEL,      leader-stat-total: 4000, domain: "4층 백광" }
+    purify_knights:   { name: "&b정화 기사단",    lineage: ANGEL,      leader-stat-total: 5000, domain: "3층" }
+    archangel_council: { name: "&e&l4대천사 회의", lineage: ANGEL,      leader-stat-total: 5000, domain: "8층" }
+    cheonje_council:  { name: "&6&l천제의 성좌",  lineage: ANGEL,      leader-stat-total: 9000, domain: "9층" }
+
+  EARTH:
+    korea_gate_authority: { name: "&f대한민국 게이트 관리국", lineage: HUNTER_LINE, leader-stat-total: 3500 }
+    usa_hunter_assoc:     { name: "&3미국 헌터 협회",       lineage: HUNTER_LINE, leader-stat-total: 4000 }
+    china_dungeon_corp:   { name: "&c중국 미궁 독점 기업",  lineage: HUNTER_LINE, leader-stat-total: 3800 }
+    russia_military:      { name: "&7러시아 군사 헌터",     lineage: HUNTER_LINE, leader-stat-total: 3600 }
+    japan_research:       { name: "&dJapan 게이트 연구소",  lineage: HUNTER_LINE, leader-stat-total: 3300 }
+    eu_alliance:          { name: "&9EU 연합 헌터",        lineage: HUNTER_LINE, leader-stat-total: 3500 }
+    intl_hunter_league:   { name: "&6국제 헌터 연맹",       lineage: HUNTER_LINE, leader-stat-total: 5000 }
+
+  MAGITECH:
+    arcadia:          { name: "&b아르카디아 (하늘 도시)",   leader-stat-total: 5000, lineage: "" }
+    mechanicus:       { name: "&7메카니쿠스 (지하 도시)",   leader-stat-total: 4800, lineage: "" }
+    etherion:         { name: "&3에테리온 (해상 도시)",     leader-stat-total: 4500, lineage: "" }
+    cronos:           { name: "&6크로노스 (시계탑)",        leader-stat-total: 4700, lineage: "" }
+    alkemia:          { name: "&a알케미아 (연금술)",        leader-stat-total: 4500, lineage: "" }
+    bellatrix:        { name: "&c벨라트릭스 (군사)",        leader-stat-total: 5000, lineage: "" }
+    nebula:           { name: "&5네뷸라 (연구·금기)",       leader-stat-total: 4800, lineage: "" }
+
+  CYBERPUNK:
+    akro:             { name: "&6AKRO (네오서울)",       leader-stat-total: 5000, lineage: "" }
+    jintech:          { name: "&3JINTECH (노바도쿄)",     leader-stat-total: 4800, lineage: "" }
+    hexacorp:         { name: "&eHEXACORP (아이언뉴욕)",  leader-stat-total: 4500, lineage: "" }
+    arcaneworks:      { name: "&8ARCANEWORKS (크롬런던)", leader-stat-total: 5000, lineage: "" }
+    frostline:        { name: "&bFROSTLINE (쉐도우모스크바)", leader-stat-total: 4700, lineage: "" }
+    dragon_nexus:     { name: "&cDRAGON NEXUS (네온상하이)", leader-stat-total: 4500, lineage: "" }
+    solaris:          { name: "&eSOLARIS (하이퍼라고스)", leader-stat-total: 4800, lineage: "" }
+    netbreaker_guild: { name: "&aNetbreaker 해커 길드",   leader-stat-total: 3500, lineage: "" }
+    rebellion:        { name: "&5리벨리온 저항군",        leader-stat-total: 4000, lineage: "" }
+
+  OCEAN:
+    aquarion_empire:  { name: "&3아쿠아리온 제국",  leader-stat-total: 5500, lineage: SEA_KING_LINE }
+    coral_alliance:   { name: "&dCoral 연합",      leader-stat-total: 4000, lineage: "" }
+    kraken_temple:    { name: "&5크라켄 신전국",    leader-stat-total: 5000, lineage: "" }
+    pearl_abyss:      { name: "&b펄 아비스 (인어)", leader-stat-total: 4500, lineage: MERMAID }
+    free_sea:         { name: "&6자유해 (해적)",    leader-stat-total: 4500, lineage: "" }
+    storm_empire:     { name: "&8폭풍 제국",       leader-stat-total: 5500, lineage: "" }
+    ghost_fleet:      { name: "&7망자의 해류",     leader-stat-total: 5000, lineage: "" }
+
+  SPIRIT:
+    fire_palace:      { name: "&c이프리나 궁전",     leader-stat-total: 8000, lineage: "" }
+    water_palace:     { name: "&3운디네르 궁전",     leader-stat-total: 7500, lineage: "" }
+    wind_palace:      { name: "&f실피드론 궁전",     leader-stat-total: 7000, lineage: "" }
+    earth_palace:     { name: "&7노움가르드 궁전",   leader-stat-total: 7500, lineage: "" }
+    contractor_guild: { name: "&a계약자 길드",       leader-stat-total: 3500, lineage: "" }
+    ancient_forest_guard: { name: "&2고대 정령 숲 수호단", leader-stat-total: 5000, lineage: "" }
+
+  APOCALYPSE:
+    last_code:        { name: "&7라스트 코드 (생존자 연합)",  leader-stat-total: 3500, lineage: "" }
+    mutant_horde:     { name: "&2뮤턴트 호드 (변종)",         leader-stat-total: 3500, lineage: "" }
+    blood_wolf:       { name: "&4블러드 울프 (약탈자)",      leader-stat-total: 3000, lineage: "" }
+    project_genesis:  { name: "&b프로젝트 제네시스 (과학자)", leader-stat-total: 4000, lineage: "" }
+    rebirth_cult:     { name: "&5리버스 교단 (광신도)",       leader-stat-total: 3000, lineage: "" }

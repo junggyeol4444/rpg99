@@ -1,0 +1,144 @@
+database:
+  type: mysql        # mysql | sqlite
+  host: localhost
+  port: 3306
+  database: reborn
+  user: reborn
+  password: changeme
+  pool-size: 10
+
+auto-save-interval: 300
+
+initial-stats:
+  normal-worlds: { min: 1, max: 10 }
+  special-worlds: { min: 10, max: 15 }
+  dragon-world: { min: 15, max: 25, dragon-power: 10 }
+  special-stat-default: 5
+
+# 13세계 + 추가 클래스 경지 테이블
+tier-tables:
+  FANTASY_SWORD:
+    [{ name: "검술 입문자", min: 0, max: 100 },
+     { name: "검사", min: 100, max: 300 },
+     { name: "상급 검사", min: 300, max: 500 },
+     { name: "소드 엑스퍼트", min: 500, max: 1000 },
+     { name: "소드 마스터", min: 1000, max: 3000 },
+     { name: "그랜드 마스터", min: 3000, max: 5000 },
+     { name: "절대자", min: 5000, max: 999999 }]
+  FANTASY_MAGE:
+    [{ name: "1서클", min: 0, max: 100 },
+     { name: "2서클", min: 100, max: 200 },
+     { name: "3서클", min: 200, max: 350 },
+     { name: "4서클", min: 350, max: 500 },
+     { name: "5서클", min: 500, max: 700 },
+     { name: "6서클", min: 700, max: 1000 },
+     { name: "7서클", min: 1000, max: 2000 },
+     { name: "8서클", min: 2000, max: 3000 },
+     { name: "9서클", min: 3000, max: 5000 },
+     { name: "절대자", min: 5000, max: 999999 }]
+  DEMON:
+    [{ name: "하급 악마", min: 0, max: 100 },
+     { name: "중급 악마", min: 100, max: 500 },
+     { name: "상급 악마", min: 500, max: 1000 },
+     { name: "자작·남작", min: 1000, max: 2000 },
+     { name: "후작·백작", min: 2000, max: 3500 },
+     { name: "대악마·공작", min: 3500, max: 5000 },
+     { name: "마왕급", min: 6000, max: 999999 }]
+  HEAVEN:
+    [{ name: "하급 천사", min: 0, max: 100 },
+     { name: "중급 천사", min: 100, max: 500 },
+     { name: "상급 천사", min: 500, max: 1000 },
+     { name: "대천사", min: 1000, max: 2000 },
+     { name: "10대 천사급", min: 2000, max: 3500 },
+     { name: "4대천사급", min: 3500, max: 5000 },
+     { name: "천제급", min: 5000, max: 999999 }]
+  SPIRIT:
+    [{ name: "최하급 정령", min: 0, max: 50 },
+     { name: "하급 정령", min: 50, max: 200 },
+     { name: "중급 정령", min: 200, max: 500 },
+     { name: "상급 정령", min: 500, max: 1000 },
+     { name: "최상급 정령", min: 1000, max: 2500 },
+     { name: "대정령", min: 2500, max: 5000 },
+     { name: "정령왕급", min: 5000, max: 999999 }]
+  MARTIAL:
+    [{ name: "삼류", min: 0, max: 100 },
+     { name: "이류", min: 100, max: 200 },
+     { name: "일류", min: 200, max: 300 },
+     { name: "절정", min: 300, max: 700 },
+     { name: "초절정", min: 700, max: 1200 },
+     { name: "화경", min: 1200, max: 2500 },
+     { name: "현경", min: 2500, max: 4500 },
+     { name: "생사경", min: 4500, max: 6000 },
+     { name: "천하제일인", min: 6000, max: 999999 }]
+  MARTIAL_TAO:
+    [{ name: "도술 입문", min: 0, max: 50 },
+     { name: "도동", min: 50, max: 200 },
+     { name: "도사", min: 200, max: 500 },
+     { name: "진인", min: 500, max: 1500 },
+     { name: "천사", min: 1500, max: 3000 },
+     { name: "지인", min: 3000, max: 5000 },
+     { name: "선인", min: 5000, max: 999999 }]
+  IMMORTAL:
+    [{ name: "연기기", min: 0, max: 100 },
+     { name: "축기기", min: 100, max: 300 },
+     { name: "금단기", min: 300, max: 800 },
+     { name: "원영기", min: 800, max: 1500 },
+     { name: "화신기", min: 1500, max: 2500 },
+     { name: "합체기", min: 2500, max: 4000 },
+     { name: "대승기", min: 4000, max: 6000 },
+     { name: "도겁비선", min: 6000, max: 999999 }]
+  YOKAI:
+    [{ name: "잡요", min: 0, max: 50 },
+     { name: "요졸", min: 50, max: 200 },
+     { name: "요장", min: 200, max: 500 },
+     { name: "요왕", min: 500, max: 1500 },
+     { name: "대요", min: 1500, max: 3000 },
+     { name: "요성", min: 3000, max: 5000 },
+     { name: "요제", min: 5000, max: 999999 }]
+  EARTH:
+    [{ name: "E급", min: 0, max: 50 },
+     { name: "D급", min: 50, max: 150 },
+     { name: "C급", min: 150, max: 400 },
+     { name: "B급", min: 400, max: 800 },
+     { name: "A급", min: 800, max: 1500 },
+     { name: "S급", min: 1500, max: 2500 },
+     { name: "SS급", min: 2500, max: 4000 },
+     { name: "SSS급", min: 4000, max: 5500 },
+     { name: "EX급", min: 5500, max: 999999 }]
+  MAGITECH:
+    [{ name: "견습 기술자", min: 0, max: 100 },
+     { name: "정식 기술자", min: 100, max: 300 },
+     { name: "마도공학사", min: 300, max: 800 },
+     { name: "마도 마스터", min: 800, max: 2000 },
+     { name: "아키텍트", min: 2000, max: 3500 },
+     { name: "그랜드 아키텍트", min: 3500, max: 5000 },
+     { name: "기술 절대자", min: 5000, max: 999999 }]
+  APOCALYPSE:
+    [{ name: "생존자", min: 0, max: 100 },
+     { name: "전투원", min: 100, max: 500 },
+     { name: "엘리트", min: 500, max: 1500 },
+     { name: "변종 적응자", min: 1500, max: 3000 },
+     { name: "군주급", min: 3000, max: 5000 },
+     { name: "종말의 왕", min: 5000, max: 999999 }]
+  CYBERPUNK:
+    [{ name: "일반인", min: 0, max: 50 },
+     { name: "어웨이큰", min: 50, max: 200 },
+     { name: "와이어드", min: 200, max: 500 },
+     { name: "크롬", min: 500, max: 1500 },
+     { name: "넷러너", min: 1500, max: 3000 },
+     { name: "오버클럭", min: 3000, max: 5000 },
+     { name: "싱귤래리티", min: 5000, max: 999999 }]
+  DRAGON:
+    [{ name: "새끼용", min: 0, max: 200, age: 0 },
+     { name: "중룡", min: 200, max: 1000, age: 100 },
+     { name: "성룡", min: 1000, max: 3000, age: 500 },
+     { name: "고룡", min: 3000, max: 5000, age: 1000 },
+     { name: "용왕급", min: 5000, max: 999999, age: 5000 }]
+  OCEAN:
+    [{ name: "일반 선원", min: 0, max: 50 },
+     { name: "숙련 선원", min: 50, max: 200 },
+     { name: "항해사", min: 200, max: 500 },
+     { name: "선장", min: 500, max: 1000 },
+     { name: "해적장/함장", min: 1000, max: 2500 },
+     { name: "제독", min: 2500, max: 5000 },
+     { name: "해왕급", min: 5000, max: 999999 }]

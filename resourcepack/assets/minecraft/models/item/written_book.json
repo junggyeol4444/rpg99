@@ -1,0 +1,14 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "item/written_book"
+  },
+  "overrides": [
+    { "predicate": { "custom_model_data": 5001 }, "model": "item/reborn/book_arteon_blade" },
+    { "predicate": { "custom_model_data": 5002 }, "model": "item/reborn/book_dokgo_gugeom" },
+    { "predicate": { "custom_model_data": 5003 }, "model": "item/reborn/book_cheonma" },
+    { "predicate": { "custom_model_data": 5004 }, "model": "item/reborn/book_meteor" },
+    { "predicate": { "custom_model_data": 5005 }, "model": "item/reborn/book_resurrection" },
+    { "predicate": { "custom_model_data": 5006 }, "model": "item/reborn/book_pacheon" }
+  ]
+}

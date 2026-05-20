@@ -1,0 +1,19 @@
+name: RebornSkill
+version: '${project.version}'
+main: kr.reborn.skill.RebornSkill
+api-version: '1.20'
+folia-supported: true
+authors: [ReincarnationWorld]
+description: 스킬·전투·에너지·비급학습
+depend: [RebornCore]
+softdepend: [RebornStat]
+load: POSTWORLD
+commands:
+  skill:
+    description: 스킬 GUI 및 시전
+    permission: rebornskill.use
+  energy:
+    description: 에너지 상태
+    permission: rebornskill.use
+permissions:
+  rebornskill.use: { default: true }

@@ -16,14 +16,23 @@ import org.bukkit.entity.Mob;
 public final class PatrolBehavior implements Behavior {
 
     @Override public String id() { return "patrol"; }
+    @Override public String category() { return "DUTY"; }
 
     @Override public int priority(RebornNpc npc) {
+        return (int) (utility(npc) * 100);
+    }
+
+    /** Utility = 직업이 경비병이면 0.3 baseline. STATUS 욕구 부족하면 더 적극적. */
+    @Override public double utility(RebornNpc npc) {
         if (npc.dead) return 0;
-        if ("GUARD".equals(npc.job) || "PATROL".equals(npc.job)
-                || "WORLD_AI_PATROL".equals(npc.aiData.get("override-job"))) {
-            return 25;
+        if (!("GUARD".equals(npc.job) || "PATROL".equals(npc.job)
+                || "WORLD_AI_PATROL".equals(npc.aiData.get("override-job")))) return 0;
+        double base = 0.3;
+        if (npc.soul != null) {
+            double status = npc.soul.needs.get(kr.reborn.npc.soul.Needs.Kind.STATUS) / 100.0;
+            base += (1 - status) * 0.2;
         }
-        return 0;
+        return Math.min(0.6, base);
     }
 
     @Override public void start(RebornNpc npc) {

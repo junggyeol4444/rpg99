@@ -35,13 +35,27 @@ public final class PursueGoalBehavior implements Behavior {
     public PursueGoalBehavior(RebornNPC plugin) { this.plugin = plugin; }
 
     @Override public String id() { return "pursue_goal"; }
+    @Override public String category() { return "GOAL"; }
 
     @Override public int priority(RebornNpc npc) {
+        return (int) (utility(npc) * 100);
+    }
+
+    /**
+     * Utility = 활성 목표 priority / 100 × 진행 부족 (0% → 1.0, 100% → 0)
+     * 목표 priority 100인 AVENGE는 utility ~1.0
+     * 목표 priority 50인 GAIN_WEALTH는 utility ~0.4
+     */
+    @Override public double utility(RebornNpc npc) {
         if (npc.dead || npc.soul == null || npc.goals.isEmpty()) return 0;
         Goal top = topActive(npc);
         if (top == null) return 0;
-        // 목표 우선순위에 따라 35~50 범위
-        return Math.min(50, 35 + top.priority / 10);
+        double priScore = top.priority / 100.0;
+        double remaining = (100.0 - top.progress) / 100.0;
+        // 거의 끝났으면 utility↓ — 다른 목표로 자연 전환
+        double tailBoost = top.progress > 90 ? 0.7 : 1.0;
+        return Math.min(0.7, priScore * remaining * tailBoost);
+        // 0.7 cap — 위급(공포·복수·전투)는 항상 우선
     }
 
     @Override public void start(RebornNpc npc) {

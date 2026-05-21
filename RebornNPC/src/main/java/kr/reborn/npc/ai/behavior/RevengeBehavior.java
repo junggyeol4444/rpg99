@@ -24,8 +24,17 @@ public final class RevengeBehavior implements Behavior {
     public RevengeBehavior(RebornNPC plugin) { this.plugin = plugin; }
 
     @Override public String id() { return "revenge"; }
+    @Override public String category() { return "AGGRO"; }
 
     @Override public int priority(RebornNpc npc) {
+        return (int) (utility(npc) * 100);
+    }
+
+    /**
+     * Utility = target 존재 × 분노 × ANGER 가중치 (성격)
+     * 평범한 NPC라도 가족 살해된 경우 utility 1.0 (priority 100 목표가 부스트).
+     */
+    @Override public double utility(RebornNpc npc) {
         if (npc.dead) return 0;
         UUID target = (UUID) npc.aiData.get("revenge:target");
         if (target == null) return 0;
@@ -39,7 +48,18 @@ public final class RevengeBehavior implements Behavior {
         if (p == null || npc.bukkitEntityId == null) return 0;
         var ent = Bukkit.getEntity(npc.bukkitEntityId);
         if (ent == null || p.getWorld() != ent.getWorld()) return 0;
-        return 80;
+        double base = 0.85;
+        if (npc.soul != null) {
+            // AVENGE 목표 있으면 +0.15
+            for (var g : npc.goals) {
+                if (g.kind == kr.reborn.npc.soul.GoalKind.AVENGE
+                        && g.target.equals(target.toString())) {
+                    base = 1.0;
+                    break;
+                }
+            }
+        }
+        return base;
     }
 
     @Override public boolean tick(RebornNpc npc) {

@@ -32,29 +32,61 @@ public final class CombatBehavior implements Behavior {
     public CombatBehavior(RebornNPC plugin) { this.plugin = plugin; }
 
     @Override public String id() { return "combat"; }
+    @Override public String category() { return "AGGRO"; }
 
     @Override public int priority(RebornNpc npc) {
+        return (int) (utility(npc) * 100);
+    }
+
+    /**
+     * Utility = 다음 곱:
+     *   - 분노 수준 (sigmoid mid=60)
+     *   - AGGRESSION 가중 (-100→0.2, 100→1.0)
+     *   - 잠재 타겟 존재 (없으면 0.1)
+     *   - EMPATHY 반비례 (높을수록 낮음)
+     *   - HP 비율 (HP 매우 낮으면 낮음 — flee로 위임)
+     * + 보너스:
+     *   - 친구 위협 + LOYALTY 높음
+     *   - 깊은 원수 (sent < -50) → 거의 강제
+     */
+    @Override public double utility(RebornNpc npc) {
         if (npc.dead || npc.soul == null) return 0;
         var p = npc.soul.personality;
-
-        int angerThreshold = 80 - p.get(Personality.Trait.AGGRESSION) / 2
-                + p.get(Personality.Trait.EMPATHY) / 3;
-        if (npc.emotion.get(Emotion.Kind.ANGER) > angerThreshold) {
-            return 85 + p.get(Personality.Trait.AGGRESSION) / 10;
-        }
-        if (p.get(Personality.Trait.LOYALTY) > 40 && allyInDanger(npc)) {
-            return 80;
-        }
-        LivingEntity hated = pickBestTarget(npc);
-        if (hated != null) {
-            int base = 70;
-            if (hated instanceof Player pl) {
-                double sent = npc.soul.relationToward(pl.getUniqueId().toString());
-                if (sent < -50) base = 90;
+        double angerScore = kr.reborn.npc.ai.utility.ResponseCurve.sigmoid(
+                npc.emotion.get(Emotion.Kind.ANGER), 60, 0.1);
+        double aggrScore = kr.reborn.npc.ai.utility.ResponseCurve.linear(
+                p.get(Personality.Trait.AGGRESSION), -100, 100);
+        aggrScore = 0.2 + 0.8 * aggrScore;  // -100에서 0.2, +100에서 1.0
+        double empathyScore = kr.reborn.npc.ai.utility.ResponseCurve.linearInverted(
+                p.get(Personality.Trait.EMPATHY), -50, 100);
+        empathyScore = 0.3 + 0.7 * empathyScore;
+        // HP 체크 (Mob entity로 확인)
+        double hpScore = 1.0;
+        if (npc.bukkitEntityId != null) {
+            var ent = org.bukkit.Bukkit.getEntity(npc.bukkitEntityId);
+            if (ent instanceof org.bukkit.entity.Mob mob) {
+                double r = mob.getHealth() / mob.getMaxHealth();
+                hpScore = kr.reborn.npc.ai.utility.ResponseCurve.sigmoid(r, 0.3, 10);
             }
-            return base;
         }
-        return 0;
+        // 타겟 존재 체크
+        LivingEntity target = pickBestTarget(npc);
+        boolean hasTarget = target != null;
+        double targetScore = hasTarget ? 1.0 : 0.1;
+        // 깊은 원수 → 강제 부스트
+        double hatedBonus = 1.0;
+        if (target instanceof Player pl) {
+            double sent = npc.soul.relationToward(pl.getUniqueId().toString());
+            if (sent < -50) hatedBonus = 1.5;  // 곱셈 보너스 (1.0 cap은 아래에서)
+            if (sent < -80) hatedBonus = 2.0;
+        }
+        // 친구 위협 — LOYALTY 충성스러우면 가담
+        double allyBonus = 1.0;
+        if (allyInDanger(npc) && p.get(Personality.Trait.LOYALTY) > 30) {
+            allyBonus = 1.3;
+        }
+        double base = angerScore * aggrScore * empathyScore * hpScore * targetScore;
+        return Math.min(1.0, base * hatedBonus * allyBonus);
     }
 
     @Override public void start(RebornNpc npc) {

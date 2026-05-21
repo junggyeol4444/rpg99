@@ -18,8 +18,26 @@ public interface Behavior {
     /** 행동 식별자. */
     String id();
 
-    /** 현재 상황에서 이 행동의 우선순위. 0 = 적용 불가, 100 = 최우선. */
+    /**
+     * (Legacy) 현재 상황에서 이 행동의 우선순위. 0~100.
+     * Utility 시스템 도입 후에도 폴백으로 유지.
+     */
     int priority(RebornNpc npc);
+
+    /**
+     * Utility 점수 (0.0 ~ 1.0). NpcBrain이 가장 높은 utility 행동 선택.
+     * 기본 구현: priority/100 (legacy 호환).
+     * Behavior가 Consideration 리스트를 가지면 override 권장.
+     */
+    default double utility(RebornNpc npc) {
+        return priority(npc) / 100.0;
+    }
+
+    /**
+     * 이 행동의 카테고리. 같은 카테고리 내에서는 hysteresis 적용 (전환 비용 감소).
+     * 예: CombatBehavior, RevengeBehavior 모두 "AGGRO" 카테고리 → 전환 부드러움.
+     */
+    default String category() { return id(); }
 
     /** 이 행동을 시작할 때 1회 호출. */
     default void start(RebornNpc npc) {}

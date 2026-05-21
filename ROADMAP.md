@@ -9,10 +9,10 @@
 지적: "단순 if문 8개 = 마크 빌리저 + α일 뿐"
 → 진짜 NPC는 성격·기억·욕구·장기목표를 가지고 **스스로** 결정해야 함.
 
-- ✓ Step 1.0: Behavior 골격 (이전 — 단순 priority 기반)
+- ✓ Step 1.0: Behavior 골격
 - ✓ Step 1.1: Personality + Memory + Needs
-- ⏳ **Step 1.2: Goals (장기 목표 — 야망·사랑·복수·창조)** (현재 완료)
-- Step 1.3: Utility-based 의사결정 (성격·욕구·기억·목표 종합)
+- ✓ Step 1.2: Goals (장기 목표)
+- ⏳ **Step 1.3: Utility-based 의사결정** (현재 완료)
 - Step 1.4: Social Network (관계 그래프·소문 전파)
 - Step 1.5: Faction Dynamics (파벌 형성·정치·전쟁)
 - Step 1.6: World Impact (NPC가 진짜로 가게·종교·왕국 만들어냄)

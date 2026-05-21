@@ -117,6 +117,21 @@ public final class NpcCommand implements CommandExecutor {
                                 + " §7(" + String.format("%.0f%%", g.progress) + ")");
                     }
                 }
+                // Utility 의사결정 스냅샷
+                if (ins.brain != null && !ins.brain.lastScores.isEmpty()) {
+                    s.sendMessage("§6--- Utility 점수 (마지막 결정) ---");
+                    ins.brain.lastScores.entrySet().stream()
+                            .sorted((a,b) -> Double.compare(b.getValue(), a.getValue()))
+                            .forEach(e -> {
+                                String color = e.getValue() > 0.7 ? "§c"
+                                        : e.getValue() > 0.4 ? "§e"
+                                        : e.getValue() > 0.2 ? "§7" : "§8";
+                                s.sendMessage("  " + color + e.getKey() + ": " + String.format("%.2f", e.getValue()));
+                            });
+                    s.sendMessage(String.format("§7현재 선택: §f%s §7(util %.2f)",
+                            ins.brain.current() != null ? ins.brain.current().id() : "-",
+                            ins.brain.currentUtility()));
+                }
                 if (!ins.goalsArchive.isEmpty()) {
                     s.sendMessage("§8과거 목표 " + ins.goalsArchive.size() + "개 (archive)");
                 }

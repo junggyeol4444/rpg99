@@ -15,10 +15,16 @@ import org.bukkit.entity.Mob;
 public final class IdleBehavior implements Behavior {
 
     @Override public String id() { return "idle"; }
+    @Override public String category() { return "BASE"; }
 
     @Override public int priority(RebornNpc npc) {
+        return (int) (utility(npc) * 100);
+    }
+
+    /** Idle은 항상 매우 낮은 baseline utility (0.05). 다른 모두 0일 때만 선택됨. */
+    @Override public double utility(RebornNpc npc) {
         if (npc.dead) return 0;
-        return 5; // 가장 낮은 우선순위
+        return 0.05;
     }
 
     @Override public void start(RebornNpc npc) {

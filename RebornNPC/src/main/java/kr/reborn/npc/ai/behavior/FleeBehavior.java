@@ -18,11 +18,36 @@ import org.bukkit.util.Vector;
 public final class FleeBehavior implements Behavior {
 
     @Override public String id() { return "flee"; }
+    @Override public String category() { return "AVOID"; }
 
     @Override public int priority(RebornNpc npc) {
-        if (npc.dead) return 0;
-        if (npc.emotion.get(Emotion.Kind.FEAR) > 70) return 95;
-        return 0;
+        return (int) (utility(npc) * 100);
+    }
+
+    /**
+     * Utility = 공포 × BRAVERY 반비례 × HP 낮음 × 위협 존재
+     * BRAVERY 100인 NPC는 공포 100이어도 utility ~0.2
+     * BRAVERY -100인 NPC는 공포 50에도 utility ~0.9
+     */
+    @Override public double utility(RebornNpc npc) {
+        if (npc.dead || npc.soul == null) return 0;
+        var p = npc.soul.personality;
+        double fearScore = kr.reborn.npc.ai.utility.ResponseCurve.sigmoid(
+                npc.emotion.get(Emotion.Kind.FEAR), 50, 0.1);
+        double braveryScore = kr.reborn.npc.ai.utility.ResponseCurve.linearInverted(
+                p.get(Personality.Trait.BRAVERY), -100, 100);
+        braveryScore = 0.2 + 0.8 * braveryScore;
+        // HP 낮을수록 도주 utility↑
+        double hpScore = 1.0;
+        if (npc.bukkitEntityId != null) {
+            var ent = org.bukkit.Bukkit.getEntity(npc.bukkitEntityId);
+            if (ent instanceof org.bukkit.entity.Mob mob) {
+                double r = mob.getHealth() / mob.getMaxHealth();
+                hpScore = kr.reborn.npc.ai.utility.ResponseCurve.linearInverted(r, 0, 0.5);
+                hpScore = 0.3 + 0.7 * hpScore;
+            }
+        }
+        return fearScore * braveryScore * hpScore;
     }
 
     @Override public void start(RebornNpc npc) {

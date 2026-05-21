@@ -22,12 +22,26 @@ import org.bukkit.entity.Mob;
 public final class ScheduleBehavior implements Behavior {
 
     @Override public String id() { return "schedule"; }
+    @Override public String category() { return "ROUTINE"; }
 
     @Override public int priority(RebornNpc npc) {
+        return (int) (utility(npc) * 100);
+    }
+
+    /**
+     * Utility = home/workplace 있음 × REST/FOOD 욕구 가중
+     * 욕구 잘 충족된 NPC는 일과 충실, 욕구 절박하면 다른 행동에 양보.
+     */
+    @Override public double utility(RebornNpc npc) {
         if (npc.dead) return 0;
-        // 직장 또는 집이 정의된 NPC만 일과 수행
         if (npc.home == null && npc.workplace == null) return 0;
-        return 20;
+        double base = 0.25;
+        if (npc.soul != null) {
+            double restScore = npc.soul.needs.get(kr.reborn.npc.soul.Needs.Kind.REST) / 100.0;
+            double foodScore = npc.soul.needs.get(kr.reborn.npc.soul.Needs.Kind.FOOD) / 100.0;
+            base *= 0.5 + 0.5 * Math.min(restScore, foodScore);
+        }
+        return base;
     }
 
     @Override public boolean tick(RebornNpc npc) {

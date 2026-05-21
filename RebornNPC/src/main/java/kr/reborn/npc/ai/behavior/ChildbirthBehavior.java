@@ -22,14 +22,26 @@ public final class ChildbirthBehavior implements Behavior {
     public ChildbirthBehavior(RebornNPC plugin) { this.plugin = plugin; }
 
     @Override public String id() { return "childbirth"; }
+    @Override public String category() { return "FAMILY"; }
 
     @Override public int priority(RebornNpc npc) {
+        return (int) (utility(npc) * 100);
+    }
+
+    /** Utility = 결혼 + 쿨 통과 시 0.15. GENEROSITY/EMPATHY 높으면 살짝 보너스. */
+    @Override public double utility(RebornNpc npc) {
         if (npc.dead) return 0;
         if (npc.spouseNpcId == null || npc.spouseNpcId.isEmpty()) return 0;
         long now = System.currentTimeMillis();
-        if (now - npc.lastMarriageAt < 86_400_000L * 7) return 0; // 결혼 7일 후
-        if (now - npc.lastChildAt < 86_400_000L * 30) return 0;   // 30일 쿨
-        return 15; // idle보다 약간 높음
+        if (now - npc.lastMarriageAt < 86_400_000L * 7) return 0;
+        if (now - npc.lastChildAt < 86_400_000L * 30) return 0;
+        double base = 0.15;
+        if (npc.soul != null) {
+            int emp = npc.soul.personality.get(kr.reborn.npc.soul.Personality.Trait.EMPATHY);
+            int gen = npc.soul.personality.get(kr.reborn.npc.soul.Personality.Trait.GENEROSITY);
+            base += Math.max(0, emp + gen) / 1000.0;
+        }
+        return Math.min(0.3, base);
     }
 
     @Override public boolean tick(RebornNpc npc) {

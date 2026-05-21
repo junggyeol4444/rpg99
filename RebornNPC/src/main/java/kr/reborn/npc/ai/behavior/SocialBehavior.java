@@ -26,19 +26,30 @@ public final class SocialBehavior implements Behavior {
     public SocialBehavior(RebornNPC plugin) { this.plugin = plugin; }
 
     @Override public String id() { return "social"; }
+    @Override public String category() { return "SOCIAL"; }
 
     @Override public int priority(RebornNpc npc) {
+        return (int) (utility(npc) * 100);
+    }
+
+    /**
+     * Utility = COMPANIONSHIP 부족 × SOCIABILITY × 근처 NPC 존재
+     * + LOVE 욕구 부족 보너스
+     * SOCIABILITY -50 이하면 거의 0 (은둔)
+     */
+    @Override public double utility(RebornNpc npc) {
         if (npc.dead || npc.soul == null) return 0;
         var p = npc.soul.personality;
         if (p.get(Personality.Trait.SOCIABILITY) < -50) return 0;
-
-        double comp = npc.soul.needs.get(Needs.Kind.COMPANIONSHIP);
-        double love = npc.soul.needs.get(Needs.Kind.LOVE);
-        int base = (int) Math.max(0, 50 - comp / 2);
-        if (love < 30) base += 10;
-        base += p.get(Personality.Trait.SOCIABILITY) / 5;
-        if (findNearby(npc) == null) base = Math.min(base, 20);
-        return Math.min(base, 50);
+        double socScore = kr.reborn.npc.ai.utility.ResponseCurve.linear(
+                p.get(Personality.Trait.SOCIABILITY), -50, 100);
+        socScore = 0.2 + 0.8 * socScore;
+        double compScore = kr.reborn.npc.ai.utility.ResponseCurve.linearInverted(
+                npc.soul.needs.get(Needs.Kind.COMPANIONSHIP), 0, 80);
+        double loveBonus = npc.soul.needs.get(Needs.Kind.LOVE) < 30 ? 1.3 : 1.0;
+        double nearbyScore = findNearby(npc) != null ? 1.0 : 0.2;
+        return Math.min(1.0, socScore * compScore * nearbyScore * loveBonus * 0.5);
+        // ×0.5 캡 — 사회 행동은 위급보다는 낮은 우선순위
     }
 
     @Override public boolean tick(RebornNpc npc) {

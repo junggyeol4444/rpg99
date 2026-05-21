@@ -22,6 +22,7 @@ public final class NpcCommand implements CommandExecutor {
         if (a.length == 0) {
             Msg.send(s, "&7/rnpc spawn <id> <name> [job] [faction] | remove <id> | list | setstat <id> <stat> <v>");
             Msg.send(s, "&7       | hermit <id> | sethome <id> | setwork <id> | inspect <id>");
+            Msg.send(s, "&7       | goals <id> | setgoal <id> <kind> [target] | abandon <id> <kind>");
             return true;
         }
         switch (a[0].toLowerCase()) {
@@ -108,6 +109,63 @@ public final class NpcCommand implements CommandExecutor {
                             + " §4원수 " + ins.soul.nemeses.size());
                     s.sendMessage("§7기억 수: §f" + ins.soul.memory.all().size() + "개");
                 }
+                // 활성 목표
+                if (!ins.goals.isEmpty()) {
+                    s.sendMessage("§6--- 활성 목표 ---");
+                    for (var g : ins.goals) {
+                        s.sendMessage("§e[" + g.priority + "] §f" + g.description
+                                + " §7(" + String.format("%.0f%%", g.progress) + ")");
+                    }
+                }
+                if (!ins.goalsArchive.isEmpty()) {
+                    s.sendMessage("§8과거 목표 " + ins.goalsArchive.size() + "개 (archive)");
+                }
+                break;
+            case "goals":
+                if (a.length < 2) return true;
+                RebornNpc gn = plugin.registry().get(a[1]);
+                if (gn == null) { Msg.error(s, "NPC 없음"); return true; }
+                Msg.send(s, "&6=== " + gn.displayName + " 활성 목표 ===");
+                if (gn.goals.isEmpty()) s.sendMessage("§7(없음 — 곧 새 목표 생성될 수 있음)");
+                for (var g : gn.goals) {
+                    s.sendMessage("§e[" + g.priority + "] §f" + g.kind + " §7→ " + g.target);
+                    s.sendMessage("    §f" + g.description + " §7(" + String.format("%.1f%%", g.progress) + ")");
+                }
+                Msg.send(s, "&7과거 목표 " + gn.goalsArchive.size() + "개:");
+                for (int i = Math.max(0, gn.goalsArchive.size() - 5); i < gn.goalsArchive.size(); i++) {
+                    var g = gn.goalsArchive.get(i);
+                    String mark = g.isFulfilled() ? "§a✓" : "§4✗";
+                    s.sendMessage("  " + mark + " §7" + g.description);
+                }
+                break;
+            case "setgoal":
+                if (a.length < 3) { Msg.error(s, "/rnpc setgoal <id> <KIND> [target]"); return true; }
+                RebornNpc sg = plugin.registry().get(a[1]);
+                if (sg == null) { Msg.error(s, "NPC 없음"); return true; }
+                try {
+                    var kind = kr.reborn.npc.soul.GoalKind.valueOf(a[2].toUpperCase());
+                    String target = a.length > 3 ? a[3] : "";
+                    var goal = new kr.reborn.npc.soul.Goal(kind, target,
+                            "[관리자 부여] " + kind.description);
+                    goal.priority = 80;
+                    sg.goals.add(goal);
+                    Msg.send(s, "&a목표 부여: " + kind.description);
+                } catch (Exception e) {
+                    Msg.error(s, "유효한 KIND: GAIN_POWER, SERVE_LORD, FOUND_TOWN, FOUND_RELIGION, DEFEAT_RIVAL, GAIN_WEALTH, START_BUSINESS, FIND_LOVE, PROTECT_FAMILY, AVENGE, MASTER_ART, EXPLORE, ACCUMULATE_KNOWLEDGE, ASCEND, DESTROY_RIVAL_FACTION, BETRAY, HIDE");
+                }
+                break;
+            case "abandon":
+                if (a.length < 3) return true;
+                RebornNpc ab = plugin.registry().get(a[1]);
+                if (ab == null) { Msg.error(s, "NPC 없음"); return true; }
+                try {
+                    var kind = kr.reborn.npc.soul.GoalKind.valueOf(a[2].toUpperCase());
+                    int removed = 0;
+                    for (var g : new java.util.ArrayList<>(ab.goals)) {
+                        if (g.kind == kind) { g.abandoned = true; removed++; }
+                    }
+                    Msg.send(s, "&7" + removed + "개 목표 포기.");
+                } catch (Exception ignored) {}
                 break;
         }
         return true;

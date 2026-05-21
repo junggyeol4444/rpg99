@@ -115,22 +115,34 @@ public final class NpcInteractListener implements Listener {
         npc.deathAt = System.currentTimeMillis();
         if (e.getEntity().getKiller() != null) {
             npc.killerId = e.getEntity().getKiller().getUniqueId();
-            // 친구·가족 NPC에게 사망 기억 전파
             String killerStr = npc.killerId.toString();
+            // 살해자에게 KILLED_TARGET 이벤트 발생 (자기 목표 AVENGE/DEFEAT_RIVAL 완료)
+            var killerNpc = plugin.registry().byEntity(npc.killerId);
+            if (killerNpc != null) {
+                plugin.registry().goalProgressor().onEvent(killerNpc,
+                        new kr.reborn.npc.soul.GoalProgressor.Event(
+                                kr.reborn.npc.soul.GoalProgressor.EventKind.KILLED_TARGET, npc.id));
+            }
             for (RebornNpc other : plugin.registry().all()) {
                 if (other == npc || other.dead || other.soul == null) continue;
                 double rel = other.soul.relationToward(npc.id);
                 if (rel >= 70) {
-                    // 가족
                     other.soul.memory.record(killerStr, Memory.Kind.KILLED_MY_FAMILY, 100, "가족 살해");
                     other.emotion.add(Emotion.Kind.ANGER, 60);
                     other.emotion.add(Emotion.Kind.SADNESS, 50);
+                    // PROTECT_FAMILY 목표 실패
+                    plugin.registry().goalProgressor().onEvent(other,
+                            new kr.reborn.npc.soul.GoalProgressor.Event(
+                                    kr.reborn.npc.soul.GoalProgressor.EventKind.FAMILY_LOST, npc.id));
                 } else if (rel >= 40) {
-                    // 친구
                     other.soul.memory.record(killerStr, Memory.Kind.KILLED_MY_FRIEND, 80, "친구 살해");
                     other.emotion.add(Emotion.Kind.ANGER, 40);
                     other.emotion.add(Emotion.Kind.SADNESS, 30);
                 }
+                // 주군 사망 → SERVE_LORD 무효
+                plugin.registry().goalProgressor().onEvent(other,
+                        new kr.reborn.npc.soul.GoalProgressor.Event(
+                                kr.reborn.npc.soul.GoalProgressor.EventKind.LORD_DIED, npc.id));
             }
         }
         Bukkit.broadcastMessage("§7§o[NPC 사망] §r" + npc.displayName + "이(가) 쓰러졌다.");

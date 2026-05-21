@@ -130,6 +130,13 @@ public final class SocialBehavior implements Behavior {
         b.soul.family.add(a.id);
         a.soul.needs.add(Needs.Kind.LOVE, +50);
         b.soul.needs.add(Needs.Kind.LOVE, +50);
+        // FIND_LOVE 목표 완료 이벤트
+        plugin.registry().goalProgressor().onEvent(a,
+                new kr.reborn.npc.soul.GoalProgressor.Event(
+                        kr.reborn.npc.soul.GoalProgressor.EventKind.MARRIED, b.id));
+        plugin.registry().goalProgressor().onEvent(b,
+                new kr.reborn.npc.soul.GoalProgressor.Event(
+                        kr.reborn.npc.soul.GoalProgressor.EventKind.MARRIED, a.id));
         Bukkit.broadcastMessage("§d§l[NPC 결혼] §f" + a.displayName + " ❤ " + b.displayName);
     }
 }

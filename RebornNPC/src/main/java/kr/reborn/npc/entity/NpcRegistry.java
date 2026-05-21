@@ -29,9 +29,13 @@ public final class NpcRegistry {
     private final RebornNPC plugin;
     private final ConcurrentHashMap<String, RebornNpc> byId = new ConcurrentHashMap<>();
     private final EnumMap<Emotion.Kind, Double> decayRates = new EnumMap<>(Emotion.Kind.class);
+    private final kr.reborn.npc.soul.GoalGenerator goalGenerator;
+    private final kr.reborn.npc.soul.GoalProgressor goalProgressor;
 
     public NpcRegistry(RebornNPC plugin) {
         this.plugin = plugin;
+        this.goalGenerator = new kr.reborn.npc.soul.GoalGenerator(plugin);
+        this.goalProgressor = new kr.reborn.npc.soul.GoalProgressor(plugin);
         var s = plugin.getConfig().getConfigurationSection("emotion-decay-rate");
         for (Emotion.Kind k : Emotion.Kind.values()) {
             decayRates.put(k, s == null ? 0.5 : s.getDouble(k.name().toLowerCase(), 0.5));
@@ -94,8 +98,12 @@ public final class NpcRegistry {
         brain.register(new SocialBehavior(plugin));
         brain.register(new RevengeBehavior(plugin));
         brain.register(new ChildbirthBehavior(plugin));
+        brain.register(new kr.reborn.npc.ai.behavior.PursueGoalBehavior(plugin));
         n.brain = brain;
     }
+
+    public kr.reborn.npc.soul.GoalGenerator goalGenerator() { return goalGenerator; }
+    public kr.reborn.npc.soul.GoalProgressor goalProgressor() { return goalProgressor; }
 
     public void tickAll() {
         for (RebornNpc n : byId.values()) {
@@ -107,6 +115,17 @@ public final class NpcRegistry {
                 n.soul.ageYears += 1.0 / (60.0 * 60.0 * 24.0 * 365.0)
                         * (plugin.getConfig().getLong("ai-tick-interval", 10L) * 50.0 / 1000.0);
             }
+            // 목표 — 자연 진행 + 새 목표 검토
+            goalProgressor.tick(n);
+            goalGenerator.considerNewGoal(n);
+            // 완료된 목표는 archive로 이동
+            n.goals.removeIf(g -> {
+                if (g.isFulfilled() || g.abandoned) {
+                    n.goalsArchive.add(g);
+                    return true;
+                }
+                return false;
+            });
             // entity가 살아있나 확인
             if (n.bukkitEntityId != null) {
                 var ent = Bukkit.getEntity(n.bukkitEntityId);

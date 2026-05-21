@@ -33,6 +33,10 @@ public class RebornNpc {
     public final Relations relations = new Relations();
     /** 영혼 — 성격·기억·욕구. 진짜 의사결정의 핵심. */
     public Soul soul;
+    /** 활성 장기 목표 (최대 3개). */
+    public final java.util.List<kr.reborn.npc.soul.Goal> goals = new java.util.ArrayList<>();
+    /** 완료/포기된 과거 목표 (행복·기억에 영향). */
+    public final java.util.List<kr.reborn.npc.soul.Goal> goalsArchive = new java.util.ArrayList<>();
 
     /** Brain — 의사결정 컨트롤러. 생성 시 등록. */
     public transient NpcBrain brain;

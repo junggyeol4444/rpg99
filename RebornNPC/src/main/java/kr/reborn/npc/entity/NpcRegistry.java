@@ -45,6 +45,8 @@ public final class NpcRegistry {
         RebornNpc n = new RebornNpc(id, name, world, loc);
         n.faction = faction;
         n.job = job;
+        // 직업 기반 성격 부여 (자녀 NPC는 ChildbirthBehavior에서 부모 평균 성격으로 덮어씀)
+        n.soul = new kr.reborn.npc.soul.Soul(kr.reborn.npc.soul.Personality.fromJob(job));
         byId.put(id, n);
         materialize(n);
         return n;
@@ -99,11 +101,16 @@ public final class NpcRegistry {
         for (RebornNpc n : byId.values()) {
             if (n.dead) continue;
             n.emotion.decay(decayRates);
+            // 영혼 — 욕구 자연 감쇠, 가상 나이 누적
+            if (n.soul != null) {
+                n.soul.needs.decay();
+                n.soul.ageYears += 1.0 / (60.0 * 60.0 * 24.0 * 365.0)
+                        * (plugin.getConfig().getLong("ai-tick-interval", 10L) * 50.0 / 1000.0);
+            }
             // entity가 살아있나 확인
             if (n.bukkitEntityId != null) {
                 var ent = Bukkit.getEntity(n.bukkitEntityId);
                 if (ent == null || ent.isDead()) {
-                    // 엔티티가 죽었거나 청크 언로드 — RIP
                     if (ent != null && ent.isDead()) {
                         n.dead = true;
                         n.deathAt = System.currentTimeMillis();
@@ -112,12 +119,11 @@ public final class NpcRegistry {
                     continue;
                 }
                 if (ent instanceof Mob mob) {
-                    // 위치 sync
                     n.location = mob.getLocation();
                 }
             }
             if (n.brain != null) n.brain.tick();
-            else SimpleAI.step(n);  // fallback
+            else SimpleAI.step(n);
         }
     }
 

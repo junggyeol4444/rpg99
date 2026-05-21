@@ -4,10 +4,14 @@ import kr.reborn.core.event.RebornNPCInteractEvent;
 import kr.reborn.npc.RebornNPC;
 import kr.reborn.npc.emotion.Emotion;
 import kr.reborn.npc.entity.RebornNpc;
+import kr.reborn.npc.soul.Memory;
+import kr.reborn.npc.soul.Needs;
+import kr.reborn.npc.soul.Personality;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 
 public final class NpcInteractListener implements Listener {
@@ -22,10 +26,39 @@ public final class NpcInteractListener implements Listener {
         if (npc == null) return;
         e.setCancelled(true);
         Bukkit.getPluginManager().callEvent(new RebornNPCInteractEvent(e.getPlayer(), npc.id));
-        // 호감도 상승
+
+        // 호감도 + 호기심
         npc.relations.addPlayer(e.getPlayer().getUniqueId(), 0.5);
         npc.emotion.add(Emotion.Kind.CURIOSITY, 1.0);
-        e.getPlayer().sendMessage("§6[" + npc.displayName + "] §f무슨 일이오?");
+
+        // 영혼이 있으면 욕구·기억 갱신
+        if (npc.soul != null) {
+            npc.soul.needs.add(Needs.Kind.COMPANIONSHIP, +2);
+            // 선물 — 손에 든 아이템 있으면 기록
+            var item = e.getPlayer().getInventory().getItemInMainHand();
+            if (item != null && !item.getType().isAir()) {
+                npc.soul.memory.record(e.getPlayer().getUniqueId().toString(),
+                        Memory.Kind.GIFTED_ME, 15, item.getType().name());
+            }
+            // 매번 만나면 약한 우호 기억
+            npc.soul.memory.record(e.getPlayer().getUniqueId().toString(),
+                    Memory.Kind.HELPED_ME, 2, "대화");
+        }
+
+        // 성격에 따른 인사말
+        String greeting = "무슨 일이오?";
+        if (npc.soul != null) {
+            int empathy = npc.soul.personality.get(Personality.Trait.EMPATHY);
+            int pride = npc.soul.personality.get(Personality.Trait.PRIDE);
+            int soc = npc.soul.personality.get(Personality.Trait.SOCIABILITY);
+            double sent = npc.soul.relationToward(e.getPlayer().getUniqueId().toString());
+            if (sent > 60) greeting = "오, 자네 왔는가! 늘 반갑네.";
+            else if (sent < -40) greeting = "...왜 또 왔나.";
+            else if (pride > 50) greeting = "감히 나에게 말을 거는가?";
+            else if (empathy > 50) greeting = "오, 반갑네. 무엇이 필요한가?";
+            else if (soc < -30) greeting = "...";
+        }
+        e.getPlayer().sendMessage("§6[" + npc.displayName + "] §f" + greeting);
 
         // 환생의 여신 클릭 시 룰렛 발동
         if ("reincarnation_goddess".equals(npc.id)) {
@@ -58,7 +91,15 @@ public final class NpcInteractListener implements Listener {
         npc.emotion.add(Emotion.Kind.FEAR, 15);
         if (e.getDamager() instanceof org.bukkit.entity.Player p) {
             npc.relations.addPlayer(p.getUniqueId(), -5);
-            // 적대 플레이어로 기록 (다음 NPC AI tick에서 CombatBehavior가 자동 인식)
+            // 영혼 — 공격 기억 기록
+            if (npc.soul != null) {
+                int intensity = (int) Math.min(50, e.getFinalDamage() * 3);
+                npc.soul.memory.record(p.getUniqueId().toString(),
+                        Memory.Kind.ATTACKED_ME, intensity, "피격");
+                npc.soul.reclassify(p.getUniqueId().toString());
+                // 안전 욕구 감소
+                npc.soul.needs.add(Needs.Kind.SAFETY, -10);
+            }
             if (npc.relations.player(p.getUniqueId()) < -50) {
                 npc.aiData.put("revenge:target", p.getUniqueId());
                 npc.aiData.put("revenge:until", System.currentTimeMillis() + 1_800_000L);
@@ -66,15 +107,31 @@ public final class NpcInteractListener implements Listener {
         }
     }
 
-    /** NPC 엔티티 사망 시 — killerId 기록 + 친한 NPC 복수 트리거 (NpcRegistry.tickAll가 감지) */
     @EventHandler
-    public void onDeath(org.bukkit.event.entity.EntityDeathEvent e) {
+    public void onDeath(EntityDeathEvent e) {
         var npc = plugin.registry().byEntity(e.getEntity().getUniqueId());
         if (npc == null) return;
         npc.dead = true;
         npc.deathAt = System.currentTimeMillis();
         if (e.getEntity().getKiller() != null) {
             npc.killerId = e.getEntity().getKiller().getUniqueId();
+            // 친구·가족 NPC에게 사망 기억 전파
+            String killerStr = npc.killerId.toString();
+            for (RebornNpc other : plugin.registry().all()) {
+                if (other == npc || other.dead || other.soul == null) continue;
+                double rel = other.soul.relationToward(npc.id);
+                if (rel >= 70) {
+                    // 가족
+                    other.soul.memory.record(killerStr, Memory.Kind.KILLED_MY_FAMILY, 100, "가족 살해");
+                    other.emotion.add(Emotion.Kind.ANGER, 60);
+                    other.emotion.add(Emotion.Kind.SADNESS, 50);
+                } else if (rel >= 40) {
+                    // 친구
+                    other.soul.memory.record(killerStr, Memory.Kind.KILLED_MY_FRIEND, 80, "친구 살해");
+                    other.emotion.add(Emotion.Kind.ANGER, 40);
+                    other.emotion.add(Emotion.Kind.SADNESS, 30);
+                }
+            }
         }
         Bukkit.broadcastMessage("§7§o[NPC 사망] §r" + npc.displayName + "이(가) 쓰러졌다.");
     }

@@ -53,6 +53,26 @@ public final class ChildbirthBehavior implements Behavior {
             for (var e : spouse.stats.entrySet()) {
                 child.stats.merge(e.getKey(), e.getValue() * 0.025, Double::sum);
             }
+            // 부모 성격 평균 + 작은 변이로 자녀 성격 유전
+            if (npc.soul != null && spouse.soul != null && child.soul != null) {
+                for (var trait : kr.reborn.npc.soul.Personality.Trait.values()) {
+                    int avg = (npc.soul.personality.get(trait) + spouse.soul.personality.get(trait)) / 2;
+                    int variation = kr.reborn.core.util.Rand.range(-15, 15);
+                    child.soul.personality.set(trait, avg + variation);
+                }
+                // 자녀는 신생아 (가상 나이 0)
+                child.soul.ageYears = 0;
+                // 부모를 가족으로 자동 등록
+                child.soul.family.add(npc.id);
+                child.soul.family.add(spouse.id);
+                npc.soul.family.add(childId);
+                spouse.soul.family.add(childId);
+                // 부모는 LOVE·ACHIEVEMENT 욕구 충족
+                npc.soul.needs.add(kr.reborn.npc.soul.Needs.Kind.LOVE, +20);
+                npc.soul.needs.add(kr.reborn.npc.soul.Needs.Kind.ACHIEVEMENT, +30);
+                spouse.soul.needs.add(kr.reborn.npc.soul.Needs.Kind.LOVE, +20);
+                spouse.soul.needs.add(kr.reborn.npc.soul.Needs.Kind.ACHIEVEMENT, +30);
+            }
             child.home = npc.home;
             npc.children.add(childId);
             spouse.children.add(childId);

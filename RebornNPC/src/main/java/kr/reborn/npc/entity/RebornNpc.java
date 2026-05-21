@@ -4,6 +4,8 @@ import kr.reborn.core.data.WorldKey;
 import kr.reborn.npc.ai.NpcBrain;
 import kr.reborn.npc.emotion.Emotion;
 import kr.reborn.npc.relation.Relations;
+import kr.reborn.npc.soul.Personality;
+import kr.reborn.npc.soul.Soul;
 import org.bukkit.Location;
 import org.bukkit.entity.Villager;
 
@@ -29,6 +31,8 @@ public class RebornNpc {
     public final Map<String, Double> stats = new HashMap<>();
     public final Emotion emotion = new Emotion();
     public final Relations relations = new Relations();
+    /** 영혼 — 성격·기억·욕구. 진짜 의사결정의 핵심. */
+    public Soul soul;
 
     /** Brain — 의사결정 컨트롤러. 생성 시 등록. */
     public transient NpcBrain brain;
@@ -61,6 +65,7 @@ public class RebornNpc {
 
     public RebornNpc(String id, String displayName, WorldKey world, Location location) {
         this.id = id; this.displayName = displayName; this.world = world; this.location = location;
+        this.soul = new Soul(Personality.random());  // 기본 무작위. job 설정 시 fromJob으로 교체.
     }
 
     public double totalStats() {

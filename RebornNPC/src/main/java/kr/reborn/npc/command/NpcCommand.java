@@ -89,6 +89,25 @@ public final class NpcCommand implements CommandExecutor {
                         + " §a기쁨 " + (int)ins.emotion.get(kr.reborn.npc.emotion.Emotion.Kind.HAPPINESS)
                         + " §b신뢰 " + (int)ins.emotion.get(kr.reborn.npc.emotion.Emotion.Kind.TRUST));
                 s.sendMessage("§7stats total: §f" + (int)ins.totalStats() + " (hermit eff: " + (int)ins.effectiveTotal() + ")");
+                if (ins.soul != null) {
+                    s.sendMessage("§6--- 영혼 ---");
+                    s.sendMessage("§7성격: " + ins.soul.personality.summary());
+                    s.sendMessage(String.format("§7나이: §f%.1f년 §7행복: §f%.0f",
+                            ins.soul.ageYears, ins.soul.happiness()));
+                    var nn = ins.soul.needs;
+                    s.sendMessage(String.format("§7욕구: §c음식%.0f §6휴식%.0f §e안전%.0f §a사교%.0f §d사랑%.0f §b지위%.0f",
+                            nn.get(kr.reborn.npc.soul.Needs.Kind.FOOD),
+                            nn.get(kr.reborn.npc.soul.Needs.Kind.REST),
+                            nn.get(kr.reborn.npc.soul.Needs.Kind.SAFETY),
+                            nn.get(kr.reborn.npc.soul.Needs.Kind.COMPANIONSHIP),
+                            nn.get(kr.reborn.npc.soul.Needs.Kind.LOVE),
+                            nn.get(kr.reborn.npc.soul.Needs.Kind.STATUS)));
+                    s.sendMessage("§7관계: §a가족 " + ins.soul.family.size()
+                            + " §b친구 " + ins.soul.friends.size()
+                            + " §6라이벌 " + ins.soul.rivals.size()
+                            + " §4원수 " + ins.soul.nemeses.size());
+                    s.sendMessage("§7기억 수: §f" + ins.soul.memory.all().size() + "개");
+                }
                 break;
         }
         return true;

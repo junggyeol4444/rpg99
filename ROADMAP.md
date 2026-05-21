@@ -4,13 +4,18 @@
 
 ## Phase 1 — 기반 시스템 깊이 (모든 세계 공통)
 
-### Step 1: NPC AI 행동 트리 ⏳ (현재 진행)
-- Behavior 인터페이스 + Goal-based 의사결정
-- Pathfinder 기반 진짜 이동
-- 일과 (출근·퇴근·시장·기도·수면)
-- 감정→행동 자동 연결
-- NPC끼리 대화·관계도 갱신
-- 사망·복수 트리거
+### Step 1: 진짜 자율 NPC (sub-step으로 분할)
+
+지적: "단순 if문 8개 = 마크 빌리저 + α일 뿐"
+→ 진짜 NPC는 성격·기억·욕구·장기목표를 가지고 **스스로** 결정해야 함.
+
+- ✓ Step 1.0: Behavior 골격 (이전 — 단순 priority 기반)
+- ⏳ **Step 1.1: Personality + Memory + Needs** (현재)
+- Step 1.2: Goals (장기 목표 — 야망·사랑·복수·창조)
+- Step 1.3: Utility-based 의사결정 (성격·욕구·기억·목표 종합)
+- Step 1.4: Social Network (관계 그래프·소문 전파)
+- Step 1.5: Faction Dynamics (파벌 형성·정치·전쟁)
+- Step 1.6: World Impact (NPC가 진짜로 가게·종교·왕국 만들어냄)
 
 ### Step 2: 스킬 효과 진짜 구현
 - 투사체 (Snowball/Arrow custom 기반)

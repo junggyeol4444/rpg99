@@ -55,8 +55,27 @@ public final class NpcInteractListener implements Listener {
         if (npc == null) return;
         npc.emotion.add(Emotion.Kind.ANGER, 25);
         npc.emotion.add(Emotion.Kind.TRUST, -10);
+        npc.emotion.add(Emotion.Kind.FEAR, 15);
         if (e.getDamager() instanceof org.bukkit.entity.Player p) {
             npc.relations.addPlayer(p.getUniqueId(), -5);
+            // 적대 플레이어로 기록 (다음 NPC AI tick에서 CombatBehavior가 자동 인식)
+            if (npc.relations.player(p.getUniqueId()) < -50) {
+                npc.aiData.put("revenge:target", p.getUniqueId());
+                npc.aiData.put("revenge:until", System.currentTimeMillis() + 1_800_000L);
+            }
         }
+    }
+
+    /** NPC 엔티티 사망 시 — killerId 기록 + 친한 NPC 복수 트리거 (NpcRegistry.tickAll가 감지) */
+    @EventHandler
+    public void onDeath(org.bukkit.event.entity.EntityDeathEvent e) {
+        var npc = plugin.registry().byEntity(e.getEntity().getUniqueId());
+        if (npc == null) return;
+        npc.dead = true;
+        npc.deathAt = System.currentTimeMillis();
+        if (e.getEntity().getKiller() != null) {
+            npc.killerId = e.getEntity().getKiller().getUniqueId();
+        }
+        Bukkit.broadcastMessage("§7§o[NPC 사망] §r" + npc.displayName + "이(가) 쓰러졌다.");
     }
 }

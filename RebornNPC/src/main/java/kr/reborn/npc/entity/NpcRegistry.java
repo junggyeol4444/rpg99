@@ -2,12 +2,22 @@ package kr.reborn.npc.entity;
 
 import kr.reborn.core.data.WorldKey;
 import kr.reborn.npc.RebornNPC;
+import kr.reborn.npc.ai.NpcBrain;
 import kr.reborn.npc.ai.SimpleAI;
+import kr.reborn.npc.ai.behavior.ChildbirthBehavior;
+import kr.reborn.npc.ai.behavior.CombatBehavior;
+import kr.reborn.npc.ai.behavior.FleeBehavior;
+import kr.reborn.npc.ai.behavior.IdleBehavior;
+import kr.reborn.npc.ai.behavior.PatrolBehavior;
+import kr.reborn.npc.ai.behavior.RevengeBehavior;
+import kr.reborn.npc.ai.behavior.ScheduleBehavior;
+import kr.reborn.npc.ai.behavior.SocialBehavior;
 import kr.reborn.npc.emotion.Emotion;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Mob;
 
 import java.io.File;
 import java.util.EnumMap;
@@ -55,14 +65,73 @@ public final class NpcRegistry {
         var v = w.spawn(n.location, n.defaultEntity());
         v.setCustomName(n.displayName);
         v.setCustomNameVisible(true);
-        v.setAI(false);
+        v.setAI(true);  // 진짜 AI 켬 — Pathfinder 활용
+        v.setRemoveWhenFarAway(false);  // 청크 언로드되도 유지
+        v.setInvulnerable(false);
+        // HP·공격력 stat 적용
+        try {
+            double maxHp = Math.max(20, n.stats.getOrDefault("ENDURANCE", 20.0) * 2);
+            var attr = v.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH);
+            if (attr != null) { attr.setBaseValue(maxHp); v.setHealth(maxHp); }
+            var dmg = v.getAttribute(org.bukkit.attribute.Attribute.GENERIC_ATTACK_DAMAGE);
+            if (dmg != null) dmg.setBaseValue(Math.max(1, n.stats.getOrDefault("STRENGTH", 5.0)));
+        } catch (Throwable ignored) {}
         n.bukkitEntityId = v.getUniqueId();
+        attachBrain(n);
+    }
+
+    /** RebornNpc에 NpcBrain을 등록하고 표준 Behavior 9종 부착. */
+    public void attachBrain(RebornNpc n) {
+        if (n.brain != null) return;
+        NpcBrain brain = new NpcBrain(n);
+        brain.register(new IdleBehavior());
+        brain.register(new ScheduleBehavior());
+        brain.register(new PatrolBehavior());
+        brain.register(new CombatBehavior(plugin));
+        brain.register(new FleeBehavior());
+        brain.register(new SocialBehavior(plugin));
+        brain.register(new RevengeBehavior(plugin));
+        brain.register(new ChildbirthBehavior(plugin));
+        n.brain = brain;
     }
 
     public void tickAll() {
         for (RebornNpc n : byId.values()) {
+            if (n.dead) continue;
             n.emotion.decay(decayRates);
-            SimpleAI.step(n);
+            // entity가 살아있나 확인
+            if (n.bukkitEntityId != null) {
+                var ent = Bukkit.getEntity(n.bukkitEntityId);
+                if (ent == null || ent.isDead()) {
+                    // 엔티티가 죽었거나 청크 언로드 — RIP
+                    if (ent != null && ent.isDead()) {
+                        n.dead = true;
+                        n.deathAt = System.currentTimeMillis();
+                        triggerRevengeForFriends(n);
+                    }
+                    continue;
+                }
+                if (ent instanceof Mob mob) {
+                    // 위치 sync
+                    n.location = mob.getLocation();
+                }
+            }
+            if (n.brain != null) n.brain.tick();
+            else SimpleAI.step(n);  // fallback
+        }
+    }
+
+    /** NPC 사망 시 친한 NPC들에게 복수 트리거 등록. */
+    private void triggerRevengeForFriends(RebornNpc dead) {
+        if (dead.killerId == null) return;
+        for (RebornNpc other : byId.values()) {
+            if (other.dead || other == dead) continue;
+            if (other.relations.npc(dead.id) >= 50) {
+                other.aiData.put("revenge:target", dead.killerId);
+                other.aiData.put("revenge:until", System.currentTimeMillis() + 3_600_000L); // 1시간
+                other.emotion.add(Emotion.Kind.ANGER, 50);
+                other.emotion.add(Emotion.Kind.SADNESS, 30);
+            }
         }
     }
 
@@ -114,20 +183,44 @@ public final class NpcRegistry {
             if (bw == null) continue;
             Location loc = new Location(bw,
                     y.getDouble(id + ".x"), y.getDouble(id + ".y"), y.getDouble(id + ".z"));
-            // 사전 정의 데이터가 있으면 좌표만 갱신 후 스폰
+            RebornNpc target;
             RebornNpc existing = byId.get(id);
             if (existing != null) {
                 existing.location = loc;
                 materialize(existing);
+                target = existing;
             } else {
-                RebornNpc n = spawn(id, name, world, loc,
+                target = spawn(id, name, world, loc,
                         y.getString(id + ".faction", ""), y.getString(id + ".job", "VILLAGER"));
-                n.hermit = y.getBoolean(id + ".hermit", false);
+                target.hermit = y.getBoolean(id + ".hermit", false);
                 var stSec = y.getConfigurationSection(id + ".stats");
                 if (stSec != null) {
-                    for (String key : stSec.getKeys(false)) n.stats.put(key, stSec.getDouble(key));
+                    for (String key : stSec.getKeys(false)) target.stats.put(key, stSec.getDouble(key));
                 }
             }
+            // home, workplace 선택적 좌표
+            if (y.contains(id + ".home")) {
+                target.home = new Location(bw,
+                        y.getDouble(id + ".home.x"), y.getDouble(id + ".home.y"), y.getDouble(id + ".home.z"));
+            }
+            if (y.contains(id + ".workplace")) {
+                target.workplace = new Location(bw,
+                        y.getDouble(id + ".workplace.x"), y.getDouble(id + ".workplace.y"), y.getDouble(id + ".workplace.z"));
+            }
+            // 신·여신 등은 일과·전투 비활성화 (브레인 비우기)
+            String job = target.job;
+            if ("GODDESS".equals(job) || "GOD".equals(job)
+                    || "DEMON_LORD".equals(job) || "ARCHANGEL".equals(job)
+                    || "SPIRIT_KING".equals(job) || "PRIMORDIAL".equals(job)) {
+                target.brain = null;
+                var ent = target.bukkitEntityId == null ? null : Bukkit.getEntity(target.bukkitEntityId);
+                if (ent instanceof Mob mob) mob.setAI(false);
+            }
+            // 결혼·자녀·사망 복원
+            target.spouseNpcId = y.getString(id + ".spouse", "");
+            var children = y.getStringList(id + ".children");
+            if (!children.isEmpty()) target.children.addAll(children);
+            target.dead = y.getBoolean(id + ".dead", false);
         }
     }
 
@@ -147,6 +240,19 @@ public final class NpcRegistry {
             y.set(b + "faction", n.faction);
             y.set(b + "job", n.job);
             y.set(b + "hermit", n.hermit);
+            if (n.home != null) {
+                y.set(b + "home.x", n.home.getX());
+                y.set(b + "home.y", n.home.getY());
+                y.set(b + "home.z", n.home.getZ());
+            }
+            if (n.workplace != null) {
+                y.set(b + "workplace.x", n.workplace.getX());
+                y.set(b + "workplace.y", n.workplace.getY());
+                y.set(b + "workplace.z", n.workplace.getZ());
+            }
+            if (!n.spouseNpcId.isEmpty()) y.set(b + "spouse", n.spouseNpcId);
+            if (!n.children.isEmpty()) y.set(b + "children", n.children);
+            y.set(b + "dead", n.dead);
             for (var e : n.stats.entrySet()) y.set(b + "stats." + e.getKey(), e.getValue());
         }
         try { y.save(f); } catch (Exception ignored) {}

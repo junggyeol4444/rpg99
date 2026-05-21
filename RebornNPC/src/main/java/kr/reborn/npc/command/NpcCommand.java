@@ -20,7 +20,8 @@ public final class NpcCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender s, @NotNull Command c,
                              @NotNull String l, @NotNull String[] a) {
         if (a.length == 0) {
-            Msg.send(s, "&7/rnpc spawn <id> <name> [job] [faction]  |  remove <id>  |  list  |  setstat <id> <stat> <v>  |  hermit <id>");
+            Msg.send(s, "&7/rnpc spawn <id> <name> [job] [faction] | remove <id> | list | setstat <id> <stat> <v>");
+            Msg.send(s, "&7       | hermit <id> | sethome <id> | setwork <id> | inspect <id>");
             return true;
         }
         switch (a[0].toLowerCase()) {
@@ -40,7 +41,10 @@ public final class NpcCommand implements CommandExecutor {
             case "list":
                 Msg.send(s, "&6총 " + plugin.registry().all().size() + "개 NPC");
                 for (RebornNpc nn : plugin.registry().all()) {
-                    s.sendMessage("§e" + nn.id + " §f" + nn.displayName + " §7(" + nn.world + " " + nn.state + ")");
+                    String brain = nn.brain != null && nn.brain.current() != null
+                            ? nn.brain.current().id() : "-";
+                    s.sendMessage("§e" + nn.id + " §f" + nn.displayName
+                            + " §7(" + nn.world + " " + nn.state + " " + brain + ")");
                 }
                 break;
             case "setstat":
@@ -55,6 +59,36 @@ public final class NpcCommand implements CommandExecutor {
                 if (h == null) { Msg.error(s, "NPC 없음"); return true; }
                 h.hermit = true;
                 Msg.send(s, h.id + " 은둔고수로 표시.");
+                break;
+            case "sethome":
+                if (!(s instanceof Player ph) || a.length < 2) return true;
+                RebornNpc hn = plugin.registry().get(a[1]);
+                if (hn == null) { Msg.error(s, "NPC 없음"); return true; }
+                hn.home = ph.getLocation();
+                Msg.send(s, hn.id + " 집 좌표 설정");
+                break;
+            case "setwork":
+                if (!(s instanceof Player pw) || a.length < 2) return true;
+                RebornNpc wn = plugin.registry().get(a[1]);
+                if (wn == null) { Msg.error(s, "NPC 없음"); return true; }
+                wn.workplace = pw.getLocation();
+                Msg.send(s, wn.id + " 직장 좌표 설정");
+                break;
+            case "inspect":
+                if (a.length < 2) return true;
+                RebornNpc ins = plugin.registry().get(a[1]);
+                if (ins == null) { Msg.error(s, "NPC 없음"); return true; }
+                Msg.send(s, "&6=== " + ins.displayName + " (" + ins.id + ") ===");
+                s.sendMessage("§7state: §f" + ins.state + " §7brain: §f"
+                        + (ins.brain != null && ins.brain.current() != null ? ins.brain.current().id() : "-"));
+                s.sendMessage("§7faction: §f" + ins.faction + " §7job: §f" + ins.job);
+                s.sendMessage("§7spouse: §f" + (ins.spouseNpcId.isEmpty() ? "-" : ins.spouseNpcId)
+                        + " §7children: §f" + ins.children.size());
+                s.sendMessage("§7emotion: §c분노 " + (int)ins.emotion.get(kr.reborn.npc.emotion.Emotion.Kind.ANGER)
+                        + " §e공포 " + (int)ins.emotion.get(kr.reborn.npc.emotion.Emotion.Kind.FEAR)
+                        + " §a기쁨 " + (int)ins.emotion.get(kr.reborn.npc.emotion.Emotion.Kind.HAPPINESS)
+                        + " §b신뢰 " + (int)ins.emotion.get(kr.reborn.npc.emotion.Emotion.Kind.TRUST));
+                s.sendMessage("§7stats total: §f" + (int)ins.totalStats() + " (hermit eff: " + (int)ins.effectiveTotal() + ")");
                 break;
         }
         return true;

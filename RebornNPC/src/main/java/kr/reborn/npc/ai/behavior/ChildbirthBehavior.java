@@ -79,6 +79,17 @@ public final class ChildbirthBehavior implements Behavior {
                 child.soul.family.add(spouse.id);
                 npc.soul.family.add(childId);
                 spouse.soul.family.add(childId);
+                // 사회망에 혈연(KIN) 관계 등록
+                var net = plugin.registry().socialNetwork();
+                net.setRelation(npc.id, childId, kr.reborn.npc.social.RelationshipType.KIN);
+                net.setRelation(spouse.id, childId, kr.reborn.npc.social.RelationshipType.KIN);
+                child.soul.relationships.put(npc.id, kr.reborn.npc.social.RelationshipType.KIN);
+                child.soul.relationships.put(spouse.id, kr.reborn.npc.social.RelationshipType.KIN);
+                npc.soul.relationships.put(childId, kr.reborn.npc.social.RelationshipType.KIN);
+                spouse.soul.relationships.put(childId, kr.reborn.npc.social.RelationshipType.KIN);
+                // 출생 소문 — 가문 번창 (긍정 평판)
+                plugin.registry().gossip().createRumor(npc, npc.id, childId,
+                        kr.reborn.npc.social.RumorContent.MARRIED, 20);
                 // 부모는 LOVE·ACHIEVEMENT 욕구 충족
                 npc.soul.needs.add(kr.reborn.npc.soul.Needs.Kind.LOVE, +20);
                 npc.soul.needs.add(kr.reborn.npc.soul.Needs.Kind.ACHIEVEMENT, +30);

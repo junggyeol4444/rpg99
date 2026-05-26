@@ -114,6 +114,17 @@ public final class SocialBehavior implements Behavior {
         a.soul.reclassify(b.id);
         b.soul.reclassify(a.id);
 
+        // 사회망 관계 형성 — 친구/라이벌 등록
+        var net = plugin.registry().socialNetwork();
+        double s = a.soul.relationToward(b.id);
+        if (s >= 50 && net.getRelation(a.id, b.id) == null) {
+            net.setRelation(a.id, b.id, kr.reborn.npc.social.RelationshipType.FRIEND);
+            a.soul.relationships.put(b.id, kr.reborn.npc.social.RelationshipType.FRIEND);
+            b.soul.relationships.put(a.id, kr.reborn.npc.social.RelationshipType.FRIEND);
+        } else if (s <= -30) {
+            net.setRelation(a.id, b.id, kr.reborn.npc.social.RelationshipType.RIVAL);
+        }
+
         double senta = a.soul.relationToward(b.id);
         double sentb = b.soul.relationToward(a.id);
         if (senta > 60 && sentb > 60 && diff < 80
@@ -127,6 +138,8 @@ public final class SocialBehavior implements Behavior {
                 && !sameFaction && diff < 120) {
             a.soul.memory.record(b.id, Memory.Kind.ALLIED_WITH_ME, 10, "정치 동맹");
             b.soul.memory.record(a.id, Memory.Kind.ALLIED_WITH_ME, 10, "정치 동맹");
+            plugin.registry().socialNetwork().setRelation(a.id, b.id,
+                    kr.reborn.npc.social.RelationshipType.ALLY);
         }
     }
 
@@ -141,6 +154,13 @@ public final class SocialBehavior implements Behavior {
         b.soul.family.add(a.id);
         a.soul.needs.add(Needs.Kind.LOVE, +50);
         b.soul.needs.add(Needs.Kind.LOVE, +50);
+        // 사회망 SPOUSE 관계 + 결혼 소문
+        plugin.registry().socialNetwork().setRelation(a.id, b.id,
+                kr.reborn.npc.social.RelationshipType.SPOUSE);
+        a.soul.relationships.put(b.id, kr.reborn.npc.social.RelationshipType.SPOUSE);
+        b.soul.relationships.put(a.id, kr.reborn.npc.social.RelationshipType.SPOUSE);
+        plugin.registry().gossip().createRumor(a, a.id, b.id,
+                kr.reborn.npc.social.RumorContent.MARRIED, 40);
         // FIND_LOVE 목표 완료 이벤트
         plugin.registry().goalProgressor().onEvent(a,
                 new kr.reborn.npc.soul.GoalProgressor.Event(

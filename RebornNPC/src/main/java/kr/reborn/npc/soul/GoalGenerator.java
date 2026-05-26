@@ -168,6 +168,24 @@ public final class GoalGenerator {
             g.priority = 65;
             candidates.add(g);
         }
+        // 소문 기반 — 직접 안 만났어도 평판 나쁜 자를 응징 (정의감 = EMPATHY 또는 자존심)
+        String infamous = npc.soul.reputation.worstReputation(70);
+        if (infamous != null && (p.get(Personality.Trait.EMPATHY) >= 50
+                || p.get(Personality.Trait.AGGRESSION) >= 60)) {
+            Goal g = new Goal(GoalKind.DEFEAT_RIVAL, infamous,
+                    "악명 높은 " + shortenId(infamous) + "을(를) 응징한다");
+            g.priority = 60;
+            candidates.add(g);
+        }
+        // 소문 기반 — 평판 좋은 자를 주군으로 (LOYALTY 높을 때, 소문만으로 흠모)
+        String renowned = npc.soul.reputation.bestReputation(70);
+        if (renowned != null && p.get(Personality.Trait.LOYALTY) >= 60
+                && npc.spouseNpcId.isEmpty()) {
+            Goal g = new Goal(GoalKind.SERVE_LORD, renowned,
+                    "명성 높은 " + shortenId(renowned) + "을(를) 섬긴다");
+            g.priority = 50;
+            candidates.add(g);
+        }
 
         // 기예 수련 — 무인·도사·수련자
         if (isMartialJob(npc.job) || isMagicalJob(npc.job)) {

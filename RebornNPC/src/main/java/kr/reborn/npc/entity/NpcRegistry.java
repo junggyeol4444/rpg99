@@ -31,11 +31,14 @@ public final class NpcRegistry {
     private final EnumMap<Emotion.Kind, Double> decayRates = new EnumMap<>(Emotion.Kind.class);
     private final kr.reborn.npc.soul.GoalGenerator goalGenerator;
     private final kr.reborn.npc.soul.GoalProgressor goalProgressor;
+    private final kr.reborn.npc.social.SocialNetwork socialNetwork = new kr.reborn.npc.social.SocialNetwork();
+    private final kr.reborn.npc.social.GossipManager gossip;
 
     public NpcRegistry(RebornNPC plugin) {
         this.plugin = plugin;
         this.goalGenerator = new kr.reborn.npc.soul.GoalGenerator(plugin);
         this.goalProgressor = new kr.reborn.npc.soul.GoalProgressor(plugin);
+        this.gossip = new kr.reborn.npc.social.GossipManager(plugin);
         var s = plugin.getConfig().getConfigurationSection("emotion-decay-rate");
         for (Emotion.Kind k : Emotion.Kind.values()) {
             decayRates.put(k, s == null ? 0.5 : s.getDouble(k.name().toLowerCase(), 0.5));
@@ -104,6 +107,9 @@ public final class NpcRegistry {
 
     public kr.reborn.npc.soul.GoalGenerator goalGenerator() { return goalGenerator; }
     public kr.reborn.npc.soul.GoalProgressor goalProgressor() { return goalProgressor; }
+    public kr.reborn.npc.social.SocialNetwork socialNetwork() { return socialNetwork; }
+    public kr.reborn.npc.social.GossipManager gossip() { return gossip; }
+    private int gossipTickCounter = 0;
 
     public void tickAll() {
         for (RebornNpc n : byId.values()) {
@@ -141,8 +147,16 @@ public final class NpcRegistry {
                     n.location = mob.getLocation();
                 }
             }
+            // 소문 평판 감쇠 (서서히 잊혀짐)
+            if (n.soul != null) n.soul.reputation.decay();
+
             if (n.brain != null) n.brain.tick();
             else SimpleAI.step(n);
+        }
+        // 소문 전파 — 5사이클마다 1번 (성능)
+        if (++gossipTickCounter >= 5) {
+            gossipTickCounter = 0;
+            gossip.propagate();
         }
     }
 

@@ -104,6 +104,13 @@ public final class NpcInteractListener implements Listener {
                 npc.aiData.put("revenge:target", p.getUniqueId());
                 npc.aiData.put("revenge:until", System.currentTimeMillis() + 1_800_000L);
             }
+            // 큰 피해는 소문 — "X가 나를 공격했다더라"
+            if (e.getFinalDamage() >= 8 && npc.soul != null) {
+                plugin.registry().gossip().createRumor(
+                        npc, p.getUniqueId().toString(), npc.id,
+                        kr.reborn.npc.social.RumorContent.ATTACKED_BY,
+                        (int) Math.min(60, e.getFinalDamage() * 2));
+            }
         }
     }
 
@@ -144,7 +151,16 @@ public final class NpcInteractListener implements Listener {
                         new kr.reborn.npc.soul.GoalProgressor.Event(
                                 kr.reborn.npc.soul.GoalProgressor.EventKind.LORD_DIED, npc.id));
             }
+            // 소문 생성 — "살해자가 사람을 죽였다더라" (목격 NPC가 있으면)
+            RebornNpc nearestWitness = plugin.registry().nearest(npc.location, 20);
+            if (nearestWitness != null && !nearestWitness.dead) {
+                plugin.registry().gossip().createRumor(
+                        nearestWitness, killerStr, npc.id,
+                        kr.reborn.npc.social.RumorContent.MURDERED, 90);
+            }
         }
+        // 사회망에서 제거
+        plugin.registry().socialNetwork().removeAllOf(npc.id);
         Bukkit.broadcastMessage("§7§o[NPC 사망] §r" + npc.displayName + "이(가) 쓰러졌다.");
     }
 }

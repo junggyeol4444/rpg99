@@ -23,6 +23,7 @@ public final class NpcCommand implements CommandExecutor {
             Msg.send(s, "&7/rnpc spawn <id> <name> [job] [faction] | remove <id> | list | setstat <id> <stat> <v>");
             Msg.send(s, "&7       | hermit <id> | sethome <id> | setwork <id> | inspect <id>");
             Msg.send(s, "&7       | goals <id> | setgoal <id> <kind> [target] | abandon <id> <kind>");
+            Msg.send(s, "&7       | social <id> | rumors <id> | reputation <id> [target]");
             return true;
         }
         switch (a[0].toLowerCase()) {
@@ -182,8 +183,68 @@ public final class NpcCommand implements CommandExecutor {
                     Msg.send(s, "&7" + removed + "개 목표 포기.");
                 } catch (Exception ignored) {}
                 break;
+            case "social": {
+                if (a.length < 2) return true;
+                RebornNpc so = plugin.registry().get(a[1]);
+                if (so == null) { Msg.error(s, "NPC 없음"); return true; }
+                Msg.send(s, "&6=== " + so.displayName + " 관계망 ===");
+                var rels = plugin.registry().socialNetwork().neighbors(so.id);
+                if (rels.isEmpty()) s.sendMessage("§7(관계 없음)");
+                for (var e : rels.entrySet()) {
+                    var partner = plugin.registry().get(e.getKey());
+                    String pname = partner != null ? partner.displayName : e.getKey();
+                    s.sendMessage("§e" + e.getValue().label + " §7→ §f" + pname);
+                }
+                s.sendMessage("§7연결 수(영향력): §f" + plugin.registry().socialNetwork().connectionCount(so.id));
+                break;
+            }
+            case "rumors": {
+                if (a.length < 2) return true;
+                RebornNpc ru = plugin.registry().get(a[1]);
+                if (ru == null || ru.soul == null) { Msg.error(s, "NPC 없음"); return true; }
+                Msg.send(s, "&6=== " + ru.displayName + "이(가) 들은 소문 (" + ru.soul.rumorsHeard.size() + ") ===");
+                int shown = 0;
+                for (int i = ru.soul.rumorsHeard.size() - 1; i >= 0 && shown < 10; i--, shown++) {
+                    var r = ru.soul.rumorsHeard.get(i);
+                    var subj = plugin.registry().get(r.subject);
+                    String sname = subj != null ? subj.displayName : shorten(r.subject);
+                    String color = r.content.isPositive() ? "§a" : "§c";
+                    s.sendMessage(color + "• " + r.story(sname)
+                            + " §8(신뢰 " + String.format("%.0f%%", r.believability * 100)
+                            + ", " + r.hopCount + "다리)");
+                }
+                break;
+            }
+            case "reputation": {
+                if (a.length < 2) return true;
+                RebornNpc rp = plugin.registry().get(a[1]);
+                if (rp == null || rp.soul == null) { Msg.error(s, "NPC 없음"); return true; }
+                if (a.length >= 3) {
+                    String target = a[2];
+                    var tn = plugin.registry().get(target);
+                    if (tn != null) target = tn.id;
+                    double score = rp.soul.reputation.scoreOf(target);
+                    Msg.send(s, "&6" + rp.displayName + "의 " + a[2] + " 평판: §f" + String.format("%.1f", score));
+                } else {
+                    Msg.send(s, "&6=== " + rp.displayName + " 평판 (상위/하위) ===");
+                    rp.soul.reputation.all().entrySet().stream()
+                            .sorted((x, y) -> Double.compare(Math.abs(y.getValue()), Math.abs(x.getValue())))
+                            .limit(10)
+                            .forEach(e -> {
+                                var t = plugin.registry().get(e.getKey());
+                                String tname = t != null ? t.displayName : shorten(e.getKey());
+                                String c = e.getValue() > 0 ? "§a+" : "§c";
+                                s.sendMessage("  " + c + String.format("%.0f", e.getValue()) + " §7" + tname);
+                            });
+                }
+                break;
+            }
         }
         return true;
+    }
+
+    private String shorten(String id) {
+        return id.length() <= 12 ? id : id.substring(0, 8) + "...";
     }
 
     private WorldKey detect(Player p) {

@@ -17,14 +17,18 @@
 - ✓ Step 1.5: Faction Dynamics (파벌 형성·정치·전쟁)
 - ✓ Step 1.6: World Impact (NPC가 진짜로 가게·종교·왕국 만들어냄)
 
-**→ Step 1 (진짜 자율 NPC) 전체 완료. 다음: Step 2 (스킬 효과 진짜 구현).**
+**→ Step 1 (진짜 자율 NPC) 전체 완료.**
 
-### Step 2: 스킬 효과 진짜 구현
-- 투사체 (Snowball/Arrow custom 기반)
-- AOE 범위 공격
-- 속성 상성 (FIRE vs ICE, HOLY vs DARK 등)
-- 캐스팅 바·시전 중단·콤보
-- 파티클·사운드 이펙트
+### ✓ Step 2: 스킬 효과 진짜 구현
+- ✓ SkillType 11종 + YAML 자동 추론 (136스킬 손 안 대고 종류별 분기)
+- ✓ 효과 9종: MELEE/PROJECTILE/AOE/HEAL/BUFF/DASH/BLINK/DOT/CHAIN/SUMMON
+- ✓ 투사체 (Snowball/SmallFireball + 메타데이터 + ProjectileHit 리스너)
+- ✓ AOE 반경 공격 + 파티클 링
+- ✓ 속성 상성 (FIRE/ICE/WATER/NATURE/HOLY/DARK… ×1.5/×0.66) + 몹 속성 추정 + 상태이상
+- ✓ 캐스팅 바(액션바 진행도)·피격 시전 중단
+- ✓ 파티클·사운드 이펙트
+
+**다음: Step 3 (몬스터 AI 10종).**
 
 ### Step 3: 몬스터 AI 10종 진짜 동작
 - PACK: 리더 따라 무리 행동

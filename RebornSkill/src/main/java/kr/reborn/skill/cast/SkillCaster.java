@@ -5,10 +5,10 @@ import kr.reborn.core.data.PlayerData;
 import kr.reborn.core.util.Msg;
 import kr.reborn.skill.RebornSkill;
 import kr.reborn.skill.def.SkillDef;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
+import kr.reborn.skill.effect.EffectExecutor;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,10 +18,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class SkillCaster {
 
     private final RebornSkill plugin;
+    private final EffectExecutor effects;
     /** 쿨타임 만료 시각 (밀리초) */
     private final Map<UUID, Map<String, Long>> cooldowns = new ConcurrentHashMap<>();
 
-    public SkillCaster(RebornSkill p) { this.plugin = p; }
+    public SkillCaster(RebornSkill p) {
+        this.plugin = p;
+        this.effects = new EffectExecutor(p);
+    }
 
     public void cast(Player p, String skillId) {
         SkillDef def = plugin.registry().get(skillId);
@@ -40,49 +44,60 @@ public final class SkillCaster {
         }
         cooldowns.get(p.getUniqueId()).put(skillId, now + (long) (def.cooldownSeconds * 1000));
 
-        // 캐스팅 시간 (피격 시 캔슬은 단순화 위해 생략)
         long castTicks = (long) (def.castSeconds * 20);
-        Runnable apply = () -> applyEffect(p, def);
-        if (castTicks > 0) {
-            Msg.send(p, "&7시전 중...");
-            RebornCore.get().scheduler().runTaskLater(apply, castTicks);
-        } else apply.run();
+        if (castTicks > 0) beginCast(p, def, castTicks);
+        else applyEffect(p, def);
     }
 
-    private void applyEffect(Player p, SkillDef def) {
-        PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
-        double dmg = Formula.eval(def.damageFormula, d);
-        // 숙련도 보정
-        int prof = plugin.store().prof(p.getUniqueId(), def.id);
-        if (prof >= 76) dmg *= 1.20;
-        else if (prof >= 51) dmg *= 1.10;
-        plugin.store().addProf(p.getUniqueId(), def.id, 1);
+    /** 캐스팅 — 진행 바 표시 + 피격 시 시전 중단. */
+    private void beginCast(Player p, SkillDef def, long totalTicks) {
+        Msg.send(p, "&7" + def.name + " &8시전 시작...");
+        castStep(p, def, totalTicks, 0, p.getHealth());
+    }
 
-        Msg.send(p, "&b" + def.name + " &f시전!");
-
-        // 음수 = 회복
-        if (dmg < 0) {
-            p.setHealth(Math.min(p.getMaxHealth(), p.getHealth() - dmg));
+    private void castStep(Player p, SkillDef def, long total, long elapsed, double startHp) {
+        if (!p.isOnline()) return;
+        if (p.getHealth() < startHp - 0.5) {  // 피격 → 중단
+            actionBar(p, "§c✘ 시전 중단!");
+            Msg.warn(p, "피격으로 시전이 중단되었다.");
             return;
         }
-        // 시야 6블록 내 가장 가까운 살아있는 엔티티에게 적용
-        Entity target = null;
-        double best = Double.MAX_VALUE;
-        Vector dir = p.getLocation().getDirection();
-        for (Entity e : p.getNearbyEntities(8, 4, 8)) {
-            if (e == p) continue;
-            if (!(e instanceof LivingEntity)) continue;
-            Vector to = e.getLocation().toVector().subtract(p.getLocation().toVector()).normalize();
-            double dot = dir.dot(to);
-            if (dot < 0.6) continue;
-            double dist = e.getLocation().distance(p.getLocation());
-            if (dist < best) { best = dist; target = e; }
+        if (elapsed >= total) {
+            actionBar(p, "");
+            applyEffect(p, def);
+            return;
         }
-        if (target instanceof LivingEntity le) {
-            le.damage(dmg, p);
-            Msg.send(p, "&c" + le.getName() + " &7→ " + String.format("%.1f", dmg) + " 피해");
-        } else {
-            Msg.warn(p, "대상이 없다.");
-        }
+        actionBar(p, castBar(def.name, (double) elapsed / total));
+        long step = Math.max(2, total / 10);
+        RebornCore.get().scheduler().runTaskLater(
+                () -> castStep(p, def, total, elapsed + step, startHp), step);
+    }
+
+    /** 데미지 계산(숙련도 포함) 후 종류별 효과 실행. */
+    private void applyEffect(Player p, SkillDef def) {
+        PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+        double power = Formula.eval(def.damageFormula, d);
+        // 숙련도 보정
+        int prof = plugin.store().prof(p.getUniqueId(), def.id);
+        if (prof >= 76) power *= 1.20;
+        else if (prof >= 51) power *= 1.10;
+        plugin.store().addProf(p.getUniqueId(), def.id, 1);
+
+        effects.execute(p, def, power);
+    }
+
+    private String castBar(String name, double progress) {
+        int filled = (int) Math.round(progress * 10);
+        StringBuilder sb = new StringBuilder("§e" + name.replaceAll("&.", "") + " §8[");
+        for (int i = 0; i < 10; i++) sb.append(i < filled ? "§a▰" : "§7▱");
+        sb.append("§8]");
+        return sb.toString();
+    }
+
+    private void actionBar(Player p, String text) {
+        try {
+            p.spigot().sendMessage(ChatMessageType.ACTION_BAR,
+                    TextComponent.fromLegacyText(text));
+        } catch (Throwable ignored) {}
     }
 }

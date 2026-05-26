@@ -85,6 +85,19 @@ public final class NpcCommand implements CommandExecutor {
                 s.sendMessage("§7state: §f" + ins.state + " §7brain: §f"
                         + (ins.brain != null && ins.brain.current() != null ? ins.brain.current().id() : "-"));
                 s.sendMessage("§7faction: §f" + ins.faction + " §7job: §f" + ins.job);
+                {
+                    Object rel = ins.aiData.get("religion");
+                    Object shp = ins.aiData.get("shop");
+                    var myFac = plugin.registry().factions().factionOf(ins.id);
+                    if (rel != null || shp != null || myFac != null) {
+                        StringBuilder impact = new StringBuilder("§7업적: ");
+                        if (myFac != null) impact.append("§a").append(myFac.name)
+                                .append("§7(").append(myFac.size()).append("명) ");
+                        if (rel != null) impact.append("§d").append(rel).append(" ");
+                        if (shp != null) impact.append("§6").append(shp);
+                        s.sendMessage(impact.toString());
+                    }
+                }
                 s.sendMessage("§7spouse: §f" + (ins.spouseNpcId.isEmpty() ? "-" : ins.spouseNpcId)
                         + " §7children: §f" + ins.children.size());
                 s.sendMessage("§7emotion: §c분노 " + (int)ins.emotion.get(kr.reborn.npc.emotion.Emotion.Kind.ANGER)

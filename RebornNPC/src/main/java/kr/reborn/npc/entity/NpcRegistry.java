@@ -34,6 +34,7 @@ public final class NpcRegistry {
     private final kr.reborn.npc.social.SocialNetwork socialNetwork = new kr.reborn.npc.social.SocialNetwork();
     private final kr.reborn.npc.social.GossipManager gossip;
     private final kr.reborn.npc.faction.FactionManager factionManager;
+    private final kr.reborn.npc.world.WorldImpact worldImpact;
 
     public NpcRegistry(RebornNPC plugin) {
         this.plugin = plugin;
@@ -41,6 +42,7 @@ public final class NpcRegistry {
         this.goalProgressor = new kr.reborn.npc.soul.GoalProgressor(plugin);
         this.gossip = new kr.reborn.npc.social.GossipManager(plugin);
         this.factionManager = new kr.reborn.npc.faction.FactionManager(plugin);
+        this.worldImpact = new kr.reborn.npc.world.WorldImpact(plugin);
         var s = plugin.getConfig().getConfigurationSection("emotion-decay-rate");
         for (Emotion.Kind k : Emotion.Kind.values()) {
             decayRates.put(k, s == null ? 0.5 : s.getDouble(k.name().toLowerCase(), 0.5));
@@ -112,6 +114,7 @@ public final class NpcRegistry {
     public kr.reborn.npc.social.SocialNetwork socialNetwork() { return socialNetwork; }
     public kr.reborn.npc.social.GossipManager gossip() { return gossip; }
     public kr.reborn.npc.faction.FactionManager factions() { return factionManager; }
+    public kr.reborn.npc.world.WorldImpact worldImpact() { return worldImpact; }
     private int gossipTickCounter = 0;
     private int factionTickCounter = 0;
 

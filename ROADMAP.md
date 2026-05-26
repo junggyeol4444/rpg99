@@ -15,7 +15,9 @@
 - ✓ Step 1.3: Utility-based 의사결정
 - ✓ Step 1.4: Social Network (관계 그래프·소문 전파)
 - ✓ Step 1.5: Faction Dynamics (파벌 형성·정치·전쟁)
-- ⏳ **Step 1.6: World Impact** (NPC가 진짜로 가게·종교·왕국 만들어냄) — 다음
+- ✓ Step 1.6: World Impact (NPC가 진짜로 가게·종교·왕국 만들어냄)
+
+**→ Step 1 (진짜 자율 NPC) 전체 완료. 다음: Step 2 (스킬 효과 진짜 구현).**
 
 ### Step 2: 스킬 효과 진짜 구현
 - 투사체 (Snowball/Arrow custom 기반)

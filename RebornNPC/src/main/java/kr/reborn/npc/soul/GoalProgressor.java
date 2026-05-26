@@ -150,6 +150,8 @@ public final class GoalProgressor {
         npc.soul.needs.add(Needs.Kind.ACHIEVEMENT, +40);
         npc.soul.needs.add(Needs.Kind.STATUS, +20);
         npc.emotion.add(kr.reborn.npc.emotion.Emotion.Kind.HAPPINESS, 40);
+        // 세계에 실제 영향 — 마을·종교·왕국·상점을 진짜로 만든다
+        plugin.registry().worldImpact().apply(npc, g);
         // 복수 완료는 특히 큰 카타르시스
         if (g.kind == GoalKind.AVENGE) {
             npc.emotion.add(kr.reborn.npc.emotion.Emotion.Kind.ANGER, -50);

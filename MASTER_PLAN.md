@@ -104,8 +104,12 @@ Element 상성표(×1.5/×0.66)+몹 속성 추정+상태이상, 투사체 메타
 - SkillDef.yml 스키마 확장: `type, shape, radius, projectileSpeed, element, durationTicks, ...`.
 - 검증: 투사체/AOE/버프/이동기 각 1개 직접 시전해 동작 확인. 상성 데미지 로그.
 
-## Step 3 — 몬스터 AI 10종 (RebornMob)
-**현 상태:** 스폰만 됨(`SpawnTicker`), `MobAI`는 사실상 빈 골격. 132종 몬스터가 전부 바닐라 AI.
+## Step 3 — 몬스터 AI 10종 (RebornMob) ✓ 완료
+**구현됨:** `MobController`가 활성 커스텀 몹을 매 주기 종류별로 구동. 16 아키타입
+(PACK/RANGED/BOSS/SWARM/FLEE/TERRITORIAL + 신규 CASTER/TANK/SUPPORT/BERSERKER/
+SUMMONER/AMBUSH). 보스는 75/50/25% 페이즈+패턴(충격파·소환·광폭화). 대표 6종 재배정.
+
+**과거 현 상태:** 스폰만 됨(`SpawnTicker`), `MobAI`는 사실상 빈 골격. 132종 몬스터가 전부 바닐라 AI.
 
 **목표:** 기획서 10종 아키타입 실동작.
 - `mob/ai/` 전략: `PackAI`(리더 추종·협공), `BossAI`(HP% 페이즈 전환·패턴 스킬),
@@ -231,6 +235,7 @@ Element 상성표(×1.5/×0.66)+몹 속성 추정+상태이상, 투사체 메타
 PHASE 1 (기반)
   Step 1  NPC      [1.0~1.6 ✓ 전체 완료]
   Step 2  스킬효과  [✓ 완료 — 9효과·속성상성·투사체·캐스팅]
+  Step 3  몹 AI     [✓ 완료 — 16 아키타입·보스 페이즈]
   Step 2  스킬효과
   Step 3  몹 AI 10종
   Step 4  퀘스트 엔진
@@ -243,4 +248,4 @@ PHASE 3 (통합)   3.1~3.4   환생 루프·티어·히든월드
 PHASE 4 (폴리시) 4.1~4.5   영속화·성능·밸런스·운영
 ```
 
-**바로 다음:** Step 3 (몬스터 AI 10종) — "계속"이라고 하면 시작.
+**바로 다음:** Step 4 (퀘스트 엔진 깊이) — "계속"이라고 하면 시작.

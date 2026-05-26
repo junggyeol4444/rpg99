@@ -50,5 +50,6 @@ public final class MobListener implements Listener {
             }
         }
         if (def.boss) plugin.bosses().onDeath(le);
+        plugin.controller().unregister(le.getUniqueId());
     }
 }

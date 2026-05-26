@@ -28,15 +28,15 @@
 - ✓ 캐스팅 바(액션바 진행도)·피격 시전 중단
 - ✓ 파티클·사운드 이펙트
 
-**다음: Step 3 (몬스터 AI 10종).**
+### ✓ Step 3: 몬스터 AI 16종 진짜 동작
+- ✓ MobController: 활성 커스텀 몹을 매 주기(ai-tick-interval) 종류별 구동
+- ✓ PACK 협공 / RANGED 카이팅(사격) / SWARM 돌격 / FLEE 도주 / TERRITORIAL 둥지 복귀
+- ✓ BOSS HP% 페이즈(75/50/25%) 전환 + 패턴(충격파·소환·광폭화) + 브로드캐스트
+- ✓ 신규 6종: CASTER(마법)·TANK(저항)·SUPPORT(아군 회복)·BERSERKER(저HP 강화)·SUMMONER(소환)·AMBUSH(은신 기습)
+- ✓ 대표 몹 6종 재배정(골렘=TANK, 거미=AMBUSH, 고스트=CASTER 등)으로 즉시 검증 가능
+- ✓ 디스폰 누수 방지(5분 미관측 정리), `/rmob ai` 활성 수 조회
 
-### Step 3: 몬스터 AI 10종 진짜 동작
-- PACK: 리더 따라 무리 행동
-- BOSS: HP % 페이즈 전환
-- RANGED: 거리 유지 + 후퇴
-- FLEE/TERRITORIAL: 영역 시스템
-- FLYING/AQUATIC: 공간별 이동
-- 영물·흉수·요마 등 무협 분류
+**다음: Step 4 (퀘스트 엔진).**
 
 ### Step 4: 퀘스트 12종 타입 전부 작동
 - KILL, GATHER, TALK, MOVE, ESCORT, CRAFT

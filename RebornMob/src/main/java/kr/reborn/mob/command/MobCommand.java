@@ -19,7 +19,7 @@ public final class MobCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender s, @NotNull Command c,
                              @NotNull String l, @NotNull String[] a) {
         if (a.length == 0) {
-            Msg.send(s, "&7/rmob spawn <id>  |  boss <id>  |  list  |  reload");
+            Msg.send(s, "&7/rmob spawn <id>  |  boss <id>  |  list  |  ai  |  reload");
             return true;
         }
         switch (a[0].toLowerCase()) {
@@ -27,8 +27,14 @@ public final class MobCommand implements CommandExecutor {
                 if (!(s instanceof Player p) || a.length < 2) return true;
                 MobDef def = plugin.registry().get(a[1]);
                 if (def == null) { Msg.error(s, "정의 없음"); return true; }
-                new kr.reborn.mob.spawn.SpawnTicker(plugin).spawn(def, p.getLocation().getChunk());
-                Msg.send(s, "&a스폰 완료.");
+                var spawned = new kr.reborn.mob.spawn.SpawnTicker(plugin)
+                        .spawnAt(def, p.getLocation());
+                Msg.send(s, spawned != null
+                        ? "&a스폰 완료 — " + def.name + " §7(AI: " + def.ai + ")"
+                        : "&c스폰 실패.");
+                break;
+            case "ai":
+                Msg.send(s, "&6활성 커스텀 몹: §f" + plugin.controller().active() + "마리 (AI 구동 중)");
                 break;
             case "boss":
                 if (!(s instanceof Player pp) || a.length < 2) return true;

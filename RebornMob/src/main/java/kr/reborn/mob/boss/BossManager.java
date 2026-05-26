@@ -25,10 +25,9 @@ public final class BossManager {
     public LivingEntity summon(String id, Location loc) {
         MobDef def = plugin.registry().get(id);
         if (def == null || !def.boss) return null;
-        var le = plugin.registry() == null ? null : null;
 
         var ticker = new kr.reborn.mob.spawn.SpawnTicker(plugin);
-        LivingEntity e = ticker.spawn(def, loc.getChunk());
+        LivingEntity e = ticker.spawnAt(def, loc);
         if (e == null) return null;
         e.setCustomName("§5§l[BOSS] §f" + def.name);
 

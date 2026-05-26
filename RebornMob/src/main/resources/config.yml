@@ -3,6 +3,9 @@ max-mobs-per-chunk: 8
 despawn-distance: 80
 boss-announce-radius: 50
 boss-contribution-top: 10
+# AI 구동 — ai-tick-interval 틱마다 모든 커스텀 몹 행동 갱신, aggro-range 내 플레이어 추적
+ai-tick-interval: 20
+aggro-range: 24
 
 # ============================================================
 # 몬스터 정의 — 세계별 (5장 5-1 ~ 5-13)
@@ -14,13 +17,13 @@ monsters:
   fantasy_slime_poison:  { base: SLIME, name: "&2독 슬라임", world: FANTASY, hp: 30, damage: 6, ai: BASIC }
   fantasy_slime_metal:   { base: MAGMA_CUBE, name: "&7메탈 슬라임", world: FANTASY, hp: 100, damage: 3, ai: FLEE }
   fantasy_kobold:        { base: ZOMBIE, name: "&8코볼트", world: FANTASY, hp: 15, damage: 3, ai: PACK }
-  fantasy_giant_spider:  { base: SPIDER, name: "&8거대 거미", world: FANTASY, hp: 35, damage: 7, ai: BASIC }
+  fantasy_giant_spider:  { base: SPIDER, name: "&8거대 거미", world: FANTASY, hp: 35, damage: 7, ai: AMBUSH }
   fantasy_low_wolf:      { base: WOLF, name: "&7로우 울프", world: FANTASY, hp: 25, damage: 5, ai: PACK }
   fantasy_skeleton:      { base: SKELETON, name: "&f스켈레톤 병사", world: FANTASY, hp: 25, damage: 6, ai: RANGED }
   fantasy_zombie:        { base: ZOMBIE, name: "&2좀비", world: FANTASY, hp: 30, damage: 5, ai: BASIC }
   fantasy_giant_rat:     { base: SILVERFISH, name: "&8거대 쥐", world: FANTASY, hp: 12, damage: 3, ai: SWARM }
   fantasy_harpy:         { base: PHANTOM, name: "&d하피", world: FANTASY, hp: 40, damage: 8, ai: FLYING }
-  fantasy_imp:           { base: VEX, name: "&c임프", world: FANTASY, hp: 25, damage: 6, ai: FLYING }
+  fantasy_imp:           { base: VEX, name: "&c임프", world: FANTASY, hp: 25, damage: 6, ai: SUPPORT }
 
   # ─── 판타지: 중급 ────────────────────────────
   fantasy_orc:           { base: PIGLIN_BRUTE, name: "&2오크", world: FANTASY, hp: 80, damage: 12, ai: PACK }
@@ -28,14 +31,14 @@ monsters:
   fantasy_ogre:          { base: RAVAGER, name: "&7오우거", world: FANTASY, hp: 250, damage: 25, ai: BASIC }
   fantasy_minotaur:      { base: RAVAGER, name: "&6미노타우로스", world: FANTASY, hp: 180, damage: 22, ai: TERRITORIAL }
   fantasy_centaur:       { base: HORSE, name: "&e켄타우로스 전사", world: FANTASY, hp: 150, damage: 18, ai: PACK }
-  fantasy_ghost:         { base: VEX, name: "&f고스트", world: FANTASY, hp: 60, damage: 10, ai: FLYING }
+  fantasy_ghost:         { base: VEX, name: "&f고스트", world: FANTASY, hp: 60, damage: 10, ai: CASTER }
   fantasy_basilisk:      { base: WITHER_SKELETON, name: "&2바실리스크", world: FANTASY, hp: 220, damage: 28, ai: TERRITORIAL }
   fantasy_cockatrice:    { base: CHICKEN, name: "&5코카트리스", world: FANTASY, hp: 50, damage: 15, ai: BASIC }
   fantasy_gargoyle:      { base: VEX, name: "&8가고일", world: FANTASY, hp: 100, damage: 14, ai: FLYING }
   fantasy_wyvern:        { base: PHANTOM, name: "&5와이번", world: FANTASY, hp: 300, damage: 30, ai: FLYING }
-  fantasy_skeleton_knight: { base: WITHER_SKELETON, name: "&f스켈레톤 나이트", world: FANTASY, hp: 150, damage: 25, ai: BASIC }
-  fantasy_wraith:        { base: VEX, name: "&8레이스", world: FANTASY, hp: 80, damage: 18, ai: FLYING }
-  fantasy_magic_golem:   { base: IRON_GOLEM, name: "&7마법 골렘", world: FANTASY, hp: 400, damage: 30, ai: BASIC }
+  fantasy_skeleton_knight: { base: WITHER_SKELETON, name: "&f스켈레톤 나이트", world: FANTASY, hp: 150, damage: 25, ai: BERSERKER }
+  fantasy_wraith:        { base: VEX, name: "&8레이스", world: FANTASY, hp: 80, damage: 18, ai: SUMMONER }
+  fantasy_magic_golem:   { base: IRON_GOLEM, name: "&7마법 골렘", world: FANTASY, hp: 400, damage: 30, ai: TANK }
 
   # ─── 판타지: 상급 ────────────────────────────
   fantasy_griffin:       { base: PHANTOM, name: "&6그리폰", world: FANTASY, hp: 600, damage: 50, ai: FLYING }

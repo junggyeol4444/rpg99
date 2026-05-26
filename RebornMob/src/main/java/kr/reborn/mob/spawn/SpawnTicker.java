@@ -56,7 +56,12 @@ public final class SpawnTicker {
         int x = (chunk.getX() << 4) + Rand.range(0, 15);
         int z = (chunk.getZ() << 4) + Rand.range(0, 15);
         int y = w.getHighestBlockYAt(x, z) + 1;
-        var loc = new org.bukkit.Location(w, x + 0.5, y, z + 0.5);
+        return spawnAt(def, new org.bukkit.Location(w, x + 0.5, y, z + 0.5));
+    }
+
+    public LivingEntity spawnAt(MobDef def, org.bukkit.Location loc) {
+        var w = loc.getWorld();
+        if (w == null) return null;
         Entity ent = w.spawnEntity(loc, def.base);
         if (!(ent instanceof LivingEntity le)) { ent.remove(); return null; }
         le.setCustomName(def.name);
@@ -69,6 +74,8 @@ public final class SpawnTicker {
         if (spd != null) spd.setBaseValue(def.speed);
         le.getPersistentDataContainer().set(new NamespacedKey(plugin, "rmob"),
                 PersistentDataType.STRING, def.id);
+        // AI 컨트롤러에 등록 — 종류별 행동 구동
+        plugin.controller().register(le, def);
         return le;
     }
 }

@@ -33,12 +33,14 @@ public final class NpcRegistry {
     private final kr.reborn.npc.soul.GoalProgressor goalProgressor;
     private final kr.reborn.npc.social.SocialNetwork socialNetwork = new kr.reborn.npc.social.SocialNetwork();
     private final kr.reborn.npc.social.GossipManager gossip;
+    private final kr.reborn.npc.faction.FactionManager factionManager;
 
     public NpcRegistry(RebornNPC plugin) {
         this.plugin = plugin;
         this.goalGenerator = new kr.reborn.npc.soul.GoalGenerator(plugin);
         this.goalProgressor = new kr.reborn.npc.soul.GoalProgressor(plugin);
         this.gossip = new kr.reborn.npc.social.GossipManager(plugin);
+        this.factionManager = new kr.reborn.npc.faction.FactionManager(plugin);
         var s = plugin.getConfig().getConfigurationSection("emotion-decay-rate");
         for (Emotion.Kind k : Emotion.Kind.values()) {
             decayRates.put(k, s == null ? 0.5 : s.getDouble(k.name().toLowerCase(), 0.5));
@@ -109,7 +111,9 @@ public final class NpcRegistry {
     public kr.reborn.npc.soul.GoalProgressor goalProgressor() { return goalProgressor; }
     public kr.reborn.npc.social.SocialNetwork socialNetwork() { return socialNetwork; }
     public kr.reborn.npc.social.GossipManager gossip() { return gossip; }
+    public kr.reborn.npc.faction.FactionManager factions() { return factionManager; }
     private int gossipTickCounter = 0;
+    private int factionTickCounter = 0;
 
     public void tickAll() {
         for (RebornNpc n : byId.values()) {
@@ -140,6 +144,7 @@ public final class NpcRegistry {
                         n.dead = true;
                         n.deathAt = System.currentTimeMillis();
                         triggerRevengeForFriends(n);
+                        factionManager.onNpcDeath(n);
                     }
                     continue;
                 }
@@ -157,6 +162,11 @@ public final class NpcRegistry {
         if (++gossipTickCounter >= 5) {
             gossipTickCounter = 0;
             gossip.propagate();
+        }
+        // 세력 동역학 — 20사이클마다 1번 (무거움: 형성·외교·전쟁)
+        if (++factionTickCounter >= 20) {
+            factionTickCounter = 0;
+            factionManager.tick();
         }
     }
 

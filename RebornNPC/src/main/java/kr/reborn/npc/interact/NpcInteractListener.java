@@ -159,8 +159,9 @@ public final class NpcInteractListener implements Listener {
                         kr.reborn.npc.social.RumorContent.MURDERED, 90);
             }
         }
-        // 사회망에서 제거
+        // 사회망·세력에서 제거 (세력은 지도자 승계·와해 처리)
         plugin.registry().socialNetwork().removeAllOf(npc.id);
+        plugin.registry().factions().onNpcDeath(npc);
         Bukkit.broadcastMessage("§7§o[NPC 사망] §r" + npc.displayName + "이(가) 쓰러졌다.");
     }
 }

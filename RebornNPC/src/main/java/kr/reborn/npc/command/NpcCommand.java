@@ -24,6 +24,7 @@ public final class NpcCommand implements CommandExecutor {
             Msg.send(s, "&7       | hermit <id> | sethome <id> | setwork <id> | inspect <id>");
             Msg.send(s, "&7       | goals <id> | setgoal <id> <kind> [target] | abandon <id> <kind>");
             Msg.send(s, "&7       | social <id> | rumors <id> | reputation <id> [target]");
+            Msg.send(s, "&7       | faction [list|info <fid>|of <id>]");
             return true;
         }
         switch (a[0].toLowerCase()) {
@@ -236,6 +237,54 @@ public final class NpcCommand implements CommandExecutor {
                                 String c = e.getValue() > 0 ? "§a+" : "§c";
                                 s.sendMessage("  " + c + String.format("%.0f", e.getValue()) + " §7" + tname);
                             });
+                }
+                break;
+            }
+            case "faction": {
+                var fm = plugin.registry().factions();
+                String sub = a.length >= 2 ? a[1].toLowerCase() : "list";
+                if ("of".equals(sub) && a.length >= 3) {
+                    var f = fm.factionOf(a[2]);
+                    if (f == null) { Msg.send(s, "&7무소속이거나 NPC 없음."); return true; }
+                    Msg.send(s, "&6" + a[2] + " → 세력: §f" + f.name
+                            + " §7(" + f.size() + "명, 지도자 " + shorten(f.leaderId) + ")");
+                } else if ("info".equals(sub) && a.length >= 3) {
+                    var f = fm.get(a[2]);
+                    if (f == null) { Msg.error(s, "세력 없음: " + a[2]); return true; }
+                    var leader = plugin.registry().get(f.leaderId);
+                    Msg.send(s, "&6=== " + f.name + " ===");
+                    s.sendMessage("§7지도자: §f" + (leader != null ? leader.displayName : f.leaderId));
+                    s.sendMessage("§7구성원: §f" + f.size() + "명  §7국고: §e" + String.format("%.0f", f.treasury));
+                    s.sendMessage("§7전력: §f" + String.format("%.0f", f.power(plugin.registry()::get)));
+                    StringBuilder mem = new StringBuilder("§7구성: §f");
+                    int c = 0;
+                    for (String mid : f.members) {
+                        if (c++ >= 8) { mem.append("…"); break; }
+                        var m = plugin.registry().get(mid);
+                        mem.append(m != null ? m.displayName : shorten(mid)).append(" ");
+                    }
+                    s.sendMessage(mem.toString());
+                    if (!f.relations.isEmpty()) {
+                        s.sendMessage("§7외교:");
+                        for (var e : f.relations.entrySet()) {
+                            var other = fm.get(e.getKey());
+                            String on = other != null ? other.name : e.getKey();
+                            String col = e.getValue().peaceful ? "§a" : "§c";
+                            s.sendMessage("  " + col + e.getValue().label + " §7→ §f" + on);
+                        }
+                    }
+                } else {
+                    Msg.send(s, "&6=== 세력 목록 (" + fm.all().size() + ") ===");
+                    if (fm.all().isEmpty()) s.sendMessage("§7(아직 자생 세력 없음)");
+                    for (var f : fm.all()) {
+                        var leader = plugin.registry().get(f.leaderId);
+                        int wars = (int) f.relations.values().stream()
+                                .filter(st -> st == kr.reborn.npc.faction.FactionStance.WAR).count();
+                        s.sendMessage("§e" + f.id + " §f" + f.name
+                                + " §7(" + f.size() + "명, 지도자 "
+                                + (leader != null ? leader.displayName : shorten(f.leaderId)) + "§7"
+                                + (wars > 0 ? ", §c전쟁 " + wars : "") + "§7)");
+                    }
                 }
                 break;
             }

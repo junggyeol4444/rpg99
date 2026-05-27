@@ -177,3 +177,47 @@ minigame:
   enlightenment:
     clone-stat-mult: 1.2
     questions: 3
+
+# ============================================================
+# 기연(奇緣) — 기획서 5장 각 세계의 기연. 탐험/사냥/채굴/운기 중 극히 낮은 확률로 발견.
+# trigger: MINE(채굴)/KILL(사냥)/EXPLORE(탐험-청크진입)/MEDITATE(운기). param 비우면 무관.
+# ============================================================
+fortunes:
+  # ── 판타지계 ──
+  worldtree_tears:    { name: "&a세계수의 눈물", world: FANTASY, trigger: EXPLORE, chance: 0.002, broadcast: true, message: "세계수가 백 년에 한 번 흘리는 수액. 마나가 영구히 차오른다.", stats: { MANA: 500 } }
+  ancient_dragon_scale: { name: "&c고룡의 역린", world: FANTASY, trigger: KILL, param: fantasy_red_dragon, chance: 0.3, broadcast: true, skill: breath_basic, message: "고룡의 역린에 용의 힘이 각인된다.", stats: { AURA: 300 } }
+  mage_tower_depths:  { name: "&5대마탑 최심층 기억 결정", world: FANTASY, trigger: EXPLORE, chance: 0.0015, message: "고대 마법사의 기억이 흘러든다.", stats: { MANA: 300, INTELLIGENCE: 50 } }
+  meteor_core:        { name: "&e운석 핵심", world: FANTASY, trigger: MINE, param: ANCIENT_DEBRIS, chance: 0.02, broadcast: true, message: "떨어진 운석의 핵심. 모든 힘이 폭증한다.", stats: { ENDURANCE: 100, STRENGTH: 100, AGILITY: 100, INTELLIGENCE: 100, MENTAL: 100, LUCK: 100, CHARISMA: 100, CHARM: 100 } }
+  spirit_king_blessing: { name: "&b정령왕의 축복", world: FANTASY, trigger: MEDITATE, chance: 0.01, skill: element_bullet, message: "세계수 뿌리에서 정령왕의 축복이 깃든다.", stats: { SPIRIT_POWER: 100 } }
+  # ── 마계 ──
+  demon_throne_shard: { name: "&8마왕의 왕좌 파편", world: DEMON, trigger: EXPLORE, chance: 0.0015, broadcast: true, message: "고대 마왕의 왕좌 파편. 마기가 들끓는다.", stats: { DEMON_KI: 500 } }
+  soul_well:          { name: "&4영혼의 우물", world: DEMON, trigger: EXPLORE, chance: 0.002, message: "영혼이 모이는 우물을 견뎌냈다.", stats: { MENTAL: 300 } }
+  fallen_angel_feather: { name: "&f타락 천사의 날개깃", world: DEMON, trigger: KILL, chance: 0.01, message: "천기와 마기가 한 몸에 깃든다.", stats: { HEAVEN_KI: 100, DEMON_KI: 100 } }
+  # ── 천계 ──
+  god_feather:        { name: "&e천신의 깃털", world: HEAVEN, trigger: EXPLORE, chance: 0.0015, broadcast: true, message: "9층에서 떨어진 천신의 깃털. 축복 그 자체.", stats: { HEAVEN_KI: 500 } }
+  light_crystal:      { name: "&f빛의 결정", world: HEAVEN, trigger: MINE, param: AMETHYST_CLUSTER, chance: 0.03, message: "정화된 영혼의 결정.", stats: { MENTAL: 100, CHARISMA: 100 } }
+  # ── 정령계 ──
+  elemental_king_core: { name: "&3정령왕의 핵 파편", world: SPIRIT, trigger: KILL, chance: 0.01, broadcast: true, message: "소멸한 정령왕의 핵. 원소 친화가 극대화된다.", stats: { SPIRIT_POWER: 500 } }
+  harmony_spring:     { name: "&a조화의 샘", world: SPIRIT, trigger: EXPLORE, chance: 0.003, message: "모든 원소가 조화를 이루는 샘.", stats: { SPIRIT_POWER: 200 } }
+  # ── 무협계 ──
+  hermit_cave:        { name: "&6무명 고수의 동굴", world: MARTIAL, trigger: EXPLORE, chance: 0.002, broadcast: true, skill: dokgo_gugeom, message: "폭포 뒤 동굴에서 은둔고수의 비급과 내공을 얻었다.", stats: { INNER_KI: 500 } }
+  lightning_body:     { name: "&e뇌격 체질", world: MARTIAL, trigger: EXPLORE, chance: 0.001, message: "낙뢰를 맞고 살아남아 뇌전 속성이 각성했다.", stats: { ENDURANCE: 100, STRENGTH: 100, AGILITY: 100, INTELLIGENCE: 100, MENTAL: 100, LUCK: 100, CHARISMA: 100, CHARM: 100 } }
+  dragon_pearl:       { name: "&b용의 여의주", world: MARTIAL, trigger: KILL, chance: 0.05, broadcast: true, message: "이무기의 여의주. 내공이 폭증한다.", stats: { INNER_KI: 1000 } }
+  heavenly_demon_blood: { name: "&4천마의 잔혈", world: MARTIAL, trigger: EXPLORE, chance: 0.0015, message: "고대 천마의 응축된 피. 마기 내공이 깃든다.", stats: { DEMON_KI: 800 } }
+  # ── 선계 ──
+  ownerless_caveheaven: { name: "&5주인 없는 동천", world: IMMORTAL, trigger: EXPLORE, chance: 0.001, broadcast: true, message: "봉인된 동천의 주인이 되었다.", stats: { IMMORTAL_KI: 400 } }
+  ancient_immortal_memory: { name: "&3고대 선인의 기억 결정", world: IMMORTAL, trigger: EXPLORE, chance: 0.002, skill: yeongi_basic, message: "경천지 심층, 고대 선인의 기억이 흘러든다.", stats: { IMMORTAL_KI: 300 } }
+  tribulation_lightning: { name: "&e천겁뇌해 뇌전", world: IMMORTAL, trigger: MEDITATE, chance: 0.005, message: "천겁의 뇌전을 흡수하고 살아남았다.", stats: { ENDURANCE: 200, STRENGTH: 200, AGILITY: 200, INTELLIGENCE: 200, MENTAL: 200, LUCK: 200, CHARISMA: 200, CHARM: 200 } }
+  # ── 요계 ──
+  moon_lake_training: { name: "&b월영담 보름달 수련", world: YOKAI, trigger: MEDITATE, chance: 0.02, message: "보름달 아래 월영담에서 요기를 흡수했다.", stats: { YOKAI_KI: 300 } }
+  gumiho_pearl:       { name: "&d구미호의 여의주", world: YOKAI, trigger: KILL, chance: 0.02, broadcast: true, skill: fox_fire, message: "초대 구미호의 여의주. 변신과 매혹이 극대화된다.", stats: { YOKAI_KI: 400, CHARM: 100 } }
+  goblin_club:        { name: "&6도깨비 방망이", world: YOKAI, trigger: MINE, chance: 0.01, message: "도깨비 광산의 전설의 방망이.", stats: { LUCK: 100 } }
+  # ── 지구 ──
+  gate_relic:         { name: "&9게이트 내부 유물", world: EARTH, trigger: KILL, chance: 0.01, message: "S급 게이트의 다른 세계 유물.", stats: { STRENGTH: 50, INTELLIGENCE: 50 } }
+  awakening_stone:    { name: "&e각성석", world: EARTH, trigger: KILL, chance: 0.02, message: "잠재 능력이 각성한다.", stats: { ENDURANCE: 100, STRENGTH: 100, AGILITY: 100, INTELLIGENCE: 100, MENTAL: 100, LUCK: 100, CHARISMA: 100, CHARM: 100 } }
+  # ── 그 외 세계 ──
+  ancient_dragon_heart: { name: "&c고대 용의 심장", world: DRAGON, trigger: KILL, chance: 0.05, broadcast: true, message: "고룡의 드래곤 하트. 용력이 폭증한다.", stats: { DRAGON_POWER: 500 } }
+  deep_palace_treasure: { name: "&3심해 궁전의 보물", world: OCEAN, trigger: EXPLORE, chance: 0.002, broadcast: true, message: "해왕의 보물이 잠든 심해 궁전.", stats: { OCEAN_POWER: 300 } }
+  lost_magitech_core: { name: "&b잃어버린 마도 코어", world: MAGITECH, trigger: MINE, chance: 0.02, message: "폐연구소의 고대 마도 코어.", stats: { MAGITECH_ENERGY: 300 } }
+  mutation_serum:     { name: "&2변이 혈청", world: APOCALYPSE, trigger: KILL, chance: 0.02, message: "변종의 정수가 담긴 혈청.", stats: { ENDURANCE: 50, STRENGTH: 50 } }
+  legendary_chip:     { name: "&d전설의 데이터 칩", world: CYBERPUNK, trigger: EXPLORE, chance: 0.003, message: "전설의 넷러너가 남긴 칩.", stats: { CYBER_ADAPTATION: 200 } }

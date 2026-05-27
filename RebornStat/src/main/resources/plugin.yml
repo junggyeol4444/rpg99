@@ -16,6 +16,8 @@ commands:
     description: 운기조식 (무협)
   answer:
     description: 깨달음 미니게임 답변
+  fortune:
+    description: 기연 목록·획득 확인
 permissions:
   rebornstat.use:
     default: true

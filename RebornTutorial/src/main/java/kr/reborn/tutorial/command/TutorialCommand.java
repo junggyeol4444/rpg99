@@ -24,6 +24,11 @@ public final class TutorialCommand implements CommandExecutor {
         switch (a[0].toLowerCase()) {
             case "exit": plugin.manager().exitToMain(p.getUniqueId()); break;
             case "start": plugin.manager().start(p.getUniqueId()); break;
+            case "train": plugin.manager().train(p); break;
+            case "choose":
+                if (a.length < 2) { Msg.send(p, "&7/rtut choose errand|underworld"); break; }
+                plugin.manager().resolveChoice(p.getUniqueId(), a[1]);
+                break;
         }
         return true;
     }

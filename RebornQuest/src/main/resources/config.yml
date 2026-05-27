@@ -29,12 +29,20 @@ quests:
     name: "&5&l[월드] 중간계 침략"
     type: WORLD
     world: DEMON
+    phases:
+      - { name: "차원의 틈 통과 — 선봉 진격", target: KILL, amount: 40 }
+      - { name: "중간계 거점 점령", target: SURVIVE, amount: 150 }
+      - { name: "연합군 영웅 격파", target: KILL, target-id: fantasy_hero_knight, amount: 1 }
     rewards: { stat: { DEMON_KI: 50, STRENGTH: 30 }, title: "중간계 침략자" }
     linked: marwang_invasion
   shinma_war_demon:
     name: "&c&l[월드] 신마전쟁 (마계 측)"
     type: WORLD
     world: DEMON
+    phases:
+      - { name: "무간지대 진격", target: KILL, amount: 40 }
+      - { name: "천군 방어선 돌파", target: KILL, amount: 60 }
+      - { name: "천계 본진 사수", target: SURVIVE, amount: 180 }
     rewards: { stat: { DEMON_KI: 100, STRENGTH: 50 }, title: "신마대전 참전자" }
     linked: shinma_war_heaven
   demon_lord_challenge:
@@ -50,12 +58,20 @@ quests:
     name: "&e&l[월드] 신마대전 (천계 측)"
     type: WORLD
     world: HEAVEN
+    phases:
+      - { name: "무간지대 출정", target: KILL, amount: 40 }
+      - { name: "마군 격퇴", target: KILL, amount: 60 }
+      - { name: "성벽 사수", target: SURVIVE, amount: 180 }
     rewards: { stat: { HEAVEN_KI: 100 }, title: "신마대전 영웅" }
     linked: shinma_war_demon
   fallen_angel_rebellion:
     name: "&8&l[월드] 타락 천사 반란"
     type: WORLD
     world: HEAVEN
+    phases:
+      - { name: "하층 타락 징후 조사", target: KILL, amount: 20 }
+      - { name: "3층 이하 점거 저지", target: SURVIVE, amount: 150 }
+      - { name: "대천사급 타락천사 토벌", target: KILL, target-id: heaven_fallen_archangel, amount: 1 }
     rewards: { stat: { HEAVEN_KI: 80, MENTAL: 30 }, title: "정화의 검" }
 
   # ─── 정령계 ──────────────
@@ -63,11 +79,23 @@ quests:
     name: "&a&l[월드] 정령왕의 분노"
     type: WORLD
     world: SPIRIT
+    phases:
+      - { name: "폭주한 야생 정령 진정", target: KILL, amount: 30 }
+      - { name: "원소 폭주 속 생존", target: SURVIVE, amount: 150 }
+      - { name: "오염 세력 토벌", target: KILL, target-id: spirit_corruptor, amount: 1 }
     rewards: { stat: { SPIRIT_POWER: 100 }, title: "자연의 수호자" }
   ancient_spirit_test:    { name: "&3태초 정령의 시험", type: TALK, target: primordial_lumiel, amount: 1, world: SPIRIT, rewards: { title: "태초의 인정" } }
 
   # ─── 무협 ──────────────
-  cult_appearance:        { name: "&5&l[월드] 마교 출현", type: WORLD, world: MARTIAL, rewards: { stat: { INNER_KI: 50 }, title: "강호 영웅" } }
+  cult_appearance:
+    name: "&5&l[월드] 마교 출현"
+    type: WORLD
+    world: MARTIAL
+    phases:
+      - { name: "마교도 출몰 진압", target: KILL, amount: 30 }
+      - { name: "정파 방어전", target: SURVIVE, amount: 150 }
+      - { name: "마교 호법 격파", target: KILL, target-id: martial_cult_protector, amount: 1 }
+    rewards: { stat: { INNER_KI: 50 }, title: "강호 영웅" }
   cheonma_descent:
     name: "&5&l[월드] 천마 강림"
     type: WORLD
@@ -80,24 +108,102 @@ quests:
     name: "&6무림 맹주 쟁탈전"
     type: WORLD
     world: MARTIAL
+    phases:
+      - { name: "비무대회 예선", target: KILL, amount: 20 }
+      - { name: "후보 고수들과 비무", target: KILL, target-id: martial_sect_leader, amount: 3 }
+      - { name: "맹주 결정전", target: KILL, target-id: martial_current_alliance_head, amount: 1 }
     rewards: { title: "무림맹주", stat: { CHARISMA: 200 } }
-  bigeup_hunt:            { name: "&7비급 쟁탈전", type: WORLD, world: MARTIAL, rewards: { item: book_dokgo_gugeom } }
-  cult_master_election:   { name: "&5마교 교주 결정전", type: WORLD, world: MARTIAL, rewards: { title: "마교 교주" } }
-  sapa_unification:       { name: "&4사파 통일전", type: WORLD, world: MARTIAL, rewards: { title: "사파 통일자" } }
+  bigeup_hunt:
+    name: "&7비급 쟁탈전"
+    type: WORLD
+    world: MARTIAL
+    phases:
+      - { name: "비급을 노리는 군웅 격퇴", target: KILL, amount: 40 }
+      - { name: "비급 쟁탈 결전", target: KILL, target-id: martial_sect_leader, amount: 1 }
+    rewards: { item: book_dokgo_gugeom, stat: { INNER_KI: 80 } }
+  cult_master_election:
+    name: "&5마교 교주 결정전"
+    type: WORLD
+    world: MARTIAL
+    phases:
+      - { name: "장로·호법 도전 격파", target: KILL, target-id: martial_cult_protector, amount: 3 }
+      - { name: "교주위 결전", target: KILL, target-id: martial_cult_master, amount: 1 }
+    rewards: { title: "마교 교주", stat: { DEMON_KI: 100 } }
+  sapa_unification:
+    name: "&4사파 통일전"
+    type: WORLD
+    world: MARTIAL
+    phases:
+      - { name: "군소 사파 규합", target: KILL, amount: 40 }
+      - { name: "혈마문·독문 패권 다툼", target: KILL, target-id: martial_sapa_lord, amount: 2 }
+    rewards: { title: "사파 통일자", stat: { INNER_KI: 80 } }
 
   # ─── 선계 ──────────────
-  demon_immortal_chaos:   { name: "&5&l[월드] 마선 대란", type: WORLD, world: IMMORTAL, rewards: { stat: { IMMORTAL_KI: 100 }, title: "선계 수호자" } }
-  cheonbup_anomaly:       { name: "&3&l[월드] 천겁 이변", type: WORLD, world: IMMORTAL, rewards: { stat: { IMMORTAL_KI: 80 }, title: "천겁 생환자" } }
-  cave_world_election:    { name: "&5&l[월드] 36동천 쟁탈전", type: WORLD, world: IMMORTAL, rewards: { title: "동천 주인" } }
+  demon_immortal_chaos:
+    name: "&5&l[월드] 마선 대란"
+    type: WORLD
+    world: IMMORTAL
+    phases:
+      - { name: "마선 추종자 토벌", target: KILL, amount: 40 }
+      - { name: "선계 침식 저지", target: SURVIVE, amount: 150 }
+      - { name: "부활한 고대 마선 봉인", target: KILL, target-id: immortal_demon_sage, amount: 1 }
+    rewards: { stat: { IMMORTAL_KI: 100 }, title: "선계 수호자" }
+  cheonbup_anomaly:
+    name: "&3&l[월드] 천겁 이변"
+    type: WORLD
+    world: IMMORTAL
+    phases:
+      - { name: "겁수 격퇴", target: KILL, amount: 30 }
+      - { name: "확장하는 천겁뇌해 생존", target: SURVIVE, amount: 200 }
+    rewards: { stat: { IMMORTAL_KI: 80 }, title: "천겁 생환자" }
+  cave_world_election:
+    name: "&5&l[월드] 36동천 쟁탈전"
+    type: WORLD
+    world: IMMORTAL
+    phases:
+      - { name: "동천 수호수 제압", target: KILL, amount: 20 }
+      - { name: "경쟁 수련자 격파", target: KILL, target-id: immortal_rival_cultivator, amount: 3 }
+    rewards: { title: "동천 주인", stat: { IMMORTAL_KI: 100 } }
   human_alchemist_hunt:   { name: "&4인약사 추적", type: KILL, target-id: immortal_human_alchemist, amount: 5, world: IMMORTAL, rewards: { stat: { IMMORTAL_KI: 50 }, title: "정의의 집행자" } }
 
   # ─── 요계 ──────────────
-  yokai_king_revival:     { name: "&5&l[월드] 요왕 부활", type: WORLD, world: YOKAI, rewards: { stat: { YOKAI_KI: 100 } } }
-  hundred_demon_chaos:    { name: "&5&l[월드] 백귀야행 대란", type: WORLD, world: YOKAI, rewards: { stat: { YOKAI_KI: 80 }, title: "야행 영웅" } }
-  human_world_invasion:   { name: "&5&l[월드] 인간계 침공", type: WORLD, world: YOKAI, rewards: { stat: { YOKAI_KI: 100 } } }
+  yokai_king_revival:
+    name: "&5&l[월드] 요왕 부활"
+    type: WORLD
+    world: YOKAI
+    phases:
+      - { name: "봉인 약화 — 요괴 창궐", target: KILL, amount: 40 }
+      - { name: "보름달 요기 폭주 속 생존", target: SURVIVE, amount: 150 }
+      - { name: "부활한 요왕 토벌", target: KILL, target-id: yokai_demon_emperor, amount: 1 }
+    rewards: { stat: { YOKAI_KI: 100 }, title: "요왕 토벌자" }
+  hundred_demon_chaos:
+    name: "&5&l[월드] 백귀야행 대란"
+    type: WORLD
+    world: YOKAI
+    phases:
+      - { name: "야시 구간 — 침입자 격퇴", target: KILL, amount: 30 }
+      - { name: "달빛 폭주 속 행렬 호위", target: SURVIVE, amount: 120 }
+      - { name: "타세계 침입자 수괴 처치", target: KILL, target-id: yokai_invader_lord, amount: 1 }
+    rewards: { stat: { YOKAI_KI: 80 }, title: "야행 영웅" }
+  human_world_invasion:
+    name: "&5&l[월드] 인간계 침공"
+    type: WORLD
+    world: YOKAI
+    phases:
+      - { name: "경계 균열 — 요괴 진격", target: KILL, amount: 50 }
+      - { name: "무림 반격 방어", target: SURVIVE, amount: 150 }
+    rewards: { stat: { YOKAI_KI: 100 } }
 
   # ─── 지구 ──────────────
-  gate_outbreak:          { name: "&3&l[월드] 게이트 대폭주", type: WORLD, world: EARTH, rewards: { stat: { LEVEL: 100 }, title: "헌터 영웅" } }
+  gate_outbreak:
+    name: "&3&l[월드] 게이트 대폭주"
+    type: WORLD
+    world: EARTH
+    phases:
+      - { name: "다수 게이트 동시 개방", target: KILL, amount: 60 }
+      - { name: "도심 방어선 사수", target: SURVIVE, amount: 180 }
+      - { name: "브레이크 게이트 보스 처치", target: KILL, target-id: earth_gate_s, amount: 3 }
+    rewards: { stat: { LEVEL: 100 }, title: "헌터 영웅" }
   labyrinth_100f:
     name: "&0&l[월드] 미궁 100층 정복"
     type: WORLD
@@ -111,41 +217,151 @@ quests:
   gate_master_trial:      { name: "&3게이트 키퍼 시련", type: KILL, target-id: earth_gate_s, amount: 3, world: EARTH, rewards: { title: "게이트 키퍼" } }
 
   # ─── 마도공학 ──────────────
-  magitech_runaway:       { name: "&c&l[월드] 마도 폭주", type: WORLD, world: MAGITECH, rewards: { stat: { MAGITECH_ENERGY: 100 } } }
+  magitech_runaway:
+    name: "&c&l[월드] 마도 폭주"
+    type: WORLD
+    world: MAGITECH
+    phases:
+      - { name: "폭주 골렘·드론 제압", target: KILL, amount: 40 }
+      - { name: "도시 간 확산 저지", target: SURVIVE, amount: 150 }
+      - { name: "폭주 핵심부 제거", target: KILL, target-id: magitech_runaway_core, amount: 1 }
+    rewards: { stat: { MAGITECH_ENERGY: 100 }, title: "폭주 진압자" }
 
   # ─── 아포칼립스 ──────────────
-  apoc_survivor_war:      { name: "&8&l[월드] 생존자 전쟁", type: WORLD, world: APOCALYPSE, rewards: { stat: { ENDURANCE: 50, STRENGTH: 50 } } }
+  apoc_survivor_war:
+    name: "&8&l[월드] 생존자 전쟁"
+    type: WORLD
+    world: APOCALYPSE
+    phases:
+      - { name: "자원 쟁탈 교전", target: KILL, amount: 40 }
+      - { name: "방사능 폭풍 속 거점 사수", target: SURVIVE, amount: 180 }
+      - { name: "적 세력 지도자 처치", target: KILL, target-id: apoc_warlord, amount: 1 }
+    rewards: { stat: { ENDURANCE: 50, STRENGTH: 50 }, title: "종말의 전사" }
 
   # ─── 사이버펑크 ──────────────
-  corp_war:               { name: "&c&l[월드] 기업 전쟁", type: WORLD, world: CYBERPUNK, rewards: { stat: { CYBER_ADAPTATION: 100 } } }
-  ai_liberation:          { name: "&5&l[월드] AI 반란", type: WORLD, world: CYBERPUNK, rewards: { title: "AI 해방자" } }
-  rebellion_revolution:   { name: "&6&l[월드] 리벨리온 혁명", type: WORLD, world: CYBERPUNK, rewards: { title: "혁명의 기수" } }
-  megacorp_takeover:      { name: "&8메가코프 인수", type: WORLD, world: CYBERPUNK, rewards: { title: "메가코프 황제" } }
+  corp_war:
+    name: "&c&l[월드] 기업 전쟁"
+    type: WORLD
+    world: CYBERPUNK
+    phases:
+      - { name: "메가코프 전투병기 격파", target: KILL, amount: 40 }
+      - { name: "전선 교착 — 거점 사수", target: SURVIVE, amount: 150 }
+      - { name: "적 메가코프 본사 제압", target: KILL, target-id: cyber_corp_warbot, amount: 1 }
+    rewards: { stat: { CYBER_ADAPTATION: 100 }, title: "기업전 생존자" }
+  ai_liberation:
+    name: "&5&l[월드] AI 반란"
+    type: WORLD
+    world: CYBERPUNK
+    phases:
+      - { name: "폭주 AI 단말 무력화", target: KILL, amount: 40 }
+      - { name: "도시 인프라 마비 속 생존", target: SURVIVE, amount: 150 }
+    rewards: { title: "AI 해방자", stat: { CYBER_ADAPTATION: 80 } }
+  rebellion_revolution:
+    name: "&6&l[월드] 리벨리온 혁명"
+    type: WORLD
+    world: CYBERPUNK
+    phases:
+      - { name: "기업 보안대 격퇴", target: KILL, amount: 50 }
+      - { name: "봉기 거점 사수", target: SURVIVE, amount: 150 }
+    rewards: { title: "혁명의 기수", stat: { CYBER_ADAPTATION: 80 } }
+  megacorp_takeover:
+    name: "&8메가코프 인수"
+    type: WORLD
+    world: CYBERPUNK
+    phases:
+      - { name: "경쟁 기업 자산 장악", target: KILL, amount: 30 }
+      - { name: "적대 메가코프 2곳 흡수", target: KILL, target-id: cyber_corp_warbot, amount: 2 }
+    rewards: { title: "메가코프 황제", stat: { CYBER_ADAPTATION: 100 } }
 
   # ─── 드래곤 ──────────────
-  dragon_king_revival:    { name: "&6&l[월드] 용왕 부활", type: WORLD, world: DRAGON, rewards: { stat: { DRAGON_POWER: 200 } } }
+  dragon_king_revival:
+    name: "&6&l[월드] 용왕 부활"
+    type: WORLD
+    world: DRAGON
+    phases:
+      - { name: "5대 가문 분쟁 개입", target: KILL, amount: 30 }
+      - { name: "용왕의 시험 — 생존", target: SURVIVE, amount: 180 }
+      - { name: "부활한 고대 용왕 격돌", target: KILL, target-id: dragon_ancient_king, amount: 1 }
+    rewards: { stat: { DRAGON_POWER: 200 }, title: "용왕에 맞선 자" }
 
   # ─── 해양 ──────────────
-  sea_king_revival:       { name: "&3&l[월드] 바다의 왕 부활", type: WORLD, world: OCEAN, rewards: { stat: { OCEAN_POWER: 200 } } }
-  great_sea_battle:       { name: "&3&l[월드] 대해전", type: WORLD, world: OCEAN, rewards: { title: "대해전의 영웅" } }
-  deep_sea_palace:        { name: "&3심해 궁전 탐사", type: WORLD, world: OCEAN, rewards: { title: "심해 탐사자" } }
-  pirate_king_election:   { name: "&6해적왕 선출", type: WORLD, world: OCEAN, rewards: { title: "해적왕" } }
+  sea_king_revival:
+    name: "&3&l[월드] 바다의 왕 부활"
+    type: WORLD
+    world: OCEAN
+    phases:
+      - { name: "해양 괴물 창궐 진압", target: KILL, amount: 40 }
+      - { name: "해일 속 함대 사수", target: SURVIVE, amount: 180 }
+      - { name: "깨어난 해왕 토벌", target: KILL, target-id: ocean_sea_king, amount: 1 }
+    rewards: { stat: { OCEAN_POWER: 200 }, title: "해왕에 맞선 자" }
+  great_sea_battle:
+    name: "&3&l[월드] 대해전"
+    type: WORLD
+    world: OCEAN
+    phases:
+      - { name: "적 함대 격침", target: KILL, amount: 50 }
+      - { name: "기함 방어전", target: SURVIVE, amount: 150 }
+    rewards: { title: "대해전의 영웅", stat: { OCEAN_POWER: 100 } }
+  deep_sea_palace:
+    name: "&3심해 궁전 탐사"
+    type: WORLD
+    world: OCEAN
+    phases:
+      - { name: "심해 군주 돌파", target: KILL, amount: 20 }
+      - { name: "수압·해류 속 생존", target: SURVIVE, amount: 180 }
+    rewards: { title: "심해 탐사자", stat: { OCEAN_POWER: 100 } }
+  pirate_king_election:
+    name: "&6해적왕 선출"
+    type: WORLD
+    world: OCEAN
+    phases:
+      - { name: "경쟁 선장 함대 격침", target: KILL, target-id: ocean_pirate_captain, amount: 3 }
+      - { name: "해적왕 결전", target: KILL, target-id: ocean_pirate_king, amount: 1 }
+    rewards: { title: "해적왕", stat: { OCEAN_POWER: 150 } }
 
   # ─── 다세계 연동 (3세계) ──────────────
   great_war_immortal_demon_yokai:
     name: "&5&l[월드:3세계] 대선마요 전쟁"
     type: WORLD
     world: IMMORTAL
+    phases:
+      - { name: "요계 경유 마선군 진격", target: KILL, amount: 50 }
+      - { name: "선계 방어선 사수", target: SURVIVE, amount: 200 }
+      - { name: "부활한 마선 본체 토벌", target: KILL, target-id: immortal_demon_sage, amount: 1 }
     rewards: { stat: { IMMORTAL_KI: 200 }, title: "삼계대전 생환자" }
   dimensional_rift:
     name: "&0&l[월드:3세계] 차원 균열 대란"
     type: WORLD
     world: FANTASY
+    phases:
+      - { name: "심연 균열에서 쏟아진 존재 격퇴", target: KILL, amount: 60 }
+      - { name: "세 세계 균열 봉인 — 생존", target: SURVIVE, amount: 240 }
     rewards: { stat: { MENTAL: 100 }, title: "균열의 봉인자" }
 
   # ─── 히든 클래스 트리거 퀘스트 ──────────────
   abyss_survival:         { name: "&0심연 생환", type: SURVIVE, target: ABYSS, amount: 600, rewards: { title: "심연의 사도" } }
   dungeon_core_conquest:  { name: "&5던전 코어 정복", type: KILL, target-id: dungeon_core, amount: 1, rewards: { title: "던전 마스터" } }
-  god_trial:              { name: "&6신의 시험", type: WORLD, rewards: { stat: { DIVINITY: 100 }, title: "신 후계자" } }
-  time_warden_trial:      { name: "&e시간 수호자 시험", type: WORLD, world: TIME_REALM, rewards: { title: "시간 수호자 견습생" } }
-  dream_lord_trial:       { name: "&d꿈 군주 시험", type: WORLD, world: DREAM, rewards: { title: "꿈의 지배자" } }
+  god_trial:
+    name: "&6신의 시험"
+    type: WORLD
+    phases:
+      - { name: "신의 사도 격파", target: KILL, amount: 30 }
+      - { name: "신성의 시련 견딤", target: SURVIVE, amount: 200 }
+      - { name: "신의 대리자 증명", target: KILL, target-id: divine_herald, amount: 1 }
+    rewards: { stat: { DIVINITY: 100 }, title: "신 후계자" }
+  time_warden_trial:
+    name: "&e시간 수호자 시험"
+    type: WORLD
+    world: TIME_REALM
+    phases:
+      - { name: "시간 역류 속 생존", target: SURVIVE, amount: 180 }
+      - { name: "시간 이상체 제거", target: KILL, amount: 20 }
+    rewards: { title: "시간 수호자 견습생", stat: { MENTAL: 100 } }
+  dream_lord_trial:
+    name: "&d꿈 군주 시험"
+    type: WORLD
+    world: DREAM
+    phases:
+      - { name: "악몽 격퇴", target: KILL, amount: 30 }
+      - { name: "꿈의 미궁 생존", target: SURVIVE, amount: 180 }
+    rewards: { title: "꿈의 지배자", stat: { MENTAL: 100 } }

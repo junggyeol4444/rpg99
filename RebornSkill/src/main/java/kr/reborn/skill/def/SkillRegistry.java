@@ -60,4 +60,8 @@ public final class SkillRegistry {
 
     public SkillDef get(String id) { return defs.get(id); }
     public java.util.Collection<SkillDef> all() { return defs.values(); }
+
+    /** 런타임 동적 등록 (스킬 창조 시스템). */
+    public void register(SkillDef def) { defs.put(def.id, def); }
+    public boolean exists(String id) { return defs.containsKey(id); }
 }

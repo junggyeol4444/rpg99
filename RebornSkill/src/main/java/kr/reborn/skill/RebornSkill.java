@@ -36,11 +36,14 @@ public final class RebornSkill extends JavaPlugin {
         this.energy = new EnergyManager(this);
         this.creator = new SkillCreator(this);
         registry.load();
+        creator.load();  // 이전에 창조된 스킬 복원
 
         getCommand("skill").setExecutor(new SkillCommand(this));
         getCommand("energy").setExecutor(new EnergyCommand(this));
         getServer().getPluginManager().registerEvents(
                 new kr.reborn.skill.effect.SkillProjectileListener(this), this);
+        getServer().getPluginManager().registerEvents(
+                new kr.reborn.skill.create.SkillCreationListener(this), this);
 
         long tick = getConfig().getLong("energy-recover-ticks", 20L);
         RebornCore.get().scheduler().runTimer(energy::tickAll, tick, tick);

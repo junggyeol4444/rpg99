@@ -17,7 +17,7 @@ public final class QuestCommand implements CommandExecutor {
                              @NotNull String l, @NotNull String[] a) {
         if (!(s instanceof Player p)) return true;
         if (a.length == 0) {
-            Msg.send(p, "&7/quest list | accept <id> | active | track <id> | create <목표설명>");
+            Msg.send(p, "&7/quest list | accept <id> | abandon <id> | active");
             return true;
         }
         switch (a[0].toLowerCase()) {
@@ -28,15 +28,20 @@ public final class QuestCommand implements CommandExecutor {
                 break;
             case "accept":
                 if (a.length < 2) return true;
-                if (!plugin.engine().accept(p, a[1])) Msg.error(p, "퀘스트 없음.");
+                if (!plugin.engine().accept(p, a[1])) Msg.error(p, "퀘스트 없음 또는 이미 진행 중.");
+                break;
+            case "abandon":
+                if (a.length < 2) return true;
+                if (!plugin.engine().abandon(p, a[1])) Msg.error(p, "진행 중이 아닌 퀘스트.");
                 break;
             case "active":
-                Msg.send(p, "&6진행 중:");
-                plugin.engine().activeFor(p.getUniqueId()).forEach((id, prog) -> {
-                    var q = plugin.registry().get(id);
-                    p.sendMessage("§e" + id + " §7- " + (q != null ? q.name : "?") + " §f"
-                            + prog.count + "/" + (q != null ? q.amount : "?"));
-                });
+                var ids = plugin.engine().activeFor(p.getUniqueId()).keySet();
+                if (ids.isEmpty()) { Msg.send(p, "&7진행 중인 퀘스트가 없다."); break; }
+                Msg.send(p, "&6진행 중 (" + ids.size() + "):");
+                for (String id : ids) {
+                    String line = plugin.engine().describe(p.getUniqueId(), id);
+                    if (line != null) p.sendMessage("§e" + id + " §7- " + line);
+                }
                 break;
             case "create":
                 if (a.length < 2) return true;

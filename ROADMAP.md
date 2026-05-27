@@ -38,10 +38,15 @@
 
 **다음: Step 4 (퀘스트 엔진).**
 
-### Step 4: 퀘스트 12종 타입 전부 작동
-- KILL, GATHER, TALK, MOVE, ESCORT, CRAFT
-- SKILL_USE, SURVIVE, EXPLORE, DEFEND, DELIVER, CUSTOM
-- 단계별 진행, 추적 ActionBar
+### ✓ Step 4: 퀘스트 엔진 (단계형 진행 + 이벤트 연동)
+- ✓ 통합 진행 엔진 progress() — 모든 타입·다단계가 하나의 정확한 경로로
+- ✓ **다단계 WORLD 퀘스트(36종) 실제 작동** — 단계 완료 시 다음 단계, 마지막에 완료
+- ✓ 이벤트 연동 6종: KILL·GATHER(획득)·CRAFT(제작)·TALK(NPC대화)·EXPLORE(월드입장)·SURVIVE(생존 타이머+사망 리셋)
+- ✓ CUSTOM API(custom()) — ESCORT/DEFEND/MOVE/DELIVER/SKILL_USE는 이 경로로 구동(차후 전용 연동)
+- ✓ ActionBar 단계 진행 표시, /quest accept|abandon|active, 후속 퀘스트 자동 수락
+- ✓ 기존 onKill→complete의 ConcurrentModification 잠재 버그 수정
+
+**다음: Step 5 (세계 디렉터 AI).**
 
 ### Step 5: 세계 AI 실제 데이터 분석
 - RebornEconomy 실제 거래 로그 분석

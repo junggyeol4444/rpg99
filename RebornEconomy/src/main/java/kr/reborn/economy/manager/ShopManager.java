@@ -76,6 +76,18 @@ public final class ShopManager {
     }
 
     public Shop get(String id) { return shops.get(id); }
+    public java.util.Collection<Shop> all() { return shops.values(); }
+
+    /** NPC가 차린 상점 등록 (RebornNpcWorldImpactEvent 소비). 기본 잡화 매대 포함. */
+    public Shop registerNpc(String id, String name) {
+        Shop existing = shops.get(id);
+        if (existing != null) return existing;
+        Shop s = new Shop(id, name);
+        s.items.add(new ShopItem("bread", org.bukkit.Material.BREAD, "GOLD_COIN", 8, 2, -1, 0));
+        s.items.add(new ShopItem("torch", org.bukkit.Material.TORCH, "GOLD_COIN", 4, 1, -1, 0));
+        shops.put(id, s);
+        return s;
+    }
 
     public void open(Player p, String shopId) {
         Shop shop = shops.get(shopId);

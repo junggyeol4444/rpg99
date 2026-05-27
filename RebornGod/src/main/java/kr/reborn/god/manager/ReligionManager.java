@@ -32,6 +32,17 @@ public final class ReligionManager {
     }
 
     public Religion get(String id) { return religions.get(id); }
+    public java.util.Collection<Religion> all() { return religions.values(); }
+
+    /** NPC가 창시한 교단 등록 (RebornNpcWorldImpactEvent 소비). 신 자격 검사 없음. */
+    public Religion registerNpc(String id, String name, String npcId) {
+        Religion existing = religions.get(id);
+        if (existing != null) return existing;
+        Religion r = new Religion(id, name,
+                java.util.UUID.nameUUIDFromBytes(("npc:" + npcId).getBytes()));
+        religions.put(id, r);
+        return r;
+    }
 
     public static final class Religion {
         public final String id;

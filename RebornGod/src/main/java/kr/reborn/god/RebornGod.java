@@ -23,6 +23,8 @@ public final class RebornGod extends JavaPlugin {
         this.domains = new DomainManager(this);
         this.religions = new ReligionManager(this);
         getCommand("god").setExecutor(new GodCommand(this));
+        getServer().getPluginManager().registerEvents(
+                new kr.reborn.god.listener.GodWorldImpactListener(this), this);
         getLogger().info("RebornGod 활성화");
     }
 

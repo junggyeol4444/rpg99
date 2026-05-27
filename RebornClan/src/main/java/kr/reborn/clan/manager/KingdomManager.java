@@ -43,6 +43,17 @@ public final class KingdomManager {
         return kingdoms.get(clan.kingdomId);
     }
 
+    public java.util.Collection<Kingdom> all() { return kingdoms.values(); }
+
+    /** NPC가 초월(ASCEND)하여 세운 왕국 등록 (RebornNpcWorldImpactEvent 소비). 가문 조건 없음. */
+    public Kingdom registerNpc(String id, String name, String npcId) {
+        Kingdom existing = kingdoms.get(id);
+        if (existing != null) return existing;
+        Kingdom k = new Kingdom(id, name, UUID.nameUUIDFromBytes(("npc:" + npcId).getBytes()));
+        kingdoms.put(id, k);
+        return k;
+    }
+
     public void ally(Player king, String otherKingdomId) {
         Kingdom mine = ofPlayer(king.getUniqueId());
         Kingdom other = kingdoms.get(otherKingdomId);

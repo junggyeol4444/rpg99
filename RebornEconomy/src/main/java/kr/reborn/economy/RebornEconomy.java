@@ -61,6 +61,9 @@ public final class RebornEconomy extends JavaPlugin {
         // 경매 만료 체크: 1분마다
         RebornCore.get().scheduler().runTimerAsync(() -> auctions.tickExpire(), 1200L, 1200L);
 
+        getServer().getPluginManager().registerEvents(
+                new kr.reborn.economy.listener.EconomyWorldImpactListener(this), this);
+
         getLogger().info("RebornEconomy 활성화: 통화 " + currencies.all().size() + "종");
     }
 

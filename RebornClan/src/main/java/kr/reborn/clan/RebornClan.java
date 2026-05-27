@@ -35,6 +35,8 @@ public final class RebornClan extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(marriages, this);
         getServer().getPluginManager().registerEvents(territories, this);
+        getServer().getPluginManager().registerEvents(
+                new kr.reborn.clan.listener.ClanWorldImpactListener(this), this);
 
         getLogger().info("RebornClan 활성화");
     }

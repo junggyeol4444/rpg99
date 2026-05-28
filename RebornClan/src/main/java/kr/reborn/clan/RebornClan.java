@@ -14,6 +14,7 @@ public final class RebornClan extends JavaPlugin {
     private MarriageManager marriages;
     private TerritoryManager territories;
     private KingdomManager kingdoms;
+    private kr.reborn.clan.power.PowerEngine powers;
 
     public static RebornClan get() { return instance; }
 
@@ -25,6 +26,7 @@ public final class RebornClan extends JavaPlugin {
         this.marriages = new MarriageManager(this);
         this.territories = new TerritoryManager(this);
         this.kingdoms = new KingdomManager(this);
+        this.powers = new kr.reborn.clan.power.PowerEngine(this);
 
         getCommand("clan").setExecutor(new ClanCommand(this));
         getCommand("marry").setExecutor(new MarryCommand(this));
@@ -51,4 +53,5 @@ public final class RebornClan extends JavaPlugin {
     public MarriageManager marriages() { return marriages; }
     public TerritoryManager territories() { return territories; }
     public KingdomManager kingdoms() { return kingdoms; }
+    public kr.reborn.clan.power.PowerEngine powers() { return powers; }
 }

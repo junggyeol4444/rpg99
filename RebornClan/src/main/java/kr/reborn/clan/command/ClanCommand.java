@@ -20,9 +20,30 @@ public final class ClanCommand implements CommandExecutor {
         if (!(s instanceof Player p)) return true;
         if (a.length == 0) {
             Msg.send(p, "&7/clan create <id> <name> | join <id> | leave | invite <player> | info | list | treasury");
+            Msg.send(p, "&7        | power list | power use <권능명>");
             return true;
         }
         switch (a[0].toLowerCase()) {
+            case "power": {
+                if (a.length < 2 || (a.length >= 2 && "list".equalsIgnoreCase(a[1]))) {
+                    Msg.send(p, "&6=== 알려진 권능 (" + plugin.powers().all().size() + ") ===");
+                    int n = 0;
+                    for (String name : plugin.powers().all()) {
+                        if (n++ >= 30) { p.sendMessage("§7…"); break; }
+                        p.sendMessage("  §7• §f" + name);
+                    }
+                    Msg.send(p, "&7사용: /clan power use <권능명>");
+                    break;
+                }
+                if ("use".equalsIgnoreCase(a[1]) && a.length >= 3) {
+                    StringBuilder name = new StringBuilder(a[2]);
+                    for (int i = 3; i < a.length; i++) name.append(' ').append(a[i]);
+                    if (!plugin.powers().use(p, name.toString())) {
+                        Msg.error(p, "권능 없음 또는 쿨다운: " + name);
+                    }
+                }
+                break;
+            }
             case "create":
                 if (a.length < 3) return true;
                 plugin.clans().create(p, a[1], a[2]);

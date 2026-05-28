@@ -93,6 +93,38 @@ public final class WorldAI {
                 && state.tension < 20) {
             tryQuest("PEACE_FESTIVAL", now, "평화 축제");
         }
+        // 세계별 특수 사건 — 낮은 확률로 자율 발동 (모든 월드 퀘스트가 시간에 따라 돌아간다)
+        double special = plugin.getConfig().getDouble("thresholds.world-special-percent-per-cycle", 1.5) / 100.0;
+        if (Rand.chance(special)) {
+            tryQuest("WORLD_SPECIAL", now, worldSpecialLabel());
+        }
+        // 봉기·반란 — 안정도 낮을 때
+        if (state.stability < 25 && Rand.chance(0.05)) {
+            tryQuest("REVOLT", now, "봉기·반란");
+        }
+        // 보스 강림 — 매우 낮은 확률, 큰 사건
+        if (Rand.chance(0.003)) {
+            tryQuest("BOSS_DESCENT", now, "전설의 존재 강림");
+        }
+    }
+
+    private String worldSpecialLabel() {
+        switch (world) {
+            case HEAVEN: return "타락 천사 반란 조짐";
+            case SPIRIT: return "정령왕의 분노";
+            case IMMORTAL: return "마선 대란";
+            case YOKAI: return "백귀야행 대란";
+            case EARTH: return "게이트 대폭주";
+            case MAGITECH: return "마도 폭주";
+            case APOCALYPSE: return "생존자 전쟁";
+            case CYBERPUNK: return "기업 전쟁";
+            case DRAGON: return "용왕의 시험";
+            case OCEAN: return "바다의 왕 부활";
+            case MARTIAL: return "비급 쟁탈전";
+            case DEMON: return "신마전쟁";
+            case FANTASY: return "차원의 틈 확장";
+            default: return "세계 특수 사건";
+        }
     }
 
     private void tryQuest(String key, long now, String label) {
@@ -137,15 +169,59 @@ public final class WorldAI {
                 switch (world) {
                     case FANTASY: return "marwang_invasion";
                     case DEMON: return "marwang_intermid_invasion";
+                    case HEAVEN: return "shinma_war_heaven";
                     case MARTIAL: return "cult_appearance";
                     case OCEAN: return "great_sea_battle";
+                    case CYBERPUNK: return "corp_war";
+                    case APOCALYPSE: return "apoc_survivor_war";
+                    case IMMORTAL: return "demon_immortal_chaos";
                     default: return null;
                 }
-            case "ECON_CRISIS": return null;
             case "MOB_INVASION":
-                if (world == kr.reborn.core.data.WorldKey.YOKAI) return "yokai_king_revival";
-                return null;
-            case "PEACE_FESTIVAL": return null;
+                switch (world) {
+                    case YOKAI: return "yokai_king_revival";
+                    case EARTH: return "gate_outbreak";
+                    case DEMON: return "shinma_war_demon";
+                    case OCEAN: return "sea_king_revival";
+                    case DRAGON: return "dragon_king_revival";
+                    default: return null;
+                }
+            case "WORLD_SPECIAL":
+                switch (world) {
+                    case HEAVEN: return "fallen_angel_rebellion";
+                    case SPIRIT: return "spirit_king_rage";
+                    case IMMORTAL: return "demon_immortal_chaos";
+                    case YOKAI: return "hundred_demon_chaos";
+                    case EARTH: return "gate_outbreak";
+                    case MAGITECH: return "magitech_runaway";
+                    case APOCALYPSE: return "apoc_survivor_war";
+                    case CYBERPUNK: return "ai_liberation";
+                    case DRAGON: return "dragon_king_revival";
+                    case OCEAN: return "sea_king_revival";
+                    case MARTIAL: return "bigeup_hunt";
+                    case DEMON: return "shinma_war_demon";
+                    case FANTASY: return "dimensional_rift";
+                    default: return null;
+                }
+            case "REVOLT":
+                switch (world) {
+                    case CYBERPUNK: return "rebellion_revolution";
+                    case MARTIAL: return "sapa_unification";
+                    case IMMORTAL: return "cave_world_election";
+                    case OCEAN: return "pirate_king_election";
+                    default: return null;
+                }
+            case "BOSS_DESCENT":
+                switch (world) {
+                    case MARTIAL: return "cheonma_descent";
+                    case EARTH: return "labyrinth_100f";
+                    case FANTASY: return "marwang_invasion";
+                    case DRAGON: return "dragon_king_revival";
+                    case OCEAN: return "sea_king_revival";
+                    default: return null;
+                }
+            case "ECON_CRISIS":
+            case "PEACE_FESTIVAL":
             default: return null;
         }
     }

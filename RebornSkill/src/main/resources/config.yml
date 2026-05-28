@@ -172,3 +172,121 @@ skills:
   # 절대자 차원 이동 스킬
   # ============================================================
   dimension_travel:       { name: "&5✦ 차원 이동", world: GOD, category: MAGIC, min-tier-stats: 5000, cost: { type: MENTAL, amount: 500 }, cooldown-seconds: 3600, learn: ACHIEVEMENT }
+
+  # ============================================================
+  # 마계 — 마기술 (DEMONIC)
+  # ============================================================
+  demon_hellfire:       { name: "&4🔥 지옥불", world: DEMON, category: DEMONIC, type: PROJECTILE, cost: { type: DEMON_KI, amount: 20 }, cooldown-seconds: 3, damage: "demon_ki * 1.8 + strength", element: FIRE, learn: AUTO }
+  demon_soul_drain:     { name: "&8🩸 영혼 흡수", world: DEMON, category: DEMONIC, type: DOT, cost: { type: DEMON_KI, amount: 25 }, cooldown-seconds: 8, damage: "demon_ki * 1.2", element: DARK, duration-ticks: 100, learn: BOOK }
+  demon_maggi_blast:    { name: "&5💥 마기 폭발", world: DEMON, category: DEMONIC, type: AOE, cost: { type: DEMON_KI, amount: 35 }, cooldown-seconds: 6, damage: "demon_ki * 2.0", element: DARK, aoe-radius: 6, learn: BOOK }
+  demon_shadow_dash:    { name: "&0🌑 그림자 도약", world: DEMON, category: DEMONIC, type: DASH, cost: { type: DEMON_KI, amount: 10 }, cooldown-seconds: 5, projectile-speed: 1.9, learn: AUTO }
+  demon_hellhound:      { name: "&c🐺 헬하운드 소환", world: DEMON, category: DEMONIC, type: SUMMON, cost: { type: DEMON_KI, amount: 50 }, cooldown-seconds: 30, summon-mob: WOLF, duration-ticks: 600, learn: NPC }
+  demon_maggi_shield:   { name: "&8🛡 마기 방패", world: DEMON, category: DEMONIC, type: BUFF, cost: { type: DEMON_KI, amount: 30 }, cooldown-seconds: 20, duration-ticks: 200, learn: AUTO }
+  demon_chain_of_pain:  { name: "&4⛓ 고통의 사슬", world: DEMON, category: DEMONIC, type: CHAIN, cost: { type: DEMON_KI, amount: 40 }, cooldown-seconds: 7, damage: "demon_ki * 1.5", element: DARK, radius: 5, learn: BOOK }
+  demon_lord_authority: { name: "&5👑 마왕의 권능", world: DEMON, category: DEMONIC, type: AOE, min-tier-stats: 3500, cost: { type: DEMON_KI, amount: 200 }, cooldown-seconds: 60, damage: "demon_ki * 5", element: DARK, aoe-radius: 12, learn: ACHIEVEMENT }
+  demon_corruption:     { name: "&2☠ 부패의 저주", world: DEMON, category: DEMONIC, type: DOT, cost: { type: DEMON_KI, amount: 30 }, cooldown-seconds: 10, damage: "demon_ki * 1.0", element: POISON, duration-ticks: 120, learn: BOOK }
+
+  # ============================================================
+  # 천계 — 신성술 (DIVINE)
+  # ============================================================
+  heaven_holy_bolt:     { name: "&e✨ 성광탄", world: HEAVEN, category: DIVINE, type: PROJECTILE, cost: { type: HEAVEN_KI, amount: 15 }, cooldown-seconds: 2, damage: "heaven_ki * 1.5", element: HOLY, learn: AUTO }
+  heaven_smite:         { name: "&f⚡ 천벌", world: HEAVEN, category: DIVINE, type: AOE, cost: { type: HEAVEN_KI, amount: 40 }, cooldown-seconds: 8, damage: "heaven_ki * 2.2", element: HOLY, aoe-radius: 7, learn: BOOK }
+  heaven_heal_light:    { name: "&a✚ 치유의 빛", world: HEAVEN, category: DIVINE, type: HEAL, cost: { type: HEAVEN_KI, amount: 25 }, cooldown-seconds: 6, damage: "-(heaven_ki * 2)", radius: 8, learn: AUTO }
+  heaven_purify:        { name: "&b○ 정화", world: HEAVEN, category: DIVINE, type: HEAL, cost: { type: HEAVEN_KI, amount: 30 }, cooldown-seconds: 15, damage: "-(heaven_ki * 1.5)", learn: BOOK }
+  heaven_light_shield:  { name: "&f🛡 빛의 방패", world: HEAVEN, category: DIVINE, type: BUFF, cost: { type: HEAVEN_KI, amount: 25 }, cooldown-seconds: 15, duration-ticks: 200, learn: AUTO }
+  heaven_judgment:      { name: "&6⚖ 심판", world: HEAVEN, category: DIVINE, type: AOE, min-tier-stats: 2000, cost: { type: HEAVEN_KI, amount: 120 }, cooldown-seconds: 40, damage: "heaven_ki * 4", element: HOLY, aoe-radius: 10, learn: ACHIEVEMENT }
+  heaven_angel_wings:   { name: "&f🕊 천사의 날개", world: HEAVEN, category: DIVINE, type: BUFF, cost: { type: HEAVEN_KI, amount: 20 }, cooldown-seconds: 30, duration-ticks: 300, learn: AUTO }
+  heaven_holy_chain:    { name: "&e⛓ 성스러운 사슬", world: HEAVEN, category: DIVINE, type: CHAIN, cost: { type: HEAVEN_KI, amount: 35 }, cooldown-seconds: 7, damage: "heaven_ki * 1.6", element: HOLY, radius: 5, learn: BOOK }
+
+  # ============================================================
+  # 정령계 — 정령술 (SPIRIT, 원소별)
+  # ============================================================
+  spirit_flame_lance:   { name: "&c🔥 화염 정령술", world: SPIRIT, category: SPIRIT, type: PROJECTILE, cost: { type: SPIRIT_POWER, amount: 15 }, cooldown-seconds: 2, damage: "spirit_power * 1.6", element: FIRE, learn: AUTO }
+  spirit_aqua_heal:     { name: "&3💧 물 정령술", world: SPIRIT, category: SPIRIT, type: HEAL, cost: { type: SPIRIT_POWER, amount: 20 }, cooldown-seconds: 6, damage: "-(spirit_power * 2)", element: WATER, learn: AUTO }
+  spirit_gale_step:     { name: "&a🍃 바람 정령술", world: SPIRIT, category: SPIRIT, type: DASH, cost: { type: SPIRIT_POWER, amount: 12 }, cooldown-seconds: 5, element: WIND, projectile-speed: 2.0, learn: AUTO }
+  spirit_quake:         { name: "&6⛰ 대지 정령술", world: SPIRIT, category: SPIRIT, type: AOE, cost: { type: SPIRIT_POWER, amount: 30 }, cooldown-seconds: 7, damage: "spirit_power * 1.8", element: NATURE, aoe-radius: 6, learn: BOOK }
+  spirit_thunder:       { name: "&e⚡ 뇌전 정령술", world: SPIRIT, category: SPIRIT, type: CHAIN, cost: { type: SPIRIT_POWER, amount: 28 }, cooldown-seconds: 6, damage: "spirit_power * 1.7", element: LIGHTNING, radius: 5, learn: BOOK }
+  spirit_frost_nova:    { name: "&b❄ 빙결 정령술", world: SPIRIT, category: SPIRIT, type: AOE, cost: { type: SPIRIT_POWER, amount: 32 }, cooldown-seconds: 8, damage: "spirit_power * 1.9", element: ICE, aoe-radius: 6, learn: BOOK }
+  spirit_summon_lord:   { name: "&5✦ 정령 소환", world: SPIRIT, category: SPIRIT, type: SUMMON, cost: { type: SPIRIT_POWER, amount: 60 }, cooldown-seconds: 40, summon-mob: SNOW_GOLEM, duration-ticks: 600, learn: NPC }
+  spirit_harmony:       { name: "&d☯ 원소 조화", world: SPIRIT, category: SPIRIT, type: BUFF, cost: { type: SPIRIT_POWER, amount: 25 }, cooldown-seconds: 20, duration-ticks: 240, learn: AUTO }
+
+  # ============================================================
+  # 요계 — 요술 (YOKAI)
+  # ============================================================
+  yokai_foxfire_volley: { name: "&5🦊 여우불 연사", world: YOKAI, category: YOKAI, type: CHAIN, cost: { type: YOKAI_KI, amount: 18 }, cooldown-seconds: 4, damage: "yokai_ki * 1.4", element: FIRE, radius: 5, learn: AUTO }
+  yokai_illusion:       { name: "&d🌀 환술", world: YOKAI, category: YOKAI, type: BUFF, cost: { type: YOKAI_KI, amount: 25 }, cooldown-seconds: 25, duration-ticks: 160, learn: BOOK }
+  yokai_charm:          { name: "&c💗 매혹", world: YOKAI, category: YOKAI, type: DOT, cost: { type: YOKAI_KI, amount: 20 }, cooldown-seconds: 10, damage: "yokai_ki * 0.8", element: DARK, duration-ticks: 80, learn: BOOK }
+  yokai_beast_form:     { name: "&6🐲 둔갑 (야수)", world: YOKAI, category: YOKAI, type: BUFF, cost: { type: YOKAI_KI, amount: 30 }, cooldown-seconds: 30, duration-ticks: 300, learn: AUTO }
+  yokai_clone:          { name: "&7👥 분신술", world: YOKAI, category: YOKAI, type: SUMMON, cost: { type: YOKAI_KI, amount: 40 }, cooldown-seconds: 35, summon-mob: VEX, duration-ticks: 400, learn: NPC }
+  yokai_kishin_strike:  { name: "&0👹 귀신 일격", world: YOKAI, category: YOKAI, type: MELEE, cost: { type: YOKAI_KI, amount: 22 }, cooldown-seconds: 4, damage: "yokai_ki * 2.0 + strength", element: DARK, learn: AUTO }
+  yokai_kangshi:        { name: "&2🧟 강시 소환", world: YOKAI, category: YOKAI, type: SUMMON, cost: { type: YOKAI_KI, amount: 50 }, cooldown-seconds: 45, summon-mob: ZOMBIE, duration-ticks: 600, learn: BOOK }
+  yokai_moonlight_blast: { name: "&b🌙 월광탄", world: YOKAI, category: YOKAI, type: PROJECTILE, cost: { type: YOKAI_KI, amount: 24 }, cooldown-seconds: 5, damage: "yokai_ki * 1.7", element: ICE, learn: BOOK }
+
+  # ============================================================
+  # 선계 — 도술 (TAO, 추가)
+  # ============================================================
+  tao_fire_talisman:    { name: "&c🔥 화염 부적", world: IMMORTAL, category: TAO, type: PROJECTILE, cost: { type: TAO_POWER, amount: 20 }, cooldown-seconds: 3, damage: "tao_power * 1.6 + immortal_ki * 0.3", element: FIRE, learn: AUTO }
+  tao_thunder_seal:     { name: "&e⚡ 뇌부 (雷符)", world: IMMORTAL, category: TAO, type: CHAIN, cost: { type: TAO_POWER, amount: 35 }, cooldown-seconds: 6, damage: "tao_power * 2.0", element: LIGHTNING, radius: 6, learn: BOOK }
+  tao_flying_sword:     { name: "&f🗡 어검비행", world: IMMORTAL, category: TAO, type: PROJECTILE, min-tier-stats: 1200, cost: { type: IMMORTAL_KI, amount: 60 }, cooldown-seconds: 4, damage: "immortal_ki * 3", projectile-speed: 2.2, learn: NPC }
+  tao_barrier:          { name: "&b🔰 결계", world: IMMORTAL, category: TAO, type: BUFF, cost: { type: TAO_POWER, amount: 30 }, cooldown-seconds: 20, duration-ticks: 240, learn: AUTO }
+  tao_exorcism:         { name: "&e✝ 퇴마술", world: IMMORTAL, category: TAO, type: AOE, cost: { type: TAO_POWER, amount: 40 }, cooldown-seconds: 10, damage: "tao_power * 2.2", element: HOLY, aoe-radius: 7, learn: BOOK }
+  tao_cloud_step:       { name: "&f☁ 축지법", world: IMMORTAL, category: TAO, type: BLINK, cost: { type: TAO_POWER, amount: 25 }, cooldown-seconds: 8, range: 16, learn: AUTO }
+  tao_pill_heal:        { name: "&a💊 단약 운기", world: IMMORTAL, category: TAO, type: HEAL, cost: { type: IMMORTAL_KI, amount: 40 }, cooldown-seconds: 15, damage: "-(immortal_ki * 3)", learn: AUTO }
+
+  # ============================================================
+  # 지구 — 헌터 스킬 (HEROIC)
+  # ============================================================
+  earth_rapid_fire:     { name: "&7🔫 연사 사격", world: EARTH, category: HEROIC, type: PROJECTILE, cost: { type: LEVEL, amount: 0 }, cooldown-seconds: 2, damage: "strength * 1.5 + level * 0.5", learn: AUTO }
+  earth_grenade:        { name: "&8💣 수류탄", world: EARTH, category: HEROIC, type: AOE, cost: { type: LEVEL, amount: 0 }, cooldown-seconds: 8, damage: "level * 1.0 + strength", element: FIRE, aoe-radius: 5, learn: AUTO }
+  earth_adrenaline:     { name: "&c💉 아드레날린", world: EARTH, category: HEROIC, type: BUFF, cost: { type: LEVEL, amount: 0 }, cooldown-seconds: 30, duration-ticks: 200, learn: BOOK }
+  earth_snipe:          { name: "&f🎯 저격", world: EARTH, category: HEROIC, type: PROJECTILE, cost: { type: LEVEL, amount: 0 }, cooldown-seconds: 6, damage: "strength * 3 + level", projectile-speed: 3.0, learn: BOOK }
+  earth_combat_roll:    { name: "&7➰ 전술 회피", world: EARTH, category: HEROIC, type: DASH, cost: { type: LEVEL, amount: 0 }, cooldown-seconds: 5, projectile-speed: 1.8, learn: AUTO }
+  earth_battle_drone:   { name: "&b🛸 전투 드론", world: EARTH, category: HEROIC, type: SUMMON, cost: { type: LEVEL, amount: 0 }, cooldown-seconds: 40, summon-mob: IRON_GOLEM, duration-ticks: 500, learn: NPC }
+
+  # ============================================================
+  # 마도공학 — 마도술 (TECH)
+  # ============================================================
+  magitech_mana_cannon: { name: "&b🔷 마나 캐논", world: MAGITECH, category: TECH, type: PROJECTILE, cost: { type: MAGITECH_ENERGY, amount: 25 }, cooldown-seconds: 3, damage: "magitech_energy * 1.8", element: ARCANE, learn: AUTO }
+  magitech_laser:       { name: "&c➤ 마도 레이저", world: MAGITECH, category: TECH, type: CHAIN, cost: { type: MAGITECH_ENERGY, amount: 35 }, cooldown-seconds: 6, damage: "magitech_energy * 2.0", element: ARCANE, radius: 6, learn: BOOK }
+  magitech_overdrive:   { name: "&e⚙ 오버드라이브", world: MAGITECH, category: TECH, type: BUFF, cost: { type: MAGITECH_ENERGY, amount: 40 }, cooldown-seconds: 30, duration-ticks: 200, learn: BOOK }
+  magitech_turret:      { name: "&7🔩 자동 포탑", world: MAGITECH, category: TECH, type: SUMMON, cost: { type: MAGITECH_ENERGY, amount: 50 }, cooldown-seconds: 35, summon-mob: IRON_GOLEM, duration-ticks: 500, learn: NPC }
+  magitech_emp:         { name: "&3💠 EMP 충격파", world: MAGITECH, category: TECH, type: AOE, cost: { type: MAGITECH_ENERGY, amount: 45 }, cooldown-seconds: 12, damage: "magitech_energy * 1.5", element: LIGHTNING, aoe-radius: 8, learn: BOOK }
+
+  # ============================================================
+  # 아포칼립스 — 생존 전투 (HEROIC)
+  # ============================================================
+  apoc_rifle_burst:     { name: "&8🔫 라이플 연사", world: APOCALYPSE, category: HEROIC, type: PROJECTILE, cost: { type: ENDURANCE, amount: 0 }, cooldown-seconds: 2, damage: "strength * 1.6", learn: AUTO }
+  apoc_molotov:         { name: "&c🍾 화염병", world: APOCALYPSE, category: HEROIC, type: AOE, cost: { type: ENDURANCE, amount: 0 }, cooldown-seconds: 8, damage: "strength * 1.2", element: FIRE, aoe-radius: 5, learn: AUTO }
+  apoc_adren_shot:      { name: "&a💉 응급 주사", world: APOCALYPSE, category: HEROIC, type: HEAL, cost: { type: ENDURANCE, amount: 0 }, cooldown-seconds: 20, damage: "-(endurance * 2 + 20)", learn: BOOK }
+  apoc_mutant_smash:    { name: "&2👊 변종 강타", world: APOCALYPSE, category: HEROIC, type: MELEE, cost: { type: ENDURANCE, amount: 0 }, cooldown-seconds: 4, damage: "strength * 2.5", element: POISON, learn: BOOK }
+  apoc_radiation_burst: { name: "&2☢ 방사능 분출", world: APOCALYPSE, category: HEROIC, type: DOT, cost: { type: ENDURANCE, amount: 0 }, cooldown-seconds: 10, damage: "strength * 1.0", element: POISON, duration-ticks: 100, learn: BOOK }
+
+  # ============================================================
+  # 사이버펑크 — 사이버웨어 (CYBER)
+  # ============================================================
+  cyber_mantis_blade:   { name: "&c🦾 만티스 블레이드", world: CYBERPUNK, category: CYBER, type: MELEE, cost: { type: CYBER_ADAPTATION, amount: 10 }, cooldown-seconds: 3, damage: "agility * 2 + strength * 1.5", learn: AUTO }
+  cyber_smartgun:       { name: "&b🎯 스마트건", world: CYBERPUNK, category: CYBER, type: PROJECTILE, cost: { type: CYBER_ADAPTATION, amount: 12 }, cooldown-seconds: 3, damage: "agility * 1.8 + intelligence", projectile-speed: 2.5, learn: AUTO }
+  cyber_overload_hack:  { name: "&d💻 과부하 해킹", world: CYBERPUNK, category: CYBER, type: DOT, cost: { type: CYBER_ADAPTATION, amount: 15 }, cooldown-seconds: 8, damage: "intelligence * 1.5", element: LIGHTNING, duration-ticks: 100, learn: BOOK }
+  cyber_optical_camo:   { name: "&7🌫 광학 위장", world: CYBERPUNK, category: CYBER, type: BUFF, cost: { type: CYBER_ADAPTATION, amount: 20 }, cooldown-seconds: 25, duration-ticks: 160, learn: BOOK }
+  cyber_sandevistan:    { name: "&e⏱ 산데비스탄", world: CYBERPUNK, category: CYBER, type: BUFF, min-tier-stats: 1500, cost: { type: CYBER_ADAPTATION, amount: 30 }, cooldown-seconds: 30, duration-ticks: 120, learn: NPC }
+
+  # ============================================================
+  # 드래곤 — 용술 (MAGIC)
+  # ============================================================
+  dragon_fire_breath:   { name: "&c🐉 화염 브레스", world: DRAGON, category: MAGIC, type: AOE, cost: { type: DRAGON_POWER, amount: 40 }, cooldown-seconds: 8, damage: "dragon_power * 2.2", element: FIRE, aoe-radius: 8, learn: AUTO }
+  dragon_frost_breath:  { name: "&b❄ 빙결 브레스", world: DRAGON, category: MAGIC, type: AOE, cost: { type: DRAGON_POWER, amount: 40 }, cooldown-seconds: 8, damage: "dragon_power * 2.0", element: ICE, aoe-radius: 8, learn: BOOK }
+  dragon_lightning_breath: { name: "&e⚡ 뇌전 브레스", world: DRAGON, category: MAGIC, type: CHAIN, cost: { type: DRAGON_POWER, amount: 45 }, cooldown-seconds: 9, damage: "dragon_power * 2.3", element: LIGHTNING, radius: 7, learn: BOOK }
+  dragon_wing_buffet:   { name: "&7🪽 날개 강타", world: DRAGON, category: MAGIC, type: AOE, cost: { type: DRAGON_POWER, amount: 25 }, cooldown-seconds: 6, damage: "dragon_power * 1.5", aoe-radius: 5, learn: AUTO }
+  dragon_fear:          { name: "&5😨 용의 위압", world: DRAGON, category: MAGIC, type: DOT, cost: { type: DRAGON_POWER, amount: 30 }, cooldown-seconds: 15, damage: "dragon_power * 0.8", element: DARK, duration-ticks: 120, learn: BOOK }
+  dragon_scale_guard:   { name: "&6🛡 용린 방어", world: DRAGON, category: MAGIC, type: BUFF, cost: { type: DRAGON_POWER, amount: 30 }, cooldown-seconds: 20, duration-ticks: 240, learn: AUTO }
+  dragon_king_roar:     { name: "&4👑 용왕의 포효", world: DRAGON, category: MAGIC, min-tier-stats: 3000, cost: { type: DRAGON_POWER, amount: 150 }, cooldown-seconds: 60, damage: "dragon_power * 4", element: FIRE, aoe-radius: 12, type: AOE, learn: ACHIEVEMENT }
+
+  # ============================================================
+  # 해양 — 해양술 (HEROIC)
+  # ============================================================
+  ocean_water_jet:      { name: "&3💦 수압포", world: OCEAN, category: HEROIC, type: PROJECTILE, cost: { type: OCEAN_POWER, amount: 18 }, cooldown-seconds: 3, damage: "ocean_power * 1.6", element: WATER, learn: AUTO }
+  ocean_tidal_wave:     { name: "&3🌊 해일", world: OCEAN, category: HEROIC, type: AOE, cost: { type: OCEAN_POWER, amount: 40 }, cooldown-seconds: 10, damage: "ocean_power * 2.0", element: WATER, aoe-radius: 9, learn: BOOK }
+  ocean_siren_song:     { name: "&d🎵 인어의 노래", world: OCEAN, category: HEROIC, type: DOT, cost: { type: OCEAN_POWER, amount: 25 }, cooldown-seconds: 12, damage: "ocean_power * 0.7", element: WATER, duration-ticks: 100, learn: BOOK }
+  ocean_current_dash:   { name: "&b➤ 해류 가속", world: OCEAN, category: HEROIC, type: DASH, cost: { type: OCEAN_POWER, amount: 15 }, cooldown-seconds: 5, projectile-speed: 2.0, learn: AUTO }
+  ocean_summon_kraken:  { name: "&2🐙 크라켄 소환", world: OCEAN, category: HEROIC, min-tier-stats: 2500, cost: { type: OCEAN_POWER, amount: 80 }, cooldown-seconds: 45, summon-mob: GUARDIAN, duration-ticks: 500, type: SUMMON, learn: NPC }
+  ocean_pearl_heal:     { name: "&f🦪 진주의 가호", world: OCEAN, category: HEROIC, type: HEAL, cost: { type: OCEAN_POWER, amount: 30 }, cooldown-seconds: 15, damage: "-(ocean_power * 2.5)", learn: AUTO }

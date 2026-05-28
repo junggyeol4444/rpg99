@@ -103,13 +103,24 @@ public final class SkillCreator {
         Bukkit.getPluginManager().callEvent(new RebornSkillLearnEvent(p, skillId));
     }
 
-    /** patternKey → {표시명, 속성, SkillType}. */
+    /** patternKey → {표시명, 속성, SkillType}. 특정 패턴 먼저 매칭. */
     private String[] flavor(String key) {
-        if (key.startsWith("stealth")) return new String[]{"&8그림자 일격", "DARK", "MELEE"};
-        if (key.contains("활") || key.contains("bow")) return new String[]{"&a연사 궁술", "PHYSICAL", "PROJECTILE"};
-        if (key.contains("도끼") || key.contains("axe")) return new String[]{"&c파쇄격", "PHYSICAL", "MELEE"};
-        if (key.contains("창") || key.contains("trident")) return new String[]{"&b관통 일섬", "PHYSICAL", "MELEE"};
-        if (key.contains("맨손") || key.contains("fist")) return new String[]{"&e무형권", "PHYSICAL", "MELEE"};
+        // 특수 패턴 (먼저)
+        if (key.equals("stealth_kill")) return new String[]{"&8그림자 일격", "DARK", "MELEE"};
+        if (key.equals("survive_brink")) return new String[]{"&c사선의 반격", "PHYSICAL", "MELEE"};
+        // 채굴 패턴
+        if (key.equals("mine_pickaxe")) return new String[]{"&7광부의 격타", "PHYSICAL", "MELEE"};
+        if (key.equals("mine_axe_mine")) return new String[]{"&6벌목 강타", "PHYSICAL", "MELEE"};
+        if (key.equals("mine_shovel")) return new String[]{"&e토류 격", "PHYSICAL", "MELEE"};
+        // 제작 패턴
+        if (key.equals("craft_weapon")) return new String[]{"&f명검의 일격", "PHYSICAL", "MELEE"};
+        if (key.equals("craft_armor")) return new String[]{"&b철벽 자세", "PHYSICAL", "BUFF"};
+        if (key.equals("craft_potion")) return new String[]{"&d정수 폭발", "ARCANE", "PROJECTILE"};
+        // 무기 사냥 패턴
+        if (key.equals("weapon_bow")) return new String[]{"&a연사 궁술", "PHYSICAL", "PROJECTILE"};
+        if (key.equals("weapon_axe")) return new String[]{"&c파쇄격", "PHYSICAL", "MELEE"};
+        if (key.equals("weapon_trident")) return new String[]{"&b관통 일섬", "PHYSICAL", "MELEE"};
+        if (key.equals("weapon_fist")) return new String[]{"&e무형권", "PHYSICAL", "MELEE"};
         return new String[]{"&f자생 검기", "PHYSICAL", "MELEE"};
     }
 

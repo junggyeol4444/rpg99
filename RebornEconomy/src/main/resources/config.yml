@@ -280,6 +280,53 @@ shops:
         sell: 1
         stock: -1
 
+  # ─── 마계: 영혼·마기 거래소 ───
+  demon_soul_market:
+    name: "&4마계 영혼 거래소"
+    world: DEMON
+    items:
+      - { id: SOUL_FRAGMENT,  material: SOUL_SAND,         currency: SOUL_STONE, buy: 50,   sell: 15, stock: -1 }
+      - { id: WITHER_ROSE,    material: WITHER_ROSE,       currency: SOUL_STONE, buy: 300,  sell: 80, stock: 50 }
+      - { id: DEMON_BLADE,    material: NETHERITE_SWORD,   currency: SOUL_STONE, buy: 8000, sell: 2000, stock: 5 }
+      - { id: HELLFIRE_TOME,  material: ENCHANTED_BOOK,    currency: SOUL_STONE, buy: 5000, sell: 1500, stock: 3 }
+      - { id: ROTTEN_FLESH,   material: ROTTEN_FLESH,      currency: SOUL_STONE, buy: 2,    sell: 0,  stock: -1 }
+      - { id: BLAZE_POWDER,   material: BLAZE_POWDER,      currency: SOUL_STONE, buy: 25,   sell: 6,  stock: -1 }
+
+  # ─── 천계: 신앙 상점 ───
+  heaven_faith_temple:
+    name: "&e천계 신앙 상점"
+    world: HEAVEN
+    items:
+      - { id: HOLY_WATER,     material: POTION,            currency: FAITH_CRYSTAL, buy: 80,    sell: 20,  stock: -1 }
+      - { id: ANGEL_FEATHER,  material: FEATHER,           currency: FAITH_CRYSTAL, buy: 400,   sell: 100, stock: 20 }
+      - { id: HOLY_RAY_TOME,  material: ENCHANTED_BOOK,    currency: FAITH_CRYSTAL, buy: 6000,  sell: 1500, stock: 3 }
+      - { id: SAINTED_BLADE,  material: GOLDEN_SWORD,      currency: FAITH_CRYSTAL, buy: 10000, sell: 2500, stock: 5 }
+      - { id: PURE_AMETHYST,  material: AMETHYST_SHARD,    currency: FAITH_CRYSTAL, buy: 30,    sell: 8,   stock: -1 }
+      - { id: GLOWSTONE_DUST, material: GLOWSTONE_DUST,    currency: FAITH_CRYSTAL, buy: 15,    sell: 3,   stock: -1 }
+
+  # ─── 정령계: 정수 시장 ───
+  spirit_essence_market:
+    name: "&a정령계 정수 시장"
+    world: SPIRIT
+    items:
+      - { id: FLAME_ESSENCE,  material: BLAZE_POWDER,      currency: ESSENCE, buy: 30,   sell: 8,  stock: -1 }
+      - { id: WATER_ESSENCE,  material: WATER_BUCKET,      currency: ESSENCE, buy: 30,   sell: 8,  stock: -1 }
+      - { id: WIND_ESSENCE,   material: PHANTOM_MEMBRANE,  currency: ESSENCE, buy: 35,   sell: 9,  stock: -1 }
+      - { id: EARTH_ESSENCE,  material: COBBLESTONE,       currency: ESSENCE, buy: 25,   sell: 6,  stock: -1 }
+      - { id: SPIRIT_LURE,    material: SWEET_BERRIES,     currency: ESSENCE, buy: 50,   sell: 12, stock: 100 }
+      - { id: HARMONY_GEM,    material: AMETHYST_BLOCK,    currency: ESSENCE, buy: 1500, sell: 400, stock: 5 }
+
+  # ─── 드래곤계: 용비늘 시장 ───
+  dragon_scale_market:
+    name: "&6드래곤계 용린 시장"
+    world: DRAGON
+    items:
+      - { id: DRAGON_SCALE,   material: PRISMARINE_SHARD,  currency: DRAGON_SCALE, buy: 1,    sell: 0,    stock: -1 }
+      - { id: DRAGON_BREATH,  material: DRAGON_BREATH,     currency: DRAGON_SCALE, buy: 200,  sell: 50,   stock: 20 }
+      - { id: TIME_CHAMBER_TICKET, material: CLOCK,        currency: DRAGON_SCALE, buy: 5000, sell: 1000, stock: 3 }
+      - { id: BABY_DRAGON_EGG, material: TURTLE_EGG,       currency: DRAGON_SCALE, buy: 15000, sell: 4000, stock: 1 }
+      - { id: ANCIENT_BONE,   material: BONE_BLOCK,        currency: DRAGON_SCALE, buy: 100,  sell: 25,   stock: -1 }
+
 # 경매
 auction:
   registration-fee-percent: 2.0

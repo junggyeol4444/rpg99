@@ -16,7 +16,10 @@ public final class EventStartCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender s, @NotNull Command c,
                              @NotNull String l, @NotNull String[] a) {
         if (!(s instanceof Player p) || a.length < 1) {
-            Msg.send(s, "&7/event human_alchemist_trade  |  hundred_demon_night"); return true;
+            Msg.send(s, "&7/event <tree-id>");
+            Msg.send(s, "&7  사용 가능: human_alchemist_trade · demon_border · marwang_invasion_branches");
+            Msg.send(s, "&7              spirit_king_rage_branches · megacorp_war · hundred_demon_night");
+            return true;
         }
         if ("hundred_demon_night".equalsIgnoreCase(a[0])) {
             plugin.events().triggerHundredDemonNight(kr.reborn.core.data.WorldKey.YOKAI);

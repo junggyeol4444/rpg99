@@ -195,3 +195,70 @@ bosses:
     phases: 7
     drops:
       - { item: NETHER_STAR, chance: 1.0, amount: [3, 5] }
+
+  # ─── 마계 ───
+  marwang_lucifer:        { base: WITHER,        name: "&5&l[보스] 교만의 마왕 루시페르",   world: DEMON, hp: 80000, damage: 700, phases: 5, drops: [{ item: NETHER_STAR, chance: 1.0, amount: [5, 8] }, { item: WITHER_ROSE, chance: 1.0, amount: [9, 16] }] }
+  marwang_leviathan:      { base: ELDER_GUARDIAN, name: "&3&l[보스] 질투의 마왕 레비아탄",   world: DEMON, hp: 55000, damage: 500, phases: 4, drops: [{ item: NETHER_STAR, chance: 1.0, amount: [3, 5] }] }
+  marwang_satan:          { base: WITHER,        name: "&4&l[보스] 분노의 마왕 사탄",       world: DEMON, hp: 75000, damage: 800, phases: 5, drops: [{ item: NETHER_STAR, chance: 1.0, amount: [4, 7] }, { item: NETHERITE_INGOT, chance: 1.0, amount: [2, 4] }] }
+  marwang_mammon:         { base: PIGLIN_BRUTE,  name: "&6&l[보스] 탐욕의 마왕 마몬",       world: DEMON, hp: 50000, damage: 450, phases: 4, drops: [{ item: GOLD_BLOCK, chance: 1.0, amount: [20, 40] }] }
+  demon_archdemon:        { base: ZOMBIFIED_PIGLIN, name: "&4대악마",                       world: DEMON, hp: 5000, damage: 80, phases: 2, ai: BOSS, drops: [{ item: GOLD_INGOT, chance: 1.0, amount: [4, 8] }] }
+  demon_balrog:           { base: BLAZE,         name: "&c&l발록",                          world: DEMON, hp: 8000, damage: 120, phases: 3, ai: BOSS, drops: [{ item: BLAZE_ROD, chance: 1.0, amount: [4, 8] }] }
+
+  # ─── 천계 ───
+  heaven_fallen_archangel: { base: VEX,          name: "&8&l[보스] 타락 대천사",            world: HEAVEN, hp: 45000, damage: 400, phases: 4, drops: [{ item: GHAST_TEAR, chance: 1.0, amount: [4, 8] }, { item: TOTEM_OF_UNDYING, chance: 0.3, amount: [1, 1] }] }
+  heaven_4archangel_michael: { base: VINDICATOR, name: "&e&l[보스] 4대천사 미카엘",         world: HEAVEN, hp: 65000, damage: 600, phases: 5, drops: [{ item: NETHER_STAR, chance: 1.0, amount: [3, 5] }] }
+  heaven_cheonje:          { base: WITHER,       name: "&6&l[보스] 천제",                   world: HEAVEN, hp: 100000, damage: 1000, phases: 7, drops: [{ item: NETHER_STAR, chance: 1.0, amount: [8, 12] }, { item: BEACON, chance: 1.0, amount: [1, 1] }] }
+
+  # ─── 정령계 ───
+  spirit_corruptor:        { base: WITHER,       name: "&8&l[보스] 오염의 수괴",            world: SPIRIT, hp: 35000, damage: 350, phases: 3, drops: [{ item: WITHER_ROSE, chance: 1.0, amount: [9, 16] }] }
+  elemental_king_fire:     { base: BLAZE,        name: "&c&l화염 정령왕 이프리나",          world: SPIRIT, hp: 80000, damage: 700, phases: 5, drops: [{ item: BLAZE_ROD, chance: 1.0, amount: [16, 32] }, { item: NETHER_STAR, chance: 1.0, amount: [3, 5] }] }
+  elemental_king_water:    { base: GUARDIAN,     name: "&3&l수 정령왕 운디네르",            world: SPIRIT, hp: 75000, damage: 600, phases: 5, drops: [{ item: HEART_OF_THE_SEA, chance: 1.0, amount: [1, 1] }] }
+  elemental_king_wind:     { base: VEX,          name: "&a&l풍 정령왕 실피드론",            world: SPIRIT, hp: 70000, damage: 650, phases: 5, drops: [{ item: PHANTOM_MEMBRANE, chance: 1.0, amount: [9, 16] }] }
+  elemental_king_earth:    { base: IRON_GOLEM,   name: "&6&l지 정령왕 노움가르드",          world: SPIRIT, hp: 90000, damage: 550, phases: 5, drops: [{ item: NETHERITE_INGOT, chance: 1.0, amount: [2, 4] }] }
+
+  # ─── 무협 ───
+  martial_alliance_head:   { base: VINDICATOR,   name: "&6&l[보스] 무림맹주",               world: MARTIAL, hp: 25000, damage: 300, phases: 3, drops: [{ item: GOLD_INGOT, chance: 1.0, amount: [16, 32] }] }
+  martial_cult_master:     { base: WITHER_SKELETON, name: "&5&l[보스] 마교 교주",          world: MARTIAL, hp: 32000, damage: 350, phases: 4, drops: [{ item: WITHER_ROSE, chance: 1.0, amount: [5, 9] }] }
+  martial_sect_leader:     { base: ZOMBIE,       name: "&7정파 장문인",                     world: MARTIAL, hp: 8000, damage: 100, phases: 2, ai: BOSS, drops: [{ item: GOLD_INGOT, chance: 1.0, amount: [4, 8] }] }
+  martial_sapa_lord:       { base: WITHER_SKELETON, name: "&4사파 거두",                    world: MARTIAL, hp: 10000, damage: 130, phases: 2, ai: BOSS }
+
+  # ─── 선계 ───
+  immortal_demon_sage:     { base: WITHER,       name: "&5&l[보스] 부활한 고대 마선",       world: IMMORTAL, hp: 70000, damage: 650, phases: 6, drops: [{ item: NETHER_STAR, chance: 1.0, amount: [4, 7] }] }
+  immortal_rival_cultivator: { base: VEX,        name: "&3경쟁 수련자",                     world: IMMORTAL, hp: 6000, damage: 90, phases: 2, ai: BOSS }
+
+  # ─── 요계 ───
+  yokai_demon_emperor:     { base: WITHER,       name: "&5&l[보스] 부활한 요왕",            world: YOKAI, hp: 60000, damage: 550, phases: 5, drops: [{ item: NETHER_STAR, chance: 1.0, amount: [3, 5] }] }
+  yokai_invader_lord:      { base: VEX,          name: "&c타세계 침입자 수괴",              world: YOKAI, hp: 12000, damage: 150, phases: 2, ai: BOSS }
+  kumiho_grand:            { base: FOX,          name: "&d&l[보스] 초대 구미호",            world: YOKAI, hp: 30000, damage: 280, phases: 3, drops: [{ item: AMETHYST_SHARD, chance: 1.0, amount: [9, 16] }] }
+
+  # ─── 지구 ───
+  earth_labyrinth_100f:    { base: WARDEN,       name: "&0&l[보스] 미궁 100층",             world: EARTH, hp: 200000, damage: 1500, phases: 9, drops: [{ item: NETHER_STAR, chance: 1.0, amount: [10, 16] }, { item: BEACON, chance: 1.0, amount: [1, 1] }] }
+  earth_gate_s_boss:       { base: RAVAGER,      name: "&c&lS급 게이트 보스",                world: EARTH, hp: 18000, damage: 200, phases: 3, ai: BOSS, drops: [{ item: ECHO_SHARD, chance: 1.0, amount: [3, 5] }] }
+  earth_gate_ss_boss:      { base: WITHER,       name: "&4&lSS급 게이트 보스",               world: EARTH, hp: 40000, damage: 350, phases: 4, drops: [{ item: NETHER_STAR, chance: 1.0, amount: [2, 4] }] }
+
+  # ─── 마도공학 ───
+  magitech_runaway_core:   { base: WITHER,       name: "&c&l[보스] 폭주 핵심부",            world: MAGITECH, hp: 55000, damage: 500, phases: 4, drops: [{ item: AMETHYST_BLOCK, chance: 1.0, amount: [4, 8] }] }
+
+  # ─── 아포칼립스 ───
+  apoc_warlord:            { base: PIGLIN_BRUTE, name: "&8&l[보스] 약탈자 두목",            world: APOCALYPSE, hp: 35000, damage: 350, phases: 3, drops: [{ item: GUNPOWDER, chance: 1.0, amount: [32, 64] }] }
+  apoc_radiation_titan:    { base: WITHER,       name: "&2&l종말의 수호자",                  world: APOCALYPSE, hp: 65000, damage: 550, phases: 5, drops: [{ item: NETHER_STAR, chance: 1.0, amount: [4, 6] }] }
+
+  # ─── 사이버펑크 ───
+  cyber_corp_warbot:       { base: IRON_GOLEM,   name: "&c&l[보스] 메가코프 전쟁병기",       world: CYBERPUNK, hp: 45000, damage: 450, phases: 4, drops: [{ item: IRON_BLOCK, chance: 1.0, amount: [9, 16] }] }
+  cyber_rogue_ai:          { base: WITHER,       name: "&5&l[보스] 폭주 AI",                 world: CYBERPUNK, hp: 50000, damage: 500, phases: 5, drops: [{ item: ECHO_SHARD, chance: 1.0, amount: [4, 8] }] }
+
+  # ─── 드래곤 ───
+  dragon_ancient_king:     { base: ENDER_DRAGON, name: "&6&l[보스] 부활한 고대 용왕",        world: DRAGON, hp: 150000, damage: 1200, phases: 8, drops: [{ item: NETHER_STAR, chance: 1.0, amount: [8, 12] }, { item: DRAGON_EGG, chance: 1.0, amount: [1, 1] }] }
+  dragon_ancient_red:      { base: ENDER_DRAGON, name: "&c&l고룡 — 레드",                    world: DRAGON, hp: 60000, damage: 700, phases: 5, drops: [{ item: NETHER_STAR, chance: 1.0, amount: [3, 5] }] }
+
+  # ─── 해양 ───
+  ocean_sea_king:          { base: ELDER_GUARDIAN, name: "&3&l[보스] 해왕",                   world: OCEAN, hp: 120000, damage: 1000, phases: 7, drops: [{ item: NETHER_STAR, chance: 1.0, amount: [6, 10] }, { item: HEART_OF_THE_SEA, chance: 1.0, amount: [1, 1] }] }
+  ocean_kraken_ancient:    { base: ELDER_GUARDIAN, name: "&3고대 크라켄",                     world: OCEAN, hp: 35000, damage: 300, phases: 3, ai: BOSS, drops: [{ item: NAUTILUS_SHELL, chance: 1.0, amount: [4, 8] }] }
+  ocean_pirate_king:       { base: VINDICATOR,   name: "&6&l[보스] 해적왕",                   world: OCEAN, hp: 28000, damage: 280, phases: 3, drops: [{ item: GOLD_BLOCK, chance: 1.0, amount: [12, 24] }] }
+  ocean_pirate_captain:    { base: PILLAGER,     name: "&6경쟁 선장",                         world: OCEAN, hp: 5000, damage: 80, phases: 2, ai: BOSS }
+
+  # ─── 히든 월드 ───
+  divine_herald:           { base: VINDICATOR,   name: "&6&l신의 대리자",                     world: GOD, hp: 75000, damage: 700, phases: 5, drops: [{ item: NETHER_STAR, chance: 1.0, amount: [5, 8] }] }
+  abyss_dweller:           { base: WARDEN,       name: "&0&l심연수",                          world: ABYSS, hp: 150000, damage: 1500, phases: 9, drops: [{ item: ECHO_SHARD, chance: 1.0, amount: [16, 32] }] }
+  underworld_king:         { base: WITHER,       name: "&8&l명왕",                            world: UNDERWORLD, hp: 90000, damage: 800, phases: 6, drops: [{ item: SKELETON_SKULL, chance: 1.0, amount: [9, 16] }] }
+  dungeon_core:            { base: SHULKER,      name: "&5&l던전 코어",                       world: FANTASY, hp: 25000, damage: 250, phases: 3, drops: [{ item: SHULKER_SHELL, chance: 1.0, amount: [4, 8] }] }

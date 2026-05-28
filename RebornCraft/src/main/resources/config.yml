@@ -204,6 +204,68 @@ recipes:
     success_rate: 0.1
     exp_gain: 50000
 
+  # ─── 무기 (대장장이) ───
+  knight_sword_recipe: { profession: blacksmith, min_proficiency: 100, materials: [{material: IRON_INGOT, amount: 5}, {material: LEATHER, amount: 2}], result: iron_sword_basic, cast_seconds: 3, success_rate: 0.95, exp_gain: 50 }
+  excalibur_recipe: { profession: blacksmith, min_proficiency: 30000, materials: [{material: NETHERITE_INGOT, amount: 3}, {material: NETHER_STAR, amount: 1}, {material: GOLD_BLOCK, amount: 10}], result: excalibur, cast_seconds: 600, success_rate: 0.05, exp_gain: 50000 }
+  cheonma_blade_recipe: { profession: demon_smith, min_proficiency: 15000, materials: [{material: NETHERITE_INGOT, amount: 2}, {material: WITHER_SKELETON_SKULL, amount: 3}, {material: BLAZE_ROD, amount: 10}], result: cheonma_blade, cast_seconds: 300, success_rate: 0.10, exp_gain: 20000 }
+  dragon_slayer_recipe: { profession: blacksmith, min_proficiency: 10000, materials: [{material: DIAMOND, amount: 8}, {material: DRAGON_BREATH, amount: 3}, {material: ENDER_PEARL, amount: 5}], result: dragon_slayer, cast_seconds: 180, success_rate: 0.15, exp_gain: 8000 }
+
+  # ─── 갑옷 (대장장이/룬공방사) ───
+  knight_armor_recipe: { profession: blacksmith, min_proficiency: 200, materials: [{material: IRON_INGOT, amount: 8}], result: knight_armor, cast_seconds: 5, success_rate: 0.9, exp_gain: 80 }
+  cheolposam_armor_recipe: { profession: blacksmith, min_proficiency: 2000, materials: [{material: LEATHER, amount: 10}, {material: PHANTOM_MEMBRANE, amount: 4}], result: cheolposam_armor, cast_seconds: 30, success_rate: 0.6, exp_gain: 1500 }
+  geumjongjo_armor_recipe: { profession: rune_smith, min_proficiency: 8000, materials: [{material: GOLD_INGOT, amount: 24}, {material: NETHERITE_INGOT, amount: 1}, {material: NETHER_STAR, amount: 1}], result: geumjongjo_armor, cast_seconds: 120, success_rate: 0.2, exp_gain: 12000 }
+
+  # ─── 악세서리 (마법부여사) ───
+  amulet_of_wisdom_recipe: { profession: enchanter, min_proficiency: 1500, materials: [{material: AMETHYST_SHARD, amount: 5}, {material: GOLD_INGOT, amount: 3}], result: amulet_of_wisdom, cast_seconds: 60, success_rate: 0.7, exp_gain: 800 }
+  ring_of_aura_recipe: { profession: enchanter, min_proficiency: 3000, materials: [{material: GOLD_INGOT, amount: 4}, {material: DIAMOND, amount: 1}, {material: BLAZE_POWDER, amount: 8}], result: ring_of_aura, cast_seconds: 90, success_rate: 0.5, exp_gain: 2000 }
+  earring_of_charm_recipe: { profession: enchanter, min_proficiency: 800, materials: [{material: AMETHYST_SHARD, amount: 3}, {material: GOLD_NUGGET, amount: 8}], result: earring_of_charm, cast_seconds: 30, success_rate: 0.8, exp_gain: 400 }
+
+  # ─── 비급서 (마법부여사가 새겨 만든다) ───
+  book_arteon_blade_recipe: { profession: enchanter, min_proficiency: 5000, materials: [{material: BOOK, amount: 1}, {material: GOLD_INGOT, amount: 5}, {material: ENCHANTED_BOOK, amount: 1}], result: book_arteon_blade, cast_seconds: 120, success_rate: 0.3, exp_gain: 3500 }
+  book_dokgo_gugeom_recipe: { profession: enchanter, min_proficiency: 12000, materials: [{material: BOOK, amount: 1}, {material: NETHER_STAR, amount: 1}, {material: PAPER, amount: 9}], result: book_dokgo_gugeom, cast_seconds: 300, success_rate: 0.1, exp_gain: 15000 }
+  book_cheonma_recipe: { profession: soul_carver, min_proficiency: 20000, materials: [{material: BOOK, amount: 1}, {material: WITHER_ROSE, amount: 9}, {material: SOUL_SAND, amount: 16}], result: book_cheonma, cast_seconds: 600, success_rate: 0.05, exp_gain: 30000 }
+  book_meteor_recipe: { profession: enchanter, min_proficiency: 18000, materials: [{material: BOOK, amount: 1}, {material: MAGMA_BLOCK, amount: 16}, {material: BLAZE_ROD, amount: 12}], result: book_meteor, cast_seconds: 480, success_rate: 0.08, exp_gain: 25000 }
+  book_resurrection_recipe: { profession: enchanter, min_proficiency: 25000, materials: [{material: BOOK, amount: 1}, {material: TOTEM_OF_UNDYING, amount: 3}, {material: ENCHANTED_GOLDEN_APPLE, amount: 5}], result: book_resurrection, cast_seconds: 900, success_rate: 0.05, exp_gain: 40000 }
+  book_pacheon_recipe: { profession: enchanter, min_proficiency: 22000, materials: [{material: BOOK, amount: 1}, {material: HEART_OF_THE_SEA, amount: 1}, {material: BEACON, amount: 1}], result: book_pacheon, cast_seconds: 600, success_rate: 0.06, exp_gain: 35000 }
+
+  # ─── 무협 단약 (단약사) — 다수 ───
+  mandok_pill_recipe: { profession: pill_master, min_proficiency: 3000, materials: [{material: SPIDER_EYE, amount: 5}, {material: GLOW_BERRIES, amount: 3}, {material: BREWING_STAND, amount: 0}], result: mandok_pill, cast_seconds: 60, success_rate: 0.5, exp_gain: 1200 }
+  gujeon_hwanhonpil_recipe: { profession: pill_master, min_proficiency: 40000, materials: [{material: GHAST_TEAR, amount: 3}, {material: TOTEM_OF_UNDYING, amount: 1}, {material: ENCHANTED_GOLDEN_APPLE, amount: 1}], result: gujeon_hwanhonpil, cast_seconds: 600, success_rate: 0.1, exp_gain: 30000 }
+  sohwangol_pil_recipe: { profession: pill_master, min_proficiency: 2500, materials: [{material: GLOW_BERRIES, amount: 8}, {material: RABBIT_HIDE, amount: 5}], result: sohwangol_pil, cast_seconds: 45, success_rate: 0.6, exp_gain: 900 }
+  tongmaek_san_recipe: { profession: pill_master, min_proficiency: 800, materials: [{material: GLOW_BERRIES, amount: 3}, {material: SUGAR, amount: 5}], result: tongmaek_san, cast_seconds: 20, success_rate: 0.8, exp_gain: 300 }
+  haedok_pil_recipe: { profession: pill_master, min_proficiency: 1000, materials: [{material: SPIDER_EYE, amount: 3}, {material: SUGAR, amount: 3}], result: haedok_pil, cast_seconds: 25, success_rate: 0.75, exp_gain: 400 }
+  cheolgol_pil_recipe: { profession: pill_master, min_proficiency: 2000, materials: [{material: IRON_INGOT, amount: 2}, {material: GLOW_BERRIES, amount: 5}], result: cheolgol_pil, cast_seconds: 60, success_rate: 0.55, exp_gain: 1000 }
+  yeong_pil_recipe: { profession: pill_master, min_proficiency: 5000, materials: [{material: AMETHYST_SHARD, amount: 3}, {material: GLOW_BERRIES, amount: 8}], result: yeong_pil, cast_seconds: 90, success_rate: 0.45, exp_gain: 2500 }
+  bingsim_pil_recipe: { profession: pill_master, min_proficiency: 1500, materials: [{material: ICE, amount: 5}, {material: GLOW_BERRIES, amount: 4}], result: bingsim_pil, cast_seconds: 30, success_rate: 0.65, exp_gain: 700 }
+  yongho_pil_recipe: { profession: pill_master, min_proficiency: 12000, materials: [{material: DRAGON_BREATH, amount: 1}, {material: GHAST_TEAR, amount: 2}, {material: GLOW_BERRIES, amount: 10}], result: yongho_pil, cast_seconds: 180, success_rate: 0.3, exp_gain: 6000 }
+  gujeon_daebopil_recipe: { profession: pill_master, min_proficiency: 2200, materials: [{material: GLOW_BERRIES, amount: 9}, {material: SUGAR, amount: 9}], result: gujeon_daebopil, cast_seconds: 50, success_rate: 0.6, exp_gain: 900 }
+  jageum_pil_recipe: { profession: pill_master, min_proficiency: 1800, materials: [{material: AMETHYST_SHARD, amount: 2}, {material: SPIDER_EYE, amount: 3}], result: jageum_pil, cast_seconds: 40, success_rate: 0.65, exp_gain: 800 }
+  yangsim_pil_recipe: { profession: pill_master, min_proficiency: 1200, materials: [{material: GLOW_BERRIES, amount: 5}, {material: HONEY_BOTTLE, amount: 1}], result: yangsim_pil, cast_seconds: 30, success_rate: 0.7, exp_gain: 500 }
+  sokgol_pil_recipe: { profession: pill_master, min_proficiency: 1000, materials: [{material: BONE_MEAL, amount: 5}, {material: GLOW_BERRIES, amount: 3}], result: sokgol_pil, cast_seconds: 30, success_rate: 0.7, exp_gain: 450 }
+  hwahyeol_san_recipe: { profession: pill_master, min_proficiency: 600, materials: [{material: REDSTONE, amount: 5}, {material: SUGAR, amount: 3}], result: hwahyeol_san, cast_seconds: 15, success_rate: 0.85, exp_gain: 200 }
+  yongdam_pil_recipe: { profession: pill_master, min_proficiency: 1500, materials: [{material: GLOW_BERRIES, amount: 6}, {material: KELP, amount: 3}], result: yongdam_pil, cast_seconds: 30, success_rate: 0.7, exp_gain: 600 }
+  ohaeng_pil_recipe: { profession: pill_master, min_proficiency: 35000, materials: [{material: REDSTONE_BLOCK, amount: 1}, {material: EMERALD_BLOCK, amount: 1}, {material: LAPIS_BLOCK, amount: 1}, {material: GOLD_BLOCK, amount: 1}, {material: IRON_BLOCK, amount: 1}], result: ohaeng_pil, cast_seconds: 480, success_rate: 0.1, exp_gain: 28000 }
+
+  # ─── 선계 단약 ───
+  yongyeon_pil_recipe: { profession: pill_master, min_proficiency: 30000, materials: [{material: GHAST_TEAR, amount: 5}, {material: NETHER_STAR, amount: 1}], result: yongyeon_pil, cast_seconds: 360, success_rate: 0.12, exp_gain: 22000 }
+  hyeolgi_pil_recipe: { profession: pill_master, min_proficiency: 8000, materials: [{material: SPIDER_EYE, amount: 8}, {material: BLAZE_POWDER, amount: 5}], result: hyeolgi_pil, cast_seconds: 120, success_rate: 0.35, exp_gain: 4500 }
+  guhwa_oksan_recipe: { profession: pill_master, min_proficiency: 10000, materials: [{material: AMETHYST_SHARD, amount: 9}, {material: HONEY_BOTTLE, amount: 9}], result: guhwa_oksan, cast_seconds: 180, success_rate: 0.3, exp_gain: 6000 }
+  gujeon_geumdan_recipe: { profession: pill_master, min_proficiency: 80000, materials: [{material: GOLD_BLOCK, amount: 9}, {material: NETHER_STAR, amount: 3}, {material: TOTEM_OF_UNDYING, amount: 1}], result: gujeon_geumdan, cast_seconds: 1800, success_rate: 0.05, exp_gain: 100000 }
+  cheonhwa_sindan_recipe: { profession: pill_master, min_proficiency: 45000, materials: [{material: NETHER_STAR, amount: 2}, {material: GLOW_BERRIES, amount: 16}], result: cheonhwa_sindan, cast_seconds: 600, success_rate: 0.1, exp_gain: 32000 }
+  segol_hwansin_recipe: { profession: pill_master, min_proficiency: 25000, materials: [{material: GHAST_TEAR, amount: 5}, {material: TURTLE_SCUTE, amount: 3}], result: segol_hwansin, cast_seconds: 360, success_rate: 0.15, exp_gain: 18000 }
+
+  # ─── 마계 영혼석 가공 ───
+  soul_stone_extract_recipe: { profession: soul_carver, min_proficiency: 1000, materials: [{material: SOUL_SAND, amount: 8}, {material: BONE, amount: 5}], result: soul_stone, cast_seconds: 60, success_rate: 0.6, exp_gain: 800 }
+
+  # ─── 요계 도깨비 도구 ───
+  yokai_crystal_recipe: { profession: dokkaebi_carver, min_proficiency: 2000, materials: [{material: AMETHYST_SHARD, amount: 4}, {material: ENDER_PEARL, amount: 2}], result: yokai_crystal, cast_seconds: 60, success_rate: 0.55, exp_gain: 1200 }
+
+  # ─── 마도공학 ───
+  magitech_core_recipe: { profession: magitech_engineer, min_proficiency: 5000, materials: [{material: REDSTONE_BLOCK, amount: 4}, {material: DIAMOND, amount: 1}, {material: AMETHYST_SHARD, amount: 8}], result: magitech_core, cast_seconds: 120, success_rate: 0.5, exp_gain: 3000 }
+
+  # ─── 사이버 ───
+  credit_chip_recipe: { profession: cyber_tech, min_proficiency: 500, materials: [{material: REDSTONE, amount: 3}, {material: IRON_NUGGET, amount: 5}], result: credit_chip, cast_seconds: 15, success_rate: 0.85, exp_gain: 200 }
+
 # ============================================================
 # 강화
 # ============================================================

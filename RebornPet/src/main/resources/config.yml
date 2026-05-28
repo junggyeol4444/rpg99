@@ -23,6 +23,37 @@ mounts:
   ghost_horse:     { entity: SKELETON_HORSE, speed: 2.0, fly: false, combat: false, night-only: true }
   cyber_vehicle:   { entity: PIG, speed: 2.8, fly: false, combat: true, fuel: CREDIT }
 
+# ─── 펫(영물·흉수·요괴 등 — 길들임 가능 종) ───
+pets:
+  # 판타지
+  wolf_companion:    { entity: WOLF,        world: FANTASY, base-power: 30,  bond-skill: weapon_bow,           tame-need: BONE, description: "전장의 충실한 늑대 동반자" }
+  cat_familiar:      { entity: CAT,         world: FANTASY, base-power: 20,  bond-skill: spirit_flame_lance,   tame-need: COD, description: "마녀의 정령 같은 검은 고양이" }
+  parrot_seer:       { entity: PARROT,      world: FANTASY, base-power: 15,  bond-skill: holy_ray,             tame-need: WHEAT_SEEDS, description: "예언을 속삭이는 영조" }
+  fairy_dragon:      { entity: AXOLOTL,     world: FANTASY, base-power: 50,  bond-skill: breath_basic,         tame-need: TROPICAL_FISH, description: "새끼 페어리 드래곤" }
+  # 무협 — 영물
+  lingsa_serpent:    { entity: SLIME,       world: MARTIAL, base-power: 60,  bond-skill: bingjam_dokgyeong,    tame-need: POISONOUS_POTATO, description: "수백 년 묵은 영사" }
+  lingho_fox:        { entity: FOX,         world: MARTIAL, base-power: 80,  bond-skill: yokai_foxfire_volley, tame-need: SWEET_BERRIES, description: "천 년의 영호 — 변신 가능" }
+  ironcoat_bear:     { entity: POLAR_BEAR,  world: MARTIAL, base-power: 100, bond-skill: chilsang_gwon,        tame-need: SALMON, description: "쇠가죽 곰 — 흉수" }
+  # 요계 — 요괴
+  hellhound:         { entity: WOLF,        world: DEMON,   base-power: 70,  bond-skill: demon_hellfire,       tame-need: ROTTEN_FLESH, description: "지옥에서 온 사냥견" }
+  kumiho_kit:        { entity: FOX,         world: YOKAI,   base-power: 90,  bond-skill: yokai_charm,          tame-need: SWEET_BERRIES, description: "구미호의 새끼 — 변신" }
+  oni_companion:     { entity: ZOMBIE,      world: YOKAI,   base-power: 110, bond-skill: yokai_kishin_strike,  tame-need: GHAST_TEAR, description: "복종한 오니" }
+  # 정령계 — 정령
+  flame_sprite:      { entity: BLAZE,       world: SPIRIT,  base-power: 55,  bond-skill: spirit_flame_lance,   tame-need: BLAZE_POWDER, description: "화염의 하급 정령" }
+  water_sprite:      { entity: DOLPHIN,     world: SPIRIT,  base-power: 55,  bond-skill: spirit_aqua_heal,     tame-need: COD,         description: "물의 하급 정령" }
+  earth_golem:       { entity: IRON_GOLEM,  world: SPIRIT,  base-power: 90,  bond-skill: spirit_quake,         tame-need: IRON_INGOT, description: "대지의 정령" }
+  # 천계
+  angel_dove:        { entity: ALLAY,       world: HEAVEN,  base-power: 30,  bond-skill: heaven_heal_light,    tame-need: AMETHYST_SHARD, description: "신성한 비둘기" }
+  # 드래곤
+  baby_dragon:       { entity: AXOLOTL,     world: DRAGON,  base-power: 150, bond-skill: dragon_fire_breath,   tame-need: TROPICAL_FISH, description: "유년기 드래곤" }
+  # 해양
+  dolphin_friend:    { entity: DOLPHIN,     world: OCEAN,   base-power: 40,  bond-skill: ocean_water_jet,      tame-need: TROPICAL_FISH, description: "친근한 돌고래 동반자" }
+  squid_guardian:    { entity: GLOW_SQUID,  world: OCEAN,   base-power: 50,  bond-skill: ocean_siren_song,     tame-need: GLOW_BERRIES, description: "심해의 발광 오징어" }
+  # 지구·미궁
+  hunter_drone:      { entity: ALLAY,       world: EARTH,   base-power: 60,  bond-skill: earth_battle_drone,   tame-need: REDSTONE,   description: "헌터 협회 제식 드론" }
+  # 마도공학
+  mana_construct:    { entity: VEX,         world: MAGITECH, base-power: 70, bond-skill: magitech_laser,       tame-need: AMETHYST_SHARD, description: "마도 인공 생명체" }
+
 contract:
   break-stat-loss-percent: 10
   spirit-spirit-power-loss-percent: 50

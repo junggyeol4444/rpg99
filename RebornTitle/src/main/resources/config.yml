@@ -44,6 +44,61 @@ titles:
       stats: { STRENGTH: 50, INTELLIGENCE: 50 }
       special: HIDDEN_MASTER_REVEAL
 
+  # ─── 업적 칭호 (ACHIEVEMENT) ───
+  thousand_kills:        { type: ACHIEVEMENT, name: "&6천 사냥꾼",     description: "1000번의 사냥",    requirement: { type: KILL_COUNT, value: 1000 },    effects: { stats: { STRENGTH: 15 } } }
+  ten_thousand_kills:    { type: ACHIEVEMENT, name: "&c만 사냥꾼",     description: "10000번의 사냥",   requirement: { type: KILL_COUNT, value: 10000 },   effects: { stats: { STRENGTH: 50, LUCK: 10 } } }
+  world_traveler_7:      { type: ACHIEVEMENT, name: "&d세계 순례자",   description: "7세계 방문",       requirement: { type: WORLDS_VISITED, value: 7 },   effects: { stats: { CHARM: 15, LUCK: 8 } } }
+  all_worlds_visited:    { type: ACHIEVEMENT, name: "&e&l13세계 정복자", description: "13세계 모두 방문", requirement: { type: WORLDS_VISITED, value: 13 },  effects: { stats: { CHARM: 50, LUCK: 30, MENTAL: 20 } } }
+  first_reincarnation:   { type: ACHIEVEMENT, name: "&7환생자",        description: "첫 윤회를 마쳤다", requirement: { type: REINCARNATION, value: 1 },    effects: { stats: { MENTAL: 5 } } }
+  ten_reincarnations:    { type: ACHIEVEMENT, name: "&5십회 환생자",   description: "10번의 윤회",      requirement: { type: REINCARNATION, value: 10 },   effects: { stats: { MENTAL: 50 } } }
+  great_collector:       { type: ACHIEVEMENT, name: "&6대수집가",       description: "전설 등급 10종 보유", requirement: { type: LEGENDARY_OWNED, value: 10 }, effects: { stats: { LUCK: 25 } } }
+
+  # ─── 경지 칭호 (TIER) ───
+  swordsman:             { type: TIER, name: "&7검사",          description: "검의 길에 들어섰다",      requirement: { type: TIER, value: "검사" },          effects: { stats: { STRENGTH: 5 } } }
+  sword_expert:          { type: TIER, name: "&a소드 엑스퍼트", description: "검의 정통",                requirement: { type: TIER, value: "소드 엑스퍼트" }, effects: { stats: { STRENGTH: 10 } } }
+  grand_master:          { type: TIER, name: "&e&l그랜드 마스터", description: "검의 그랜드 마스터",     requirement: { type: TIER, value: "그랜드 마스터" }, effects: { stats: { STRENGTH: 80 } } }
+  absolute:              { type: TIER, name: "&5&l절대자",      description: "초월의 존재",              requirement: { type: TIER, value: "절대자" },        effects: { stats: { STRENGTH: 200, INTELLIGENCE: 200 } } }
+  ninth_circle:          { type: TIER, name: "&5&l9서클",       description: "현자의 경지",              requirement: { type: TIER, value: "9서클" },          effects: { stats: { INTELLIGENCE: 200, MENTAL: 100 } } }
+  hwagyeong:             { type: TIER, name: "&6화경",          description: "무인 화경",                requirement: { type: TIER, value: "화경" },           effects: { stats: { STRENGTH: 60, AGILITY: 60 } } }
+  hyeongyeong:           { type: TIER, name: "&5현경",          description: "무인 현경",                requirement: { type: TIER, value: "현경" },           effects: { stats: { STRENGTH: 100, AGILITY: 100, MENTAL: 80 } } }
+  saengsagyeong:         { type: TIER, name: "&4&l생사경",      description: "생사를 초월",              requirement: { type: TIER, value: "생사경" },         effects: { stats: { STRENGTH: 150, MENTAL: 150 } } }
+  chunhajeil:            { type: TIER, name: "&6&l천하제일인",  description: "천하 제일",                requirement: { type: TIER, value: "천하제일인" },     effects: { stats: { STRENGTH: 250, INTELLIGENCE: 100 } } }
+  yongwang_tier:         { type: TIER, name: "&6&l용왕",        description: "용족의 정점",              requirement: { type: TIER, value: "용왕급" },         effects: { stats: { STRENGTH: 200, ENDURANCE: 200 } } }
+  haewang_tier:          { type: TIER, name: "&3&l해왕",        description: "바다의 왕",                requirement: { type: TIER, value: "해왕급" },         effects: { stats: { OCEAN_POWER: 300 } } }
+  cheonje_tier:          { type: TIER, name: "&e&l천제",        description: "천계의 정점",              requirement: { type: TIER, value: "천제급" },         effects: { stats: { HEAVEN_KI: 300 } } }
+  mawang_tier:           { type: TIER, name: "&4&l마왕",        description: "7대 마왕의 자리",          requirement: { type: TIER, value: "마왕급" },         effects: { stats: { DEMON_KI: 300, STRENGTH: 100 } } }
+
+  # ─── 세력 칭호 (CLAN) ───
+  clan_elder:            { type: CLAN, name: "&6장로",          description: "가문 장로",                requirement: { type: CLAN_RANK, value: "ELDER" },   effects: { stats: { CHARISMA: 10 } } }
+  alliance_head:         { type: CLAN, name: "&6&l무림맹주",    description: "무림맹의 수장",            requirement: { type: ADMIN_GRANT },                  effects: { stats: { CHARISMA: 200 } } }
+  cult_leader:           { type: CLAN, name: "&5&l마교 교주",   description: "마교 교주",                requirement: { type: ADMIN_GRANT },                  effects: { stats: { DEMON_KI: 200, CHARISMA: 100 } } }
+  king_title:            { type: CLAN, name: "&6&l왕",          description: "왕국의 왕",                requirement: { type: ADMIN_GRANT },                  effects: { stats: { CHARISMA: 250 } } }
+  emperor:               { type: CLAN, name: "&6&l황제",        description: "제국의 황제",              requirement: { type: ADMIN_GRANT },                  effects: { stats: { CHARISMA: 400, INTELLIGENCE: 100 } } }
+  pirate_king:           { type: CLAN, name: "&6&l해적왕",      description: "자유해의 해적왕",          requirement: { type: ADMIN_GRANT },                  effects: { stats: { OCEAN_POWER: 200, CHARM: 100 } } }
+
+  # ─── NPC 부여 (NPC) ───
+  goddess_chosen:        { type: NPC, name: "&d&l여신의 총아",     description: "환생의 여신이 선택",       requirement: { type: NPC_FAVOR, npc: reincarnation_goddess, value: 100 }, effects: { stats: { LUCK: 30, CHARM: 20 } } }
+  dragon_friend:         { type: NPC, name: "&6용의 벗",          description: "드래곤과의 우정",          requirement: { type: NPC_FAVOR, npc: gold_dragon_lord, value: 100 },     effects: { stats: { DRAGON_POWER: 50, MENTAL: 30 } } }
+  immortal_disciple:     { type: NPC, name: "&3선인의 제자",      description: "선인에게 배우다",          requirement: { type: NPC_FAVOR, npc: taeheo_palace_master, value: 100 }, effects: { stats: { IMMORTAL_KI: 80 } } }
+  marwang_acknowledged:  { type: NPC, name: "&4마왕의 인정",      description: "마왕이 인정한 자",         requirement: { type: NPC_FAVOR, npc: lucifer, value: 100 },              effects: { stats: { DEMON_KI: 80 } } }
+  spirit_king_friend:    { type: NPC, name: "&a정령왕의 벗",      description: "정령왕의 가호",            requirement: { type: NPC_FAVOR, npc: ifrina, value: 100 },               effects: { stats: { SPIRIT_POWER: 60 } } }
+
+  # ─── 월드 퀘스트 칭호 (WORLD_QUEST) ───
+  marwang_war_hero:      { type: WORLD_QUEST, name: "&6대전의 영웅",     description: "마왕의 침공 격퇴",       requirement: { type: QUEST_COMPLETE, quest: marwang_invasion },           effects: { stats: { STRENGTH: 50, INTELLIGENCE: 50 } } }
+  shinma_war_veteran:    { type: WORLD_QUEST, name: "&e신마대전 참전자", description: "신마대전 생존",         requirement: { type: QUEST_COMPLETE, quest: shinma_war_heaven },          effects: { stats: { HEAVEN_KI: 100 } } }
+  cheonma_witness:       { type: WORLD_QUEST, name: "&5천마를 마주한 자", description: "천마 강림 생환",         requirement: { type: QUEST_COMPLETE, quest: cheonma_descent },            effects: { stats: { INNER_KI: 200, MENTAL: 100 } } }
+  gate_outbreak_hero:    { type: WORLD_QUEST, name: "&3헌터 영웅",      description: "게이트 대폭주 진압",      requirement: { type: QUEST_COMPLETE, quest: gate_outbreak },              effects: { stats: { LEVEL: 100 } } }
+  labyrinth_master:      { type: WORLD_QUEST, name: "&0&l미궁의 주인",  description: "미궁 100층 정복",         requirement: { type: QUEST_COMPLETE, quest: labyrinth_100f },             effects: { stats: { STRENGTH: 500, INTELLIGENCE: 500 } } }
+  sea_battle_hero:       { type: WORLD_QUEST, name: "&3대해전의 영웅",  description: "해상 대전 승리",          requirement: { type: QUEST_COMPLETE, quest: great_sea_battle },           effects: { stats: { OCEAN_POWER: 100 } } }
+  abyss_survivor:        { type: WORLD_QUEST, name: "&0심연의 생환자",  description: "심연계 생환",             requirement: { type: QUEST_COMPLETE, quest: abyss_survival },             effects: { stats: { MENTAL: 100, ABYSS_RESISTANCE: 50 } } }
+  god_trial_passed:      { type: WORLD_QUEST, name: "&6신의 시험 통과", description: "신의 시험 합격",          requirement: { type: QUEST_COMPLETE, quest: god_trial },                  effects: { stats: { DIVINITY: 100 } } }
+
+  # ─── AI 부여(특이행동) ───
+  silent_walker:         { type: AI, name: "&7&l말 없는 자",   description: "1000회 채팅 없이 사냥",       requirement: { type: ADMIN_GRANT },                                effects: { stats: { AGILITY: 30 } } }
+  vegetarian:            { type: AI, name: "&a생명을 아끼는 자", description: "100시간 동물 학살 없음",     requirement: { type: ADMIN_GRANT },                                effects: { stats: { LUCK: 20, MENTAL: 20 } } }
+  fast_clearer:          { type: AI, name: "&c&l번개손",      description: "이상하리만치 빠른 클리어",   requirement: { type: ADMIN_GRANT },                                effects: { stats: { AGILITY: 50 } } }
+  late_night_owl:        { type: AI, name: "&5&l야행성",      description: "주로 밤에만 활동",            requirement: { type: ADMIN_GRANT },                                effects: { stats: { YOKAI_KI: 30 } } }
+
 # 랭킹 갱신
 ranking:
   refresh-minutes: 5

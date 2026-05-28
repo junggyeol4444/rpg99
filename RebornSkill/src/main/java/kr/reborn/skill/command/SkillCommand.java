@@ -18,9 +18,31 @@ public final class SkillCommand implements CommandExecutor {
         if (!(s instanceof Player p)) return true;
         if (a.length == 0) {
             Msg.send(p, "&7/skill list  |  cast <id>  |  learn <id>  |  equip <slot> <id>");
+            Msg.send(p, "&7         |  techniques <id> &8(비급의 초식 보기)");
             return true;
         }
         switch (a[0].toLowerCase()) {
+            case "techniques": {
+                if (a.length < 2) return true;
+                String skillId = a[1];
+                var def = plugin.registry().get(skillId);
+                if (def == null) { Msg.error(p, "스킬 없음: " + skillId); return true; }
+                var all = plugin.techniques().of(skillId);
+                if (all.isEmpty()) { Msg.send(p, "&7" + def.name + " — 초식 데이터 없음"); return true; }
+                int prof = plugin.store().prof(p.getUniqueId(), skillId);
+                var unlocked = plugin.techniques().unlocked(skillId, prof);
+                Msg.send(p, "&6=== " + def.name + " — 초식 " + all.size() + " (해금 " + unlocked.size() + ", 숙련 " + prof + ") ===");
+                for (int i = 0; i < all.size(); i++) {
+                    var t = all.get(i);
+                    boolean got = i < unlocked.size();
+                    String head = got ? "§a" + (i + 1) + ". " : "§8" + (i + 1) + ". §7";
+                    String mult = "§7×" + String.format("%.2f", t.mult);
+                    String elem = t.elementOverride == null ? "" : " §d[" + t.elementOverride + "]";
+                    p.sendMessage(head + "§f" + t.name + " " + mult + elem);
+                    if (!t.description.isEmpty() && got) p.sendMessage("    §8" + t.description);
+                }
+                break;
+            }
             case "list":
                 Msg.send(p, "&6보유 스킬:");
                 for (String id : plugin.store().owned(p.getUniqueId())) {

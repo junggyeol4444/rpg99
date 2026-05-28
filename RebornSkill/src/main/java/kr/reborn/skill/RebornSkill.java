@@ -23,6 +23,7 @@ public final class RebornSkill extends JavaPlugin {
     private SkillCaster caster;
     private EnergyManager energy;
     private SkillCreator creator;
+    private kr.reborn.skill.technique.TechniqueRegistry techniques;
 
     public static RebornSkill get() { return instance; }
 
@@ -32,10 +33,12 @@ public final class RebornSkill extends JavaPlugin {
         saveDefaultConfig();
         this.registry = new SkillRegistry(this);
         this.store = new PlayerSkillStore(this);
+        this.techniques = new kr.reborn.skill.technique.TechniqueRegistry(this);
         this.caster = new SkillCaster(this);
         this.energy = new EnergyManager(this);
         this.creator = new SkillCreator(this);
         registry.load();
+        techniques.load();  // 초식 데이터 로드 (techniques.yml)
         creator.load();  // 이전에 창조된 스킬 복원
 
         getCommand("skill").setExecutor(new SkillCommand(this));
@@ -65,4 +68,5 @@ public final class RebornSkill extends JavaPlugin {
     public SkillCaster caster() { return caster; }
     public EnergyManager energy() { return energy; }
     public SkillCreator creator() { return creator; }
+    public kr.reborn.skill.technique.TechniqueRegistry techniques() { return techniques; }
 }

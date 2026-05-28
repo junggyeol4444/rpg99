@@ -73,7 +73,7 @@ public final class SkillCaster {
                 () -> castStep(p, def, total, elapsed + step, startHp), step);
     }
 
-    /** 데미지 계산(숙련도 포함) 후 종류별 효과 실행. */
+    /** 데미지 계산(숙련도 포함) 후 종류별 효과 실행. 초식이 있으면 적용. */
     private void applyEffect(Player p, SkillDef def) {
         PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
         double power = Formula.eval(def.damageFormula, d);
@@ -83,7 +83,27 @@ public final class SkillCaster {
         else if (prof >= 51) power *= 1.10;
         plugin.store().addProf(p.getUniqueId(), def.id, 1);
 
+        // 초식 선택 — 비급에 초식 데이터가 있으면 다음 초식을 골라 배수·속성 적용
+        var tech = plugin.techniques().nextFor(p.getUniqueId(), def.id, prof);
+        if (tech != null) {
+            power *= tech.mult;
+            Msg.send(p, "&5[" + def.name + "] §d→ §f" + tech.name);
+            if (!tech.description.isEmpty()) Msg.send(p, "&7  " + tech.description);
+            if (tech.elementOverride != null) {
+                // 속성 덮어쓰기 — 임시 SkillDef를 생성해 EffectExecutor에 넘김
+                SkillDef shadow = withElement(def, tech.elementOverride);
+                effects.execute(p, shadow, power);
+                return;
+            }
+        }
         effects.execute(p, def, power);
+    }
+
+    /** 초식이 속성을 덮어쓸 때 사용 — 한 번 캐스팅에만 쓰이는 그림자 SkillDef. */
+    private SkillDef withElement(SkillDef d, String element) {
+        return new SkillDef(d.id, d.name, d.world, d.category, d.costType, d.costAmount,
+                d.cooldownSeconds, d.castSeconds, d.damageFormula, element, d.learnMethod,
+                d.type, d.radius, d.range, d.projectileSpeed, d.durationTicks, d.summonMob);
     }
 
     private String castBar(String name, double progress) {

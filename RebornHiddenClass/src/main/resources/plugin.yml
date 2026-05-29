@@ -12,7 +12,15 @@ commands:
   hiddenclass:
     description: 히든 클래스 GUI/명령
     aliases: [hc]
-    usage: /hc · /hc list · /hc info <id> · /hc grant <player> <id>
+    usage: |
+      /hc                       - 내 보유 히든 클래스 목록
+      /hc list                  - 전체 히든 클래스 목록
+      /hc info <id>             - 클래스 상세 (조건 + 효과 + 능력)
+      /hc abilities             - 사용 가능 능력 목록
+      /hc cast <ability> [tgt]  - 능력 발동
+      /hc cooldown              - 능력 쿨다운 확인
+      /hc check                 - 조건 풀체크 강제 실행
+      /hc grant <player> <id>   - 관리자 부여
 permissions:
   rebornhiddenclass.use:
     default: true

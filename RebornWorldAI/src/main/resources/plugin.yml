@@ -10,7 +10,18 @@ softdepend: [RebornNPC, RebornMob, RebornQuest, RebornEconomy, RebornStat, Rebor
 load: POSTWORLD
 commands:
   worldai:
-    description: 세계 AI 관리
+    description: 세계 AI 시스템 — 상태/세력/시장/이주/역사/시대/재해/날씨/로그/강제트리거
     permission: rebornworldai.admin
+    usage: |
+      /worldai status <WORLD>
+      /worldai factions <WORLD>
+      /worldai market <WORLD>
+      /worldai migration
+      /worldai history <WORLD> [N]
+      /worldai epoch [WORLD]
+      /worldai disaster <WORLD> <type>
+      /worldai weather <WORLD> <name>
+      /worldai log [N]
+      /worldai force <WORLD> <WAR|FESTIVAL|CRISIS|REVOLT|OVERFLOW>
 permissions:
   rebornworldai.admin: { default: op }

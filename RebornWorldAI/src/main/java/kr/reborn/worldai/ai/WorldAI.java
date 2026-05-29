@@ -34,10 +34,25 @@ public final class WorldAI {
         analyzeWeather();
         decideQuests();
         directNpcs();
+        directFactions();
+        directMarket();
         // 스킬 창조 판단은 RebornSkill 측에서 자체 추적
+
+        // 시대 판정 — 매 사이클
+        try { plugin.epoch().cycle(world); } catch (Throwable ignored) {}
 
         Bukkit.getPluginManager().callEvent(new RebornWorldAIAnalysisEvent(world,
                 state.inflation, state.tension, state.stability));
+    }
+
+    private void directFactions() {
+        try { plugin.factions().cycle(world, state.tension, state.stability); }
+        catch (Throwable ignored) {}
+    }
+
+    private void directMarket() {
+        try { plugin.market().cycle(world, state.tension, state.inflation); }
+        catch (Throwable ignored) {}
     }
 
     private void analyzeEconomy() {
@@ -134,6 +149,18 @@ public final class WorldAI {
         questCooldowns.put(key, now);
         Bukkit.getPluginManager().callEvent(new RebornWorldAIDecisionEvent(world, key, label));
         Bukkit.broadcastMessage("§6[" + world + " AI] §f" + label + " 발동");
+        // 역사 기록
+        try {
+            kr.reborn.worldai.history.WorldHistory.EventKind kind = switch (key) {
+                case "WAR" -> kr.reborn.worldai.history.WorldHistory.EventKind.WAR_START;
+                case "PEACE_FESTIVAL" -> kr.reborn.worldai.history.WorldHistory.EventKind.FESTIVAL;
+                case "REVOLT" -> kr.reborn.worldai.history.WorldHistory.EventKind.REVOLT;
+                case "BOSS_DESCENT" -> kr.reborn.worldai.history.WorldHistory.EventKind.BOSS_DESCENT;
+                case "ECON_CRISIS" -> kr.reborn.worldai.history.WorldHistory.EventKind.ECON_CRISIS;
+                default -> kr.reborn.worldai.history.WorldHistory.EventKind.SPECIAL;
+            };
+            plugin.history().record(world, kind, label);
+        } catch (Throwable ignored) {}
 
         // RebornQuest hook — 같은 세계 플레이어 전원에게 월드 퀘스트 자동 부여
         try {

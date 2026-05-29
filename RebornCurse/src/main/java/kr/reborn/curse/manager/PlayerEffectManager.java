@@ -13,13 +13,10 @@ import kr.reborn.curse.event.RebornCurseApplyEvent;
 import kr.reborn.curse.event.RebornCurseCureEvent;
 import kr.reborn.curse.event.RebornCurseTickEvent;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,7 +41,6 @@ public final class PlayerEffectManager {
             Msg.error(p, "정의되지 않은 효과: " + id);
             return false;
         }
-        // 세계 제한 — 단순 권고. 실제 적용은 허용.
         Map<String, ActiveEffect> map = of(p.getUniqueId());
         ActiveEffect existing = map.get(id);
         if (existing != null) {
@@ -70,6 +66,9 @@ public final class PlayerEffectManager {
                     "EFFECT_PCT:" + id);
         }
 
+        // 특수 효과 캐시 등록
+        plugin.special().onApply(p, def);
+
         if (def.kind == EffectDef.Kind.BLESSING) {
             Msg.send(p, "&b[축복] " + def.name);
             Bukkit.getPluginManager().callEvent(new RebornBlessingApplyEvent(p, def));
@@ -84,6 +83,8 @@ public final class PlayerEffectManager {
         Map<String, ActiveEffect> map = of(p.getUniqueId());
         ActiveEffect a = map.remove(id);
         if (a == null) return false;
+        EffectDef def = plugin.registry().get(id);
+        if (def != null) plugin.special().onRemove(p, def);
         Msg.send(p, "&a효과 해제: " + id);
         Bukkit.getPluginManager().callEvent(new RebornCurseCureEvent(p, id));
         return true;
@@ -105,7 +106,6 @@ public final class PlayerEffectManager {
                 // 광폭화 종료 체크
                 if (a.berserkActive && now >= a.berserkUntil) {
                     a.berserkActive = false;
-                    Msg.send(p, "&7광폭화가 풀렸다.");
                 }
                 // tick 적용
                 if (def.tickIntervalSeconds > 0
@@ -118,6 +118,7 @@ public final class PlayerEffectManager {
                     a.remainingTicks--;
                     if (a.remainingTicks <= 0) {
                         it.remove();
+                        plugin.special().onRemove(p, def);
                         Msg.send(p, "&7" + def.name + " 효과가 만료되었다.");
                     }
                 }
@@ -136,29 +137,13 @@ public final class PlayerEffectManager {
                         "TICK_C:" + def.id);
             }
         }
-        if (def.berserkChance > 0 && Rand.chance(def.berserkChance) && !a.berserkActive) {
-            startBerserk(p, def, a);
-        }
-    }
+        // SpecialEffectEngine 위임 — hp_tick, out_of_ship, stats_tick_day_only, npc_favor_tick
+        plugin.special().applyTick(p, def, a);
 
-    private void startBerserk(Player p, EffectDef def, ActiveEffect a) {
-        int duration = plugin.getConfig().getInt("berserk.duration-seconds", 10);
-        int radius = plugin.getConfig().getInt("berserk.radius-blocks", 10);
-        a.berserkActive = true;
-        a.berserkUntil = System.currentTimeMillis() + duration * 1000L;
-        Msg.send(p, "&c&l광폭화! 너의 의식이 흐려진다.");
-        Bukkit.getPluginManager().callEvent(new RebornBerserkEvent(p, def));
-        // 가장 가까운 엔티티 공격 (단발)
-        List<LivingEntity> near = new ArrayList<>();
-        for (var e : p.getNearbyEntities(radius, radius, radius)) {
-            if (e instanceof LivingEntity le && !le.getUniqueId().equals(p.getUniqueId())) {
-                near.add(le);
-            }
-        }
-        if (!near.isEmpty()) {
-            LivingEntity target = near.get(0);
-            RebornCore.get().scheduler().runEntityTask(target,
-                    () -> target.damage(2.0, p));
+        // 광폭화 발동 — BerserkEngine 위임
+        if (def.berserkChance > 0 && Rand.chance(def.berserkChance) && !a.berserkActive) {
+            plugin.berserk().start(p, a);
+            Bukkit.getPluginManager().callEvent(new RebornBerserkEvent(p, def));
         }
     }
 }

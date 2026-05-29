@@ -29,3 +29,64 @@ crime:
 
 abyss:
   inner-resistance-zero-vanish: true
+  start-resistance: 100
+  decay-per-minute: 1
+  decay-near-abyss-beast: 5
+  hostile-mind-erosion-percent: 0.5
+
+  # ─── 심연수 (절대자급 이상) ───
+  beasts:
+    abyss_eye:        { name: "&0&l심연의 눈",     hp: 1000000, damage: 5000, threat: ABSOLUTE_PLUS, description: "심연의 의식체. 모든 세계의 관찰자" }
+    chaos_devourer:   { name: "&5&l혼돈 포식자",   hp: 500000,  damage: 3500, threat: ABSOLUTE,      description: "차원을 먹어치우는 존재" }
+    void_serpent:     { name: "&0&l허공의 뱀",     hp: 400000,  damage: 3000, threat: ABSOLUTE,      description: "심연 깊은 곳에 잠든 거대 뱀" }
+    nameless_one:     { name: "&8&l이름 없는 자",  hp: 600000,  damage: 4000, threat: ABSOLUTE,      description: "이름을 갖기 전에 존재한 자" }
+    silence_lord:     { name: "&7&l침묵의 주인",   hp: 350000,  damage: 2500, threat: ABSOLUTE,      description: "소리·언어·생각을 빨아들임" }
+
+# ─── 명계 토착민 ───
+underworld-residents:
+  # 명병 (명왕의 군대)
+  myungbyeong_rookie:    { name: "&8명병",          base: SKELETON,        hp: 800,    damage: 80,  level: 1, rank: 일반 }
+  myungbyeong_veteran:   { name: "&8&l숙련 명병",   base: WITHER_SKELETON, hp: 2500,   damage: 200, level: 3, rank: 정예 }
+  myungbyeong_general:   { name: "&8&l명병 장군",   base: WITHER_SKELETON, hp: 8000,   damage: 500, level: 7, rank: 장군 }
+  # 명수 (명계 야생 짐승)
+  myungsoo_hound:        { name: "&8명수 — 명견",   base: WOLF,            hp: 600,    damage: 70,  habitat: 황무지 }
+  myungsoo_serpent:      { name: "&8명수 — 명사",   base: SLIME,           hp: 1200,   damage: 100, habitat: 늪지 }
+  myungsoo_giant:        { name: "&8&l명수 — 명거인", base: GIANT,         hp: 15000,  damage: 800, habitat: 황무지 }
+  # 명관 (관료·심판자)
+  pansagwan:             { name: "&8&l판사관",      base: VILLAGER,        hp: 5000,   damage: 100, role: 심판 }
+  yundwogwan:            { name: "&8&l윤도관",      base: VILLAGER,        hp: 3000,   damage: 80,  role: 윤회배정 }
+  giroggwan:             { name: "&8기록관",       base: VILLAGER,        hp: 1500,   damage: 50,  role: 기록 }
+  # 원혼·환혼자
+  weongon:               { name: "&7원혼",          base: VEX,             hp: 500,    damage: 60,  description: "원한을 품고 명계를 떠도는 영혼" }
+  hwanhonja_lord:        { name: "&5&l환혼자 거두", base: WARDEN,          hp: 30000,  damage: 1500, description: "명계 탈출 후 군림한 자" }
+
+# ─── 히든 월드 토착민 ───
+hidden-residents:
+  # 시간계
+  time_guardian:         { name: "&e&l시간 수호자",         world: TIME_REALM, hp: 80000,  damage: 600, role: 관리자, description: "시간계의 신급 관리자" }
+  paradox_wraith:        { name: "&e&l역설의 혼령",          world: TIME_REALM, hp: 12000,  damage: 250, description: "시간 역류로 태어난 모순체" }
+  # 꿈의 세계
+  dream_lord_npc:        { name: "&d&l꿈의 군주",            world: DREAM,      hp: 100000, damage: 800, role: 지배자, description: "현실과 꿈의 경계를 흐릿하게 한다" }
+  nightmare_spawn:       { name: "&5악몽의 새끼",            world: DREAM,      hp: 3000,   damage: 200, description: "악몽에서 태어난 작은 공포" }
+  dream_eater:           { name: "&d&l꿈을 먹는 자",          world: DREAM,      hp: 30000,  damage: 500, description: "잠든 자의 꿈을 빨아먹는 거대 존재" }
+  # 허공계
+  void_wanderer:         { name: "&8허공 유랑자",           world: VOID,       hp: 8000,   damage: 200, description: "허공에 갇혀 떠도는 존재" }
+  dimension_predator:    { name: "&5&l차원 포식자",          world: VOID,       hp: 80000,  damage: 700, description: "세계의 벽을 갉아먹는다" }
+  void_drift:            { name: "&8허공의 표류",            world: VOID,       hp: 2000,   damage: 150, description: "차원 사이의 잔재" }
+  # 신계
+  divine_servant:        { name: "&6신의 시종",              world: GOD,        hp: 50000,  damage: 400, description: "주신을 섬기는 자" }
+  divine_messenger:      { name: "&e신의 사자",              world: GOD,        hp: 20000,  damage: 250, description: "신의 의지를 전하는 자" }
+  concept_fragment:      { name: "&0&l개념의 파편",          world: GOD,        hp: 200000, damage: 1500, description: "개념신의 일부가 떨어져 나온 존재" }
+
+# 히든 월드 규칙 보조
+hidden-world-rules:
+  time_realm:
+    time-flux-percent: 30
+    past-change-events: true
+  dream:
+    sleep-required: true
+    mental-key-stat: MENTAL
+    imagination-power-bonus: 2.0
+  void:
+    direction-loss-percent: 40
+    navigation-stat: LUCK

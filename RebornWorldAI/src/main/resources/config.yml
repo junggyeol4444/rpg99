@@ -37,8 +37,49 @@ worlds:
   OCEAN: true
 
 weathers:
-  마기_폭풍:    { world: DEMON, duration-min: 10 }
-  독무:         { world: MARTIAL, duration-min: 8 }
-  정령_만개:    { world: SPIRIT, duration-min: 15 }
-  핏빛_비:      { world: DEMON, duration-min: 5 }
-  방사능_폭풍:  { world: APOCALYPSE, duration-min: 10 }
+  # 마계
+  마기_폭풍:        { world: DEMON, duration-min: 10, effect: DEMON_KI_BOOST, mult: 1.5 }
+  핏빛_비:          { world: DEMON, duration-min: 5,  effect: BLOOD_DAMAGE,   mult: 1.2 }
+  지옥불_폭우:      { world: DEMON, duration-min: 8,  effect: FIRE_EVERYWHERE }
+  # 무협
+  독무:             { world: MARTIAL, duration-min: 8,  effect: POISON_FOG,   mult: 1.1 }
+  음풍:             { world: MARTIAL, duration-min: 6,  effect: INNER_KI_DRAIN }
+  지맥_폭주:        { world: MARTIAL, duration-min: 10, effect: EARTHQUAKE }
+  # 정령
+  정령_만개:        { world: SPIRIT, duration-min: 15, effect: SPIRIT_POWER_BOOST, mult: 2.0 }
+  원소_폭풍:        { world: SPIRIT, duration-min: 8,  effect: RANDOM_ELEMENT }
+  태초의_숨결:      { world: SPIRIT, duration-min: 20, effect: PRIMORDIAL_AURA,    rare: true }
+  # 판타지
+  마나_폭풍:        { world: FANTASY, duration-min: 10, effect: MANA_BOOST,        mult: 1.5 }
+  마나_고갈:        { world: FANTASY, duration-min: 6,  effect: MANA_DRAIN }
+  유성우:           { world: FANTASY, duration-min: 8,  effect: METEOR_RAIN }
+  # 천계
+  성광:             { world: HEAVEN, duration-min: 12, effect: HEAVEN_KI_BOOST,    mult: 1.5 }
+  타락_안개:        { world: HEAVEN, duration-min: 6,  effect: TAINT_RISK }
+  # 선계
+  천겁_낙뢰:        { world: IMMORTAL, duration-min: 10, effect: TRIBULATION_RISK }
+  운기_안정:        { world: IMMORTAL, duration-min: 20, effect: MEDITATE_BOOST,   mult: 2.0 }
+  # 요계
+  보름달:           { world: YOKAI, duration-min: 60,  effect: YOKAI_KI_BOOST,     mult: 2.0 }
+  여우비:           { world: YOKAI, duration-min: 5,   effect: ILLUSION_RISK }
+  음월_침식:        { world: YOKAI, duration-min: 8,   effect: HOSTILE_YOKAI_SPAWN }
+  # 지구
+  게이트_폭풍:      { world: EARTH, duration-min: 10,  effect: GATE_OUTBREAK_RISK }
+  미세먼지:         { world: EARTH, duration-min: 6,   effect: STAT_PENALTY_MINOR }
+  # 마도공학
+  마도_난기류:      { world: MAGITECH, duration-min: 8, effect: MAGITECH_ENERGY_BOOST, mult: 1.3 }
+  코어_폭주:        { world: MAGITECH, duration-min: 5, effect: GOLEM_RAMPAGE }
+  # 아포칼립스
+  방사능_폭풍:      { world: APOCALYPSE, duration-min: 10, effect: RADIATION_DAMAGE }
+  검은_재:          { world: APOCALYPSE, duration-min: 12, effect: VISIBILITY_LOSS }
+  변종_부화:        { world: APOCALYPSE, duration-min: 8,  effect: MUTANT_SPAWN_BOOST }
+  # 사이버펑크
+  애시드_레인:      { world: CYBERPUNK, duration-min: 10, effect: CYBER_DEGRADATION }
+  데이터_폭풍:      { world: CYBERPUNK, duration-min: 6,  effect: HACK_BOOST,      mult: 1.5 }
+  # 드래곤
+  용의_위압:        { world: DRAGON, duration-min: 15,  effect: STAT_PENALTY_MAJOR, rare: true }
+  보물_운:          { world: DRAGON, duration-min: 30,  effect: DROP_BOOST,        mult: 2.0 }
+  # 해양
+  해일:             { world: OCEAN, duration-min: 8,   effect: TSUNAMI_DAMAGE }
+  진주_조류:        { world: OCEAN, duration-min: 20,  effect: OCEAN_POWER_BOOST, mult: 1.5 }
+  유령선_안개:      { world: OCEAN, duration-min: 10,  effect: GHOST_SHIP_SPAWN }

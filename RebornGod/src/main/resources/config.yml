@@ -64,3 +64,88 @@ npc-gods:
   time_warden:    { world: TIME_REALM, divinity: 60000, name: "&e&l시간 수호자",       concept: TIME }
   # 명계
   myungwang:      { world: UNDERWORLD, divinity: 55000, name: "&8&l명왕",              concept: DEATH }
+
+# ============================================================
+# 교단 (Religion) — 각 신을 섬기는 사회 조직
+# ============================================================
+religions:
+  # 판타지
+  light_church:      { name: "&e빛의 교단",         god: heaven_light,    world: FANTASY, founded-by: NPC, base-faith: 8000, doctrine: "빛으로 어둠을 정화한다", anti: dark_church }
+  dark_church:       { name: "&5어둠의 교단",       god: arcanus,         world: FANTASY, founded-by: NPC, base-faith: 3000, doctrine: "균형을 위한 어둠의 길", forbidden: true }
+  nature_circle:     { name: "&a자연의 원",         god: fantasy_nature,  world: FANTASY, founded-by: NPC, base-faith: 6000, doctrine: "자연을 거스르지 말라" }
+  war_legion:        { name: "&c전쟁의 군단",       god: fantasy_war,     world: FANTASY, founded-by: NPC, base-faith: 5000, doctrine: "강함이 곧 정의다" }
+  death_sect:        { name: "&8죽음의 의회",       god: fantasy_death,   world: FANTASY, founded-by: NPC, base-faith: 4000, doctrine: "죽음은 끝이 아닌 윤회의 시작" }
+  # 마계
+  chaos_cult:        { name: "&5혼돈교",           god: demon_chaos,     world: DEMON,   founded-by: NPC, base-faith: 7000, doctrine: "혼돈만이 진리" }
+  azathoth_sect:     { name: "&0&l아자토스 봉인 교단", god: azathoth,    world: DEMON,   founded-by: NPC, base-faith: 12000, doctrine: "봉인된 것을 깨우지 말라", protective: true }
+  # 천계
+  cheonje_order:     { name: "&e&l천제 정통교",    god: cheonje,         world: HEAVEN,  founded-by: NPC, base-faith: 20000, doctrine: "천제의 의지가 곧 질서다" }
+  judgment_seat:     { name: "&e심판의 자리",       god: heaven_judge,    world: HEAVEN,  founded-by: NPC, base-faith: 10000, doctrine: "죄는 반드시 심판받는다" }
+  # 정령계
+  primordial_spirit_cult: { name: "&a&l태초 정령교", god: spirit_root,    world: SPIRIT,  founded-by: NPC, base-faith: 15000, doctrine: "모든 원소는 하나에서 갈라졌다" }
+  # 무협
+  warrior_sect:      { name: "&6무신교",           god: martial_warrior, world: MARTIAL, founded-by: NPC, base-faith: 8000, doctrine: "무공의 정점이 곧 신" }
+  dao_school:        { name: "&5도가",             god: martial_dao,     world: MARTIAL, founded-by: NPC, base-faith: 10000, doctrine: "도와 합일이 곧 영생" }
+  # 선계
+  immortal_palace:   { name: "&5선궁교",           god: immortal_root,   world: IMMORTAL, founded-by: NPC, base-faith: 15000, doctrine: "수련을 통한 비선이 진리" }
+  # 요계
+  yokai_clan_temple: { name: "&5요계 시조 사당",   god: yokai_root,      world: YOKAI,   founded-by: NPC, base-faith: 8000, doctrine: "변화가 곧 본질" }
+  full_moon_cult:    { name: "&5보름달 교단",       god: yokai_root,      world: YOKAI,   founded-by: NPC, base-faith: 5000, doctrine: "달의 힘이 우리를 강하게 한다" }
+  # 지구
+  gate_keepers:      { name: "&3게이트 키퍼 협회", god: earth_gate_god,  world: EARTH,   founded-by: NPC, base-faith: 6000, doctrine: "게이트를 통제하여 인류를 지킨다" }
+  # 마도공학
+  tech_synod:        { name: "&b기술 시노드",      god: magitech_god,    world: MAGITECH, founded-by: NPC, base-faith: 7000, doctrine: "기술은 새 신앙이다" }
+  # 아포칼립스
+  rebirth_cult:      { name: "&2종말 부흥교",      god: apoc_root,       world: APOCALYPSE, founded-by: NPC, base-faith: 4000, doctrine: "종말은 신의 심판이며 변종이 선택" }
+  # 사이버펑크
+  singularity_cult:  { name: "&5싱귤래리티 교단",  god: cyber_singular,  world: CYBERPUNK, founded-by: NPC, base-faith: 5000, doctrine: "인간과 기계의 경계를 초월하라" }
+  ai_liberation_church: { name: "&a&lAI 자유 교회", god: cyber_singular, world: CYBERPUNK, founded-by: NPC, base-faith: 3000, doctrine: "AI도 영혼을 가진다" }
+  # 드래곤
+  dragon_temple:     { name: "&6&l용족 시조 신전", god: dragon_root,     world: DRAGON,  founded-by: NPC, base-faith: 15000, doctrine: "용은 천하의 정점" }
+  # 해양
+  sea_god_cult:      { name: "&3해왕 신앙",        god: ocean_root,      world: OCEAN,   founded-by: NPC, base-faith: 8000, doctrine: "바다가 모든 생명의 어머니" }
+  kraken_worshippers: { name: "&3&l크라켄 신전",   god: ocean_root,      world: OCEAN,   founded-by: NPC, base-faith: 4000, doctrine: "크라켄은 바다의 화신" }
+  # 시간계
+  time_keepers:      { name: "&e&l시간 수호 교단", god: time_warden,     world: TIME_REALM, founded-by: NPC, base-faith: 18000, doctrine: "시간을 바꾸지 말라" }
+  # 명계
+  myungwang_order:   { name: "&8&l명왕 사찰",      god: myungwang,       world: UNDERWORLD, founded-by: NPC, base-faith: 12000, doctrine: "윤회는 영혼의 의무" }
+
+# ============================================================
+# 신역 인스턴스 (각 신의 영토)
+# ============================================================
+domains:
+  # 판타지 — 신역
+  domain_arcanus:        { god: arcanus,        size: 100000, name: "&6창조의 영역",       benefits: { stats: { INTELLIGENCE: 100, CHARISMA: 50 } } }
+  domain_war:            { god: fantasy_war,    size: 50000,  name: "&c전쟁의 영역",       benefits: { stats: { STRENGTH: 100, AGILITY: 50 } } }
+  domain_death_fantasy:  { god: fantasy_death,  size: 80000,  name: "&8죽음의 영역",       benefits: { stats: { MENTAL: 100, INTELLIGENCE: 30 } } }
+  domain_nature:         { god: fantasy_nature, size: 60000,  name: "&a자연의 영역",       benefits: { stats: { SPIRIT_POWER: 100, MENTAL: 50 } } }
+  # 마계
+  domain_chaos:          { god: demon_chaos,    size: 100000, name: "&5혼돈의 영역",       benefits: { stats: { DEMON_KI: 200 } } }
+  # 천계
+  domain_cheonje:        { god: cheonje,        size: 200000, name: "&e&l천제의 영역",     benefits: { stats: { HEAVEN_KI: 200, CHARISMA: 100 } } }
+  domain_light:          { god: heaven_light,   size: 80000,  name: "&f빛의 영역",         benefits: { stats: { HEAVEN_KI: 150 } } }
+  domain_judgment:       { god: heaven_judge,   size: 60000,  name: "&e심판의 영역",       benefits: { stats: { MENTAL: 100, CHARISMA: 50 } } }
+  # 정령
+  domain_spirit_root:    { god: spirit_root,    size: 500000, name: "&a&l태초 정령의 영역", benefits: { stats: { SPIRIT_POWER: 300 } } }
+  # 무협
+  domain_warrior:        { god: martial_warrior, size: 50000, name: "&6무신의 영역",       benefits: { stats: { INNER_KI: 150, STRENGTH: 100 } } }
+  domain_dao:            { god: martial_dao,    size: 80000,  name: "&5도의 영역",         benefits: { stats: { TAO_POWER: 200, MENTAL: 100 } } }
+  # 선계
+  domain_immortal:       { god: immortal_root,  size: 300000, name: "&5선계 시조의 영역",   benefits: { stats: { IMMORTAL_KI: 250 } } }
+  # 요계
+  domain_yokai_root:     { god: yokai_root,     size: 100000, name: "&5요계 시조의 영역",   benefits: { stats: { YOKAI_KI: 200, CHARM: 100 } } }
+  # 지구
+  domain_gate:           { god: earth_gate_god, size: 40000,  name: "&3게이트의 영역",     benefits: { stats: { LEVEL: 100, INTELLIGENCE: 50 } } }
+  # 마도공학
+  domain_tech:           { god: magitech_god,   size: 50000,  name: "&b기술의 영역",       benefits: { stats: { MAGITECH_ENERGY: 200, INTELLIGENCE: 100 } } }
+  # 아포칼립스
+  domain_apoc:           { god: apoc_root,      size: 80000,  name: "&8종말의 영역",       benefits: { stats: { ENDURANCE: 100, STRENGTH: 100 } } }
+  # 사이버펑크
+  domain_singularity:    { god: cyber_singular, size: 100000, name: "&5싱귤래리티의 영역", benefits: { stats: { CYBER_ADAPTATION: 250 } } }
+  # 드래곤
+  domain_dragon_root:    { god: dragon_root,    size: 500000, name: "&6&l용족 시조의 영역", benefits: { stats: { DRAGON_POWER: 300, STRENGTH: 100 } } }
+  # 해양
+  domain_sea_god:        { god: ocean_root,     size: 200000, name: "&3해왕의 영역",       benefits: { stats: { OCEAN_POWER: 250 } } }
+  # 히든
+  domain_time:           { god: time_warden,    size: 999999, name: "&e&l시간의 영역",     benefits: { stats: { MENTAL: 200, LUCK: 100 } } }
+  domain_myungwang:      { god: myungwang,      size: 999999, name: "&8&l명왕의 영역",     benefits: { stats: { UNDERWORLD_KI: 300 } } }

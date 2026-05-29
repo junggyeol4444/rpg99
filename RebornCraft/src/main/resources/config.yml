@@ -274,3 +274,77 @@ enchant:
     LEGENDARY: 0.1
     MYTHIC: 0.3
     GENESIS: 0.0   # 창세 안 깨짐
+
+  # ─── 강화석 (재료) ───
+  stones:
+    iron_stone:        { name: "&7철 강화석",       grade: COMMON,    bonus-percent: 5,   success-rate: 0.95, level-cap: 5 }
+    silver_stone:      { name: "&f은 강화석",       grade: UNCOMMON,  bonus-percent: 10,  success-rate: 0.85, level-cap: 8 }
+    gold_stone:        { name: "&e금 강화석",       grade: RARE,      bonus-percent: 15,  success-rate: 0.70, level-cap: 10 }
+    mithril_stone:     { name: "&b미스릴 강화석",   grade: HEROIC,    bonus-percent: 25,  success-rate: 0.50, level-cap: 13 }
+    adamantite_stone:  { name: "&5아다만타이트 강화석", grade: LEGENDARY, bonus-percent: 40, success-rate: 0.35, level-cap: 15 }
+    netherite_stone:   { name: "&8네더라이트 강화석", grade: LEGENDARY, bonus-percent: 50,  success-rate: 0.30, level-cap: 17 }
+    stardust_stone:    { name: "&6&l별가루 강화석",   grade: MYTHIC,    bonus-percent: 80,  success-rate: 0.15, level-cap: 20 }
+    genesis_stone:     { name: "&6&l창세 결정",       grade: GENESIS,   bonus-percent: 150, success-rate: 0.05, level-cap: 25 }
+
+  # ─── 단계별 강화 효과 (+1 ~ +25) ───
+  levels:
+    "1":  { stat-mult: 1.05, success-needed: 1 }
+    "5":  { stat-mult: 1.30, success-needed: 1, milestone: true }
+    "10": { stat-mult: 1.80, success-needed: 1, milestone: true, glow: true }
+    "13": { stat-mult: 2.40, success-needed: 2, milestone: true }
+    "15": { stat-mult: 3.00, success-needed: 2, milestone: true, particle: true }
+    "17": { stat-mult: 3.80, success-needed: 3, milestone: true }
+    "20": { stat-mult: 5.00, success-needed: 3, milestone: true, aura: true }
+    "25": { stat-mult: 9.00, success-needed: 5, milestone: true, ultimate: true }
+
+  # ─── 룬 (각인) — 영구 부여, 슬롯 3개 ───
+  runes:
+    rune_strength:    { name: "&c&l근력 룬",       stat: STRENGTH,     bonus: 30,  cost-stones: 5,  professions: [rune_smith, enchanter] }
+    rune_endurance:   { name: "&7&l맷집 룬",       stat: ENDURANCE,    bonus: 40,  cost-stones: 5,  professions: [rune_smith] }
+    rune_agility:     { name: "&a&l민첩 룬",       stat: AGILITY,      bonus: 25,  cost-stones: 5,  professions: [rune_smith, enchanter] }
+    rune_intelligence: { name: "&b&l지능 룬",      stat: INTELLIGENCE, bonus: 30,  cost-stones: 5,  professions: [enchanter] }
+    rune_mental:      { name: "&5&l정신 룬",       stat: MENTAL,       bonus: 25,  cost-stones: 6,  professions: [enchanter, talisman_writer] }
+    rune_luck:        { name: "&e&l행운 룬",       stat: LUCK,         bonus: 20,  cost-stones: 8,  professions: [enchanter, dokkaebi_carver] }
+    rune_aura:        { name: "&6&l오러 룬",       stat: AURA,         bonus: 50,  cost-stones: 12, professions: [enchanter] }
+    rune_mana:        { name: "&3&l마나 룬",       stat: MANA,         bonus: 50,  cost-stones: 12, professions: [enchanter] }
+    rune_inner_ki:    { name: "&6&l내공 룬",       stat: INNER_KI,     bonus: 60,  cost-stones: 15, professions: [talisman_writer] }
+    rune_demon_ki:    { name: "&4&l마기 룬",       stat: DEMON_KI,     bonus: 60,  cost-stones: 15, professions: [demon_smith, soul_carver] }
+    rune_heaven_ki:   { name: "&e&l천기 룬",       stat: HEAVEN_KI,    bonus: 60,  cost-stones: 15, professions: [enchanter] }
+    rune_immortal_ki: { name: "&5&l선기 룬",       stat: IMMORTAL_KI,  bonus: 60,  cost-stones: 15, professions: [immortal_artifact, talisman_writer] }
+    rune_yokai_ki:    { name: "&5&l요기 룬",       stat: YOKAI_KI,     bonus: 60,  cost-stones: 15, professions: [dokkaebi_carver, talisman_writer] }
+    rune_dragon:      { name: "&6&l용력 룬",       stat: DRAGON_POWER, bonus: 80,  cost-stones: 20, professions: [rune_smith] }
+    rune_ocean:       { name: "&3&l해양력 룬",     stat: OCEAN_POWER,  bonus: 60,  cost-stones: 15, professions: [ocean_gear] }
+    rune_genesis:     { name: "&6&l&n창세 룬",     stat: ALL_COMMON,   bonus: 100, cost-stones: 50, professions: [enchanter, rune_smith], genesis-only: true }
+
+  # ─── 부여 마법 (효과) ───
+  enchantments:
+    sharpness_plus:    { name: "&7날카로움+",       effect: SHARP_DAMAGE,  amount: 15,  applies: WEAPON,    tier: COMMON, cost-currency: 1000 }
+    flame_aura:        { name: "&c화염 오라",        effect: FIRE_DAMAGE,    amount: 10,  applies: WEAPON,    tier: RARE,   cost-currency: 5000 }
+    soul_drain:        { name: "&8영혼 흡수",        effect: LIFE_STEAL,     amount: 5,   applies: WEAPON,    tier: HEROIC, cost-currency: 15000 }
+    holy_smite:        { name: "&e성스러운 일격",    effect: HOLY_DAMAGE,    amount: 20,  applies: WEAPON,    tier: HEROIC, cost-currency: 20000 }
+    chain_lightning:   { name: "&e연쇄 번개",        effect: CHAIN_DAMAGE,   amount: 8,   applies: WEAPON,    tier: LEGENDARY, cost-currency: 50000 }
+    vampire_strike:    { name: "&4흡혈 일격",        effect: VAMPIRIC,        amount: 12,  applies: WEAPON,    tier: LEGENDARY, cost-currency: 60000 }
+    dragon_bane:       { name: "&6용살의 일격",      effect: DRAGON_BANE,    amount: 50,  applies: WEAPON,    tier: MYTHIC,  cost-currency: 200000 }
+    undead_bane:       { name: "&e사령파괴",        effect: UNDEAD_BANE,    amount: 30,  applies: WEAPON,    tier: HEROIC,  cost-currency: 10000 }
+    protection_plus:   { name: "&b방어력+",         effect: PROTECTION,     amount: 15,  applies: ARMOR,     tier: COMMON,  cost-currency: 1000 }
+    fire_resistance:   { name: "&c화염 저항",        effect: FIRE_RESIST,    amount: 30,  applies: ARMOR,     tier: RARE,    cost-currency: 5000 }
+    magic_resistance:  { name: "&5마법 저항",        effect: MAGIC_RESIST,   amount: 25,  applies: ARMOR,     tier: HEROIC,  cost-currency: 15000 }
+    reflect:           { name: "&d반사",             effect: REFLECT_PCT,    amount: 15,  applies: ARMOR,     tier: LEGENDARY, cost-currency: 50000 }
+    thorns_aura:       { name: "&7가시 오라",        effect: THORNS,         amount: 20,  applies: ARMOR,     tier: HEROIC,  cost-currency: 12000 }
+    absorb_aura:       { name: "&b흡수 오라",        effect: ABSORB_PCT,     amount: 10,  applies: ARMOR,     tier: LEGENDARY, cost-currency: 80000 }
+    blessing_glow:     { name: "&e&l신의 가호",      effect: DIVINE_GUARD,   amount: 50,  applies: ARMOR,     tier: MYTHIC,  cost-currency: 250000 }
+    luck_charm:        { name: "&e행운 부적",        effect: LUCK_BONUS,     amount: 30,  applies: ACCESSORY, tier: RARE,    cost-currency: 8000 }
+    exp_amplifier:     { name: "&a경험치 증폭",      effect: EXP_BONUS,      amount: 25,  applies: ACCESSORY, tier: HEROIC,  cost-currency: 20000 }
+    drop_charm:        { name: "&6드랍률 증폭",      effect: DROP_BONUS,     amount: 30,  applies: ACCESSORY, tier: HEROIC,  cost-currency: 30000 }
+    mana_regen:        { name: "&3마나 재생+",       effect: MANA_REGEN,     amount: 50,  applies: ACCESSORY, tier: LEGENDARY, cost-currency: 40000 }
+
+# ============================================================
+# 강화 보호권
+# ============================================================
+protection_scroll:
+  preserve-on-fail: true
+  consume-on-use: true
+  tiers:
+    common:    { name: "&7일반 보호권",   max-grade-protect: HEROIC,    cost: 5000 }
+    rare:      { name: "&5고급 보호권",   max-grade-protect: LEGENDARY, cost: 20000 }
+    legendary: { name: "&6&l전설 보호권", max-grade-protect: MYTHIC,    cost: 100000 }

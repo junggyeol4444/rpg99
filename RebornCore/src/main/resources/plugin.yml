@@ -11,6 +11,9 @@ commands:
     description: RebornCore 관리 명령어
     aliases: [rcore, rc]
     permission: reborncore.admin
+  dashboard:
+    description: 통합 대시보드 - 모든 플러그인 상태 한 화면
+    aliases: [db, status]
 permissions:
   reborncore.admin:
     default: op

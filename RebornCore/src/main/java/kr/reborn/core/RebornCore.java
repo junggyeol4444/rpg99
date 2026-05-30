@@ -50,6 +50,9 @@ public final class RebornCore extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerDataListener(dataManager), this);
 
         getCommand("reborncore").setExecutor(new CoreCommand(this));
+        if (getCommand("dashboard") != null) {
+            getCommand("dashboard").setExecutor(new kr.reborn.core.command.DashboardCommand(this));
+        }
 
         long interval = getConfig().getLong("auto-save-interval", 300L) * 20L;
         scheduler.runTimerAsync(() -> dataManager.flushAll(), interval, interval);

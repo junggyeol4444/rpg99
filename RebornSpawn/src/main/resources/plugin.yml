@@ -15,5 +15,9 @@ commands:
   gym:
     description: 신들의 헬스장 운동 마무리
     permission: rebornspawn.use
+  race:
+    description: 종족 — list/info/set/all
+    usage: /race [list <WORLD> | info <RACE> | set <player> <RACE> | all]
 permissions:
   rebornspawn.use: { default: true }
+  rebornspawn.admin: { default: op }

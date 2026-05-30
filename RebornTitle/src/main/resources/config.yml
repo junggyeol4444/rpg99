@@ -99,6 +99,19 @@ titles:
   fast_clearer:          { type: AI, name: "&c&l번개손",      description: "이상하리만치 빠른 클리어",   requirement: { type: ADMIN_GRANT },                                effects: { stats: { AGILITY: 50 } } }
   late_night_owl:        { type: AI, name: "&5&l야행성",      description: "주로 밤에만 활동",            requirement: { type: ADMIN_GRANT },                                effects: { stats: { YOKAI_KI: 30 } } }
 
+  # ──── 사망/부활 ────
+  undying:               { type: ACHIEVEMENT, name: "&5재림자",      description: "10번 죽고도 살아남았다",     requirement: { type: ADMIN_GRANT }, effects: { stats: { MENTAL: 20, ENDURANCE: 30 } } }
+  immortal_soul:         { type: ACHIEVEMENT, name: "&6&l불멸혼",    description: "100번의 죽음을 견뎌냈다",    requirement: { type: ADMIN_GRANT }, effects: { stats: { MENTAL: 100, ENDURANCE: 200 } } }
+
+  # ──── 신·격 칭호 ────
+  god_tier:              { type: TIER, name: "&6&l신",            description: "신성 1000+ 도달",            requirement: { type: ADMIN_GRANT }, effects: { stats: { DIVINITY: 200, CHARISMA: 100 } } }
+  martial_god:           { type: TIER, name: "&5&l무신",          description: "내공 5000+ 도달",            requirement: { type: ADMIN_GRANT }, effects: { stats: { INNER_KI: 500, STRENGTH: 80, AGILITY: 80 } } }
+  demon_god:             { type: TIER, name: "&4&l마신",          description: "마기 5000+ 도달",            requirement: { type: ADMIN_GRANT }, effects: { stats: { DEMON_KI: 500, STRENGTH: 100 } } }
+  heaven_god:            { type: TIER, name: "&e&l천신",          description: "천기 5000+ 도달",            requirement: { type: ADMIN_GRANT }, effects: { stats: { HEAVEN_KI: 500, DIVINITY: 50 } } }
+  dragon_lord_t:         { type: TIER, name: "&c&l용군",          description: "용력 1000+ 도달",            requirement: { type: ADMIN_GRANT }, effects: { stats: { DRAGON_POWER: 300, STRENGTH: 50 } } }
+  sea_king_t:            { type: TIER, name: "&3&l해왕격",        description: "해양력 1000+ 도달",          requirement: { type: ADMIN_GRANT }, effects: { stats: { OCEAN_POWER: 300, ENDURANCE: 50 } } }
+  yokai_emperor_t:       { type: TIER, name: "&5&l요제격",        description: "요기 5000+ 도달",            requirement: { type: ADMIN_GRANT }, effects: { stats: { YOKAI_KI: 500, CHARM: 50 } } }
+
 # 랭킹 갱신
 ranking:
   refresh-minutes: 5

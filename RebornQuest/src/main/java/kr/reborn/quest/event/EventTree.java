@@ -288,6 +288,141 @@ public final class EventTree {
         corp.nodes.put("rebel", new EventNode("저항군",
             List.of("언더시티에서 봉기의 불꽃이 일어난다."), List.of()));
         TREES.put("megacorp_war", corp);
+
+        // ============================================================
+        // 무림 정사대전 (무협) — 정파/사파/마교 3분기 + 후속
+        // ============================================================
+        EventTreeDef wulin = new EventTreeDef("wulin_war", "choose_path");
+        wulin.nodes.put("choose_path", new EventNode("정사대전 발발",
+            List.of("정파의 무림맹과 사파, 마교가 충돌한다.",
+                    "강호의 운명이 손에 달렸다 — 어느 길을 갈 것인가?"),
+            List.of(
+                new EventChoice("정파 — 무림맹 휘하",
+                    "orthodox_join", List.of("STAT:CHARISMA=30", "STAT:INNER_KI=100", "TITLE:정파 후기지수")),
+                new EventChoice("사파 — 자유의 길",
+                    "sapa_join", List.of("STAT:AGILITY=30", "STAT:LUCK=20", "TITLE:사파 거두")),
+                new EventChoice("마교 — 천마의 뜻",
+                    "cult_join", List.of("STAT:DEMON_KI=200", "STAT:STRENGTH=30", "TITLE:마교 호법", "CURSE:bloodlust")))));
+        wulin.nodes.put("orthodox_join", new EventNode("정파 일원",
+            List.of("정파 일원으로서 사파·마교 토벌에 나선다.",
+                    "첫 임무 — 마교 지부 단신 침투 또는 정파 동료 호위?"),
+            List.of(
+                new EventChoice("단신 침투 (영광)",
+                    "orthodox_solo", List.of("STAT:STRENGTH=50", "BROADCAST:§3§l[정사대전] §f%player%이(가) 단신 침투 임무 수행")),
+                new EventChoice("동료 호위 (안전)",
+                    "orthodox_team", List.of("STAT:ENDURANCE=30", "STAT:CHARM=10")))));
+        wulin.nodes.put("sapa_join", new EventNode("사파 거두",
+            List.of("사파에서는 룰이 없다 — 누가 더 강한가만 중요.",
+                    "마교의 비급을 약탈할 것인가? 정파의 영지를 칠 것인가?"),
+            List.of(
+                new EventChoice("마교 비급 강탈",
+                    "sapa_loot_cult", List.of("STAT:INNER_KI=300", "STAT:LUCK=30")),
+                new EventChoice("정파 영지 침공",
+                    "sapa_attack_orthodox", List.of("STAT:STRENGTH=80")))));
+        wulin.nodes.put("cult_join", new EventNode("마교 호법",
+            List.of("천마의 명을 받들어 강호를 피로 물들인다."), List.of()));
+        wulin.nodes.put("orthodox_solo", new EventNode("정파 영웅",
+            List.of("단신 침투 성공 — 무림맹 정식 호법으로 승격."), List.of()));
+        wulin.nodes.put("orthodox_team", new EventNode("정파 동료",
+            List.of("호위 성공 — 정파 인맥 +."), List.of()));
+        wulin.nodes.put("sapa_loot_cult", new EventNode("사파 거두",
+            List.of("비급 강탈 — 마교가 추적한다. 살인청부 명단에 올랐다."), List.of()));
+        wulin.nodes.put("sapa_attack_orthodox", new EventNode("사파 거두",
+            List.of("정파 영지 함락 — 무림맹과 영구 적대."), List.of()));
+        TREES.put("wulin_war", wulin);
+
+        // ============================================================
+        // 신앙 위기 (천계) — 타락 천사 반란
+        // ============================================================
+        EventTreeDef faith = new EventTreeDef("heaven_faith_crisis", "encounter");
+        faith.nodes.put("encounter", new EventNode("타락한 대천사",
+            List.of("절친한 대천사가 어둠에 빠졌다.",
+                    "그의 신앙은 무너졌고, 그는 너에게 도움을 청한다."),
+            List.of(
+                new EventChoice("구원한다 — 회개의 빛",
+                    "redeem", List.of("STAT:DIVINITY=20", "STAT:HEAVEN_KI=200", "TITLE:구원자")),
+                new EventChoice("처단한다 — 타락은 용서 없다",
+                    "execute", List.of("STAT:CHARISMA=20", "BROADCAST:§e§l[천계] §f%player%이(가) 타락 천사를 처단했다")),
+                new EventChoice("함께 타락한다 — 천계의 한계",
+                    "fall", List.of("STAT:DEMON_KI=300", "TITLE:타락자", "CURSE:monk_oath_break")))));
+        faith.nodes.put("redeem", new EventNode("구원자",
+            List.of("타락 천사가 빛의 길로 돌아왔다 — 천계의 칭송."), List.of()));
+        faith.nodes.put("execute", new EventNode("정의 집행",
+            List.of("냉정한 판결 — 천계의 질서는 지켜졌으나 마음은 무겁다."), List.of()));
+        faith.nodes.put("fall", new EventNode("타락",
+            List.of("천계를 등지고 어둠과 손잡았다.",
+                    "이제 너의 적은 신이다."), List.of()));
+        TREES.put("heaven_faith_crisis", faith);
+
+        // ============================================================
+        // 게이트 폭주 (지구) — S랭크 게이트 동시다발
+        // ============================================================
+        EventTreeDef gate = new EventTreeDef("gate_overflow", "alarm");
+        gate.nodes.put("alarm", new EventNode("긴급 경보",
+            List.of("S랭크 게이트가 4개 동시 출현.",
+                    "헌터 협회는 너에게 1개 담당을 요청한다."),
+            List.of(
+                new EventChoice("서울 강남 (드래곤)",
+                    "gangnam", List.of("STAT:STRENGTH=30", "STAT:ENDURANCE=30", "TITLE:용 사냥꾼")),
+                new EventChoice("부산 해운대 (해마)",
+                    "haeundae", List.of("STAT:AGILITY=30", "STAT:OCEAN_POWER=50")),
+                new EventChoice("제주 한라산 (정령왕)",
+                    "halla", List.of("STAT:SPIRIT_POWER=50", "STAT:MENTAL=20")),
+                new EventChoice("백두산 (마왕)",
+                    "baekdu", List.of("STAT:DEMON_KI=100", "STAT:CHARISMA=30", "BROADCAST:§4§l[게이트] §f%player%이(가) 백두산 마왕 게이트 진입")))));
+        gate.nodes.put("gangnam", new EventNode("강남 드래곤",
+            List.of("초고층 빌딩들 사이에서 드래곤과의 사투. 강남 시민 1만명 구조."), List.of()));
+        gate.nodes.put("haeundae", new EventNode("해운대 해마",
+            List.of("해변의 거대 해마 — 바다 위 결투."), List.of()));
+        gate.nodes.put("halla", new EventNode("한라 정령왕",
+            List.of("한라산 정상에서 정령왕과의 영적 결투."), List.of()));
+        gate.nodes.put("baekdu", new EventNode("백두 마왕",
+            List.of("백두산 호수가 검게 변했다 — 마왕 직접 강림."), List.of()));
+        TREES.put("gate_overflow", gate);
+
+        // ============================================================
+        // 해양 패권 (해양) — 해적왕 후계자 결정전
+        // ============================================================
+        EventTreeDef sea = new EventTreeDef("sea_succession", "competition");
+        sea.nodes.put("competition", new EventNode("해적왕 후계자전",
+            List.of("죽은 해적왕의 자리를 두고 7대 해적단이 패권 다툼.",
+                    "어느 해적단에 합류할 것인가?"),
+            List.of(
+                new EventChoice("백패 해적단 (정의)",
+                    "white", List.of("STAT:CHARISMA=30", "STAT:OCEAN_POWER=100", "TITLE:백패 선장")),
+                new EventChoice("검사단 (전투광)",
+                    "black", List.of("STAT:STRENGTH=50", "STAT:AGILITY=30", "TITLE:검사단 일원")),
+                new EventChoice("암해단 (어둠)",
+                    "shadow", List.of("STAT:AGILITY=50", "STAT:LUCK=30", "BLESSING:pirate_curse")))));
+        sea.nodes.put("white", new EventNode("백패 선장",
+            List.of("정의의 해적 — 약자 보호 + 보물 분배."), List.of()));
+        sea.nodes.put("black", new EventNode("검사단",
+            List.of("최강의 해적 — 다른 해적단과 모두 적대."), List.of()));
+        sea.nodes.put("shadow", new EventNode("암해단",
+            List.of("그림자에서 활동 — 해적 저주를 받아들였다."), List.of()));
+        TREES.put("sea_succession", sea);
+
+        // ============================================================
+        // 폐허 생존 (아포칼립스) — 정착지 운명 결정
+        // ============================================================
+        EventTreeDef apoc = new EventTreeDef("apoc_settlement", "arrival");
+        apoc.nodes.put("arrival", new EventNode("정착지 도착",
+            List.of("폐허 속 유일한 인간 정착지에 도착했다.",
+                    "정착지는 약탈단의 공격 위기에 놓여 있다."),
+            List.of(
+                new EventChoice("방어 — 약탈단과 싸운다",
+                    "defend", List.of("STAT:STRENGTH=30", "STAT:ENDURANCE=30", "TITLE:정착지 수호자")),
+                new EventChoice("협상 — 식량을 바친다",
+                    "negotiate", List.of("STAT:CHARISMA=20", "STAT:INTELLIGENCE=20")),
+                new EventChoice("배신 — 약탈단에 가담",
+                    "betray", List.of("STAT:LUCK=30", "BROADCAST:§4§l[폐허] §f%player%이(가) 정착지를 배신했다")))));
+        apoc.nodes.put("defend", new EventNode("정착지 수호자",
+            List.of("정착지를 지켜냈다 — 생존자들의 영웅."), List.of()));
+        apoc.nodes.put("negotiate", new EventNode("외교가",
+            List.of("협상 성공 — 평화를 샀으나 식량 위기는 계속."), List.of()));
+        apoc.nodes.put("betray", new EventNode("배신자",
+            List.of("정착지가 약탈당했다 — 약탈단의 일원으로 살아간다."), List.of()));
+        TREES.put("apoc_settlement", apoc);
     }
 
     public static final class EventTreeDef {

@@ -157,8 +157,79 @@ public final class QuestEngine {
                 } catch (Exception ignored) {}
             }
         }
+        // 칭호 부여 — RebornTitle 리플렉션
         Object title = q.rewards.get("title");
-        if (title != null) Msg.send(p, "&6칭호 획득: " + title);
+        if (title != null) {
+            try {
+                var tp = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornTitle");
+                if (tp != null) {
+                    Object tm = tp.getClass().getMethod("titles").invoke(tp);
+                    tm.getClass().getMethod("grant", Player.class, String.class)
+                            .invoke(tm, p, String.valueOf(title));
+                }
+            } catch (Throwable ignored) {}
+            Msg.send(p, "&6칭호 획득: " + title);
+        }
+        // 화폐 보상
+        Object gold = q.rewards.get("gold");
+        if (gold instanceof Number n) {
+            try {
+                var ep = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornEconomy");
+                if (ep != null) {
+                    Object cur = ep.getClass().getMethod("currencies").invoke(ep);
+                    cur.getClass().getMethod("deposit", java.util.UUID.class, String.class, long.class)
+                            .invoke(cur, p.getUniqueId(), "GOLD_COIN", n.longValue());
+                }
+                Msg.send(p, "&6보상: §f+" + n.longValue() + " GOLD");
+            } catch (Throwable ignored) {}
+        }
+        // 아이템 보상
+        Object items = q.rewards.get("items");
+        if (items instanceof java.util.List<?> list) {
+            for (Object raw : list) {
+                if (!(raw instanceof Map<?, ?> mm)) continue;
+                try {
+                    org.bukkit.Material mat = org.bukkit.Material.matchMaterial(
+                            String.valueOf(mm.get("material")));
+                    int amt = ((Number) mm.getOrDefault("amount", 1)).intValue();
+                    if (mat != null) {
+                        p.getInventory().addItem(new org.bukkit.inventory.ItemStack(mat, amt));
+                        Msg.send(p, "&6보상: §f" + mat + " ×" + amt);
+                    }
+                } catch (Throwable ignored) {}
+            }
+        }
+        // 스킬 학습 — RebornSkill
+        Object skills = q.rewards.get("skills");
+        if (skills instanceof java.util.List<?> list) {
+            try {
+                var sp = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornSkill");
+                if (sp != null) {
+                    for (Object skillId : list) {
+                        sp.getClass().getMethod("learnByApi",
+                                        java.util.UUID.class, String.class)
+                                .invoke(sp, p.getUniqueId(), String.valueOf(skillId));
+                        Msg.send(p, "&b스킬 학습: §f" + skillId);
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
+        // 축복/저주 부여
+        Object blessing = q.rewards.get("blessing");
+        if (blessing != null) applyEffect(p, String.valueOf(blessing));
+        Object curse = q.rewards.get("curse");
+        if (curse != null) applyEffect(p, String.valueOf(curse));
+    }
+
+    private void applyEffect(Player p, String effectId) {
+        try {
+            var cp = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornCurse");
+            if (cp != null) {
+                Object effects = cp.getClass().getMethod("effects").invoke(cp);
+                effects.getClass().getMethod("apply", Player.class, String.class)
+                        .invoke(effects, p, effectId);
+            }
+        } catch (Throwable ignored) {}
     }
 
     // ───────────────────────── 표시 ─────────────────────────

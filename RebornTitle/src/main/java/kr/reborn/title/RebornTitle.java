@@ -37,6 +37,8 @@ public final class RebornTitle extends JavaPlugin {
         getCommand("title").setExecutor(new TitleCommand(this));
         getCommand("ranking").setExecutor(new RankingCommand(this));
         getServer().getPluginManager().registerEvents(new TitleProgressListener(this), this);
+        getServer().getPluginManager().registerEvents(
+                new kr.reborn.title.listener.TitleAutoGrantListener(this), this);
 
         long refresh = getConfig().getLong("ranking.refresh-minutes", 5L) * 60L * 20L;
         RebornCore.get().scheduler().runTimerAsync(() -> rankings.refresh(), refresh, refresh);

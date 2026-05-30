@@ -60,6 +60,11 @@ public final class Roulette {
 
         Bukkit.getPluginManager().callEvent(new RebornRouletteResultEvent(p, result));
 
+        // 종족 자동 배정
+        try {
+            plugin.races().assignRandom(p, result);
+        } catch (Throwable ignored) {}
+
         // RebornHiddenClass INITIAL 클래스 후보 굴림 (있으면)
         try {
             var hcPlugin = Bukkit.getPluginManager().getPlugin("RebornHiddenClass");

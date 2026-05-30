@@ -23,5 +23,8 @@ commands:
       /worldai weather <WORLD> <name>
       /worldai log [N]
       /worldai force <WORLD> <WAR|FESTIVAL|CRISIS|REVOLT|OVERFLOW>
+  world:
+    description: 13세계 통합 상태 한 화면
+    aliases: [worlds]
 permissions:
   rebornworldai.admin: { default: op }

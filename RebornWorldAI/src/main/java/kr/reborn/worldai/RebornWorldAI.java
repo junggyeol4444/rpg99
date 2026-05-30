@@ -63,6 +63,10 @@ public final class RebornWorldAI extends JavaPlugin {
         }
 
         getCommand("worldai").setExecutor(new WorldAICommand(this));
+        if (getCommand("world") != null) {
+            getCommand("world").setExecutor(
+                    new kr.reborn.worldai.command.WorldOverviewCommand(this));
+        }
 
         long tick = getConfig().getLong("analysis-tick-interval", 6000L);
         RebornCore.get().scheduler().runTimerAsync(this::tickAll, tick, tick);

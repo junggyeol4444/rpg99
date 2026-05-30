@@ -57,3 +57,28 @@ pets:
 contract:
   break-stat-loss-percent: 10
   spirit-spirit-power-loss-percent: 50
+
+# 펫 진화: 특정 mob → 레벨에서 다음 mob으로 변신
+pet:
+  evolutions:
+    WOLF:        [{level: 30, to: ZOMBIE_HORSE}]
+    CAT:         [{level: 20, to: OCELOT}]
+    AXOLOTL:     [{level: 25, to: PUFFERFISH}, {level: 60, to: GUARDIAN}]
+    FOX:         [{level: 30, to: PHANTOM}]
+    DOLPHIN:     [{level: 25, to: SQUID}, {level: 60, to: ELDER_GUARDIAN}]
+    PHANTOM:     [{level: 50, to: ENDER_DRAGON}]
+    SLIME:       [{level: 20, to: MAGMA_CUBE}]
+    BLAZE:       [{level: 30, to: WITHER_SKELETON}]
+    PARROT:      [{level: 25, to: ALLAY}]
+    IRON_GOLEM:  [{level: 50, to: WARDEN}]
+  preferred-food:
+    WOLF: BONE
+    CAT: COD
+    PARROT: WHEAT_SEEDS
+    FOX: SWEET_BERRIES
+    DOLPHIN: TROPICAL_FISH
+    AXOLOTL: TROPICAL_FISH
+    POLAR_BEAR: SALMON
+    BLAZE: BLAZE_POWDER
+    GLOW_SQUID: GLOW_BERRIES
+    ALLAY: AMETHYST_SHARD

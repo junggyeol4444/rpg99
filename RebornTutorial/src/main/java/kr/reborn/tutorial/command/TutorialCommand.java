@@ -25,6 +25,14 @@ public final class TutorialCommand implements CommandExecutor {
             case "exit": plugin.manager().exitToMain(p.getUniqueId()); break;
             case "start": plugin.manager().start(p.getUniqueId()); break;
             case "train": plugin.manager().train(p); break;
+            case "guide": plugin.hints().showWorldGuide(p); break;
+            case "hints":
+                var sess = plugin.manager().sessionOf(p.getUniqueId());
+                if (sess == null) { Msg.warn(p, "튜토리얼 중에만 사용."); break; }
+                if (sess.stage == 1) plugin.hints().stage1Hints(p);
+                else if (sess.stage == 2) plugin.hints().stage2Hints(p);
+                else plugin.hints().stage3Hints(p);
+                break;
             case "choose":
                 if (a.length < 2) { Msg.send(p, "&7/rtut choose errand|underworld"); break; }
                 plugin.manager().resolveChoice(p.getUniqueId(), a[1]);

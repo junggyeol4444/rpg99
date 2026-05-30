@@ -47,6 +47,20 @@ public final class ShipCommand implements CommandExecutor {
             case "join":
                 Msg.send(p, "&7선원으로 승선");
                 break;
+            case "fire":
+                Ship sf = pickByName(p, a, 1);
+                if (sf != null) plugin.combat().fireCannon(p, sf);
+                break;
+            case "status":
+                Ship st = pickByName(p, a, 1);
+                if (st != null) {
+                    Msg.send(p, "&6=== " + st.name + " ===");
+                    p.sendMessage("§7등급: §f" + st.grade
+                            + " §7HP: §c" + (int) st.hp + "/" + (int) st.maxHp);
+                    p.sendMessage("§7상태: §f" + st.state
+                            + " §7블록: §f" + st.blockCount);
+                }
+                break;
         }
         return true;
     }

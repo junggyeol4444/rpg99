@@ -26,8 +26,10 @@ public final class RebornPet extends JavaPlugin {
 
         getCommand("pet").setExecutor(new PetCommand(this));
         getCommand("mount").setExecutor(new MountCommand(this));
+        getServer().getPluginManager().registerEvents(
+                new kr.reborn.pet.combat.PetCombat(this), this);
 
-        getLogger().info("RebornPet 활성화");
+        getLogger().info("RebornPet 활성화 — 전투·진화·먹이 시스템 가동");
     }
 
     public PetManager pets() { return pets; }

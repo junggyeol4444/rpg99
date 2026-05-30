@@ -83,6 +83,85 @@ public final class PetManager {
             pet.xp -= need;
             pet.level++;
             need = pet.level * 100L;
+            tryEvolve(pet);
         }
+    }
+
+    /** 펫 진화 — 특정 레벨 도달 시 mobId 변경. */
+    public void tryEvolve(Pet pet) {
+        var evos = plugin.getConfig().getConfigurationSection("pet.evolutions");
+        if (evos == null) return;
+        for (String fromMob : evos.getKeys(false)) {
+            if (!pet.mobId.equalsIgnoreCase(fromMob)) continue;
+            var entries = evos.getMapList(fromMob);
+            for (var e : entries) {
+                int reqLevel = ((Number) e.getOrDefault("level", 999)).intValue();
+                if (pet.level >= reqLevel) {
+                    String toMob = String.valueOf(e.get("to"));
+                    pet.mobId = toMob;
+                    pet.bond += 20;
+                    Bukkit.broadcastMessage("§5§l[펫 진화] §f" + pet.name + " §7→ " + toMob);
+                    if (pet.activeEntityId != null) {
+                        var ent = Bukkit.getEntity(pet.activeEntityId);
+                        if (ent != null) {
+                            var loc = ent.getLocation();
+                            ent.remove();
+                            try {
+                                var t = org.bukkit.entity.EntityType.valueOf(toMob);
+                                var newEnt = ent.getWorld().spawnEntity(loc, t);
+                                newEnt.setCustomName(pet.name);
+                                newEnt.setCustomNameVisible(true);
+                                pet.activeEntityId = newEnt.getUniqueId();
+                            } catch (Throwable ignored) {}
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    public boolean feed(Player owner, String petName, org.bukkit.Material food) {
+        Pet pp = byName(owner.getUniqueId(), petName);
+        if (pp == null) { Msg.error(owner, "해당 펫 없음"); return false; }
+        if (!owner.getInventory().contains(food)) {
+            Msg.error(owner, "먹이 부족: " + food);
+            return false;
+        }
+        owner.getInventory().removeItem(new org.bukkit.inventory.ItemStack(food, 1));
+        int bondGain = 5;
+        long xpGain = 50;
+        var pref = plugin.getConfig().getString("pet.preferred-food." + pp.mobId);
+        if (pref != null && pref.equalsIgnoreCase(food.name())) {
+            bondGain = 15;
+            xpGain = 150;
+            Msg.send(owner, "&a선호 먹이! 효과 ×3");
+        }
+        pp.bond = Math.min(100, pp.bond + bondGain);
+        addXp(pp, xpGain);
+        Msg.send(owner, "&6먹이 주기 — bond +" + bondGain + " (총 " + pp.bond + ")");
+        return true;
+    }
+
+    public boolean rename(Player owner, String oldName, String newName) {
+        Pet pp = byName(owner.getUniqueId(), oldName);
+        if (pp == null) { Msg.error(owner, "해당 펫 없음"); return false; }
+        pp.name = newName;
+        var ent = pp.activeEntityId != null ? Bukkit.getEntity(pp.activeEntityId) : null;
+        if (ent != null) ent.setCustomName(newName);
+        Msg.send(owner, "&a이름 변경: " + newName);
+        return true;
+    }
+
+    public boolean setMode(Player owner, String petName, Pet.Mode mode) {
+        Pet pp = byName(owner.getUniqueId(), petName);
+        if (pp == null) { Msg.error(owner, "해당 펫 없음"); return false; }
+        pp.mode = mode;
+        Msg.send(owner, "&a모드: " + mode);
+        return true;
+    }
+
+    public Map<UUID, List<Pet>> byOwnerSnapshot() {
+        return new java.util.HashMap<>(byOwner);
     }
 }

@@ -170,18 +170,33 @@ public final class QuestEngine {
             } catch (Throwable ignored) {}
             Msg.send(p, "&6칭호 획득: " + title);
         }
-        // 화폐 보상
+        // 화폐 보상 (gold 또는 money: { currency, amount } 형식 둘 다 지원)
         Object gold = q.rewards.get("gold");
-        if (gold instanceof Number n) {
+        Object money = q.rewards.get("money");
+        String currency = "GOLD_COIN";
+        long amount = 0;
+        if (gold instanceof Number n) amount = n.longValue();
+        else if (money instanceof Map<?, ?> mm) {
+            Object cur = mm.get("currency");
+            Object amt = mm.get("amount");
+            if (cur != null) currency = String.valueOf(cur);
+            if (amt instanceof Number nn) amount = nn.longValue();
+        }
+        if (amount > 0) {
             try {
                 var ep = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornEconomy");
                 if (ep != null) {
-                    Object cur = ep.getClass().getMethod("currencies").invoke(ep);
-                    cur.getClass().getMethod("deposit", java.util.UUID.class, String.class, long.class)
-                            .invoke(cur, p.getUniqueId(), "GOLD_COIN", n.longValue());
+                    Object cm = ep.getClass().getMethod("currencies").invoke(ep);
+                    cm.getClass().getMethod("deposit", java.util.UUID.class, String.class, long.class)
+                            .invoke(cm, p.getUniqueId(), currency, amount);
                 }
-                Msg.send(p, "&6보상: §f+" + n.longValue() + " GOLD");
+                Msg.send(p, "&6보상: §f+" + amount + " " + currency);
             } catch (Throwable ignored) {}
+        }
+        // 단일 아이템 (item: <customId>)
+        Object singleItem = q.rewards.get("item");
+        if (singleItem != null) {
+            Msg.send(p, "&6보상: §f" + singleItem + " §7(CraftItem 시스템)");
         }
         // 아이템 보상
         Object items = q.rewards.get("items");

@@ -60,6 +60,8 @@ public final class RebornCraft extends JavaPlugin {
         }
 
         getServer().getPluginManager().registerEvents(new ConsumeListener(this), this);
+        getServer().getPluginManager().registerEvents(
+                new kr.reborn.craft.enchant.EnchantEquipListener(this), this);
 
         getLogger().info("RebornCraft 활성화: 아이템 " + items.all().size() + "종 / 레시피 " + recipes.all().size() + "종");
     }

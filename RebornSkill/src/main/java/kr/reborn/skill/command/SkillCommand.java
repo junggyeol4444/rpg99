@@ -65,6 +65,40 @@ public final class SkillCommand implements CommandExecutor {
                 plugin.store().equip(p.getUniqueId(), Integer.parseInt(a[1]), a[2]);
                 Msg.send(p, "&a장착 완료.");
                 break;
+            case "info":
+                if (a.length < 2) return true;
+                var d = plugin.registry().get(a[1]);
+                if (d == null) { Msg.error(p, "스킬 없음"); return true; }
+                Msg.send(p, "&6=== " + d.name + " ===");
+                p.sendMessage("§7세계: §e" + d.world + " §7카테고리: §e" + d.category);
+                p.sendMessage("§7비용: §c" + (int) d.costAmount + " " + d.costType);
+                p.sendMessage("§7쿨다운: §f" + d.cooldownSeconds + "s §7시전: §f" + d.castSeconds + "s");
+                p.sendMessage("§7데미지: §c" + d.damageFormula + " §7원소: §5" + d.element);
+                p.sendMessage("§7타입: §e" + d.type + " §7범위: §f" + d.radius + " §7사거리: §f" + d.range);
+                if (d.durationTicks > 0) p.sendMessage("§7지속: §f" + (d.durationTicks / 20) + "초");
+                p.sendMessage("§7학습 방법: §a" + d.learnMethod);
+                break;
+            case "combo":
+                var dq = plugin.combo().recentOf(p.getUniqueId());
+                Msg.send(p, "&6=== 최근 콤보 (5초 이내) ===");
+                int i = 0;
+                for (var rec : dq) {
+                    p.sendMessage("§7" + (++i) + ". §f" + rec.skillId
+                            + " §8(" + rec.category + "/" + rec.element + ")");
+                }
+                if (dq.isEmpty()) p.sendMessage("§7기록 없음.");
+                break;
+            case "catalog":
+                Msg.send(p, "&6=== 전체 스킬 카탈로그 (" + plugin.registry().all().size() + ") ===");
+                String filter = a.length >= 2 ? a[1].toUpperCase() : null;
+                int shown = 0;
+                for (var sk : plugin.registry().all()) {
+                    if (filter != null && (sk.world == null || !sk.world.name().equals(filter))) continue;
+                    if (shown++ >= 40) { p.sendMessage("§7… 추가 다수"); break; }
+                    p.sendMessage("§7• §e" + sk.id + " §f" + sk.name
+                            + " §8[" + sk.world + "/" + sk.category + "]");
+                }
+                break;
         }
         return true;
     }

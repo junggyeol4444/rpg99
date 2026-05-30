@@ -37,5 +37,16 @@ public final class DeathListener implements Listener {
             plugin.crime().onPvpKill(killer, p);
             plugin.bounty().onKilled(killer, p.getUniqueId());
         }
+        // 보험금 자동 지급 (RebornEconomy 리플렉션)
+        try {
+            var ep = Bukkit.getPluginManager().getPlugin("RebornEconomy");
+            if (ep != null) {
+                Object ins = ep.getClass().getMethod("insurance").invoke(ep);
+                if (ins != null) {
+                    ins.getClass().getMethod("payoutOnDeath", Player.class)
+                            .invoke(ins, p);
+                }
+            }
+        } catch (Throwable ignored) {}
     }
 }

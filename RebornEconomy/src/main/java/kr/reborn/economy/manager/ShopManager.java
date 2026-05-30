@@ -117,14 +117,16 @@ public final class ShopManager {
 
     private void buy(Player p, String shopId, ShopItem it) {
         if (it.stock == 0) { Msg.error(p, "품절되었습니다."); return; }
-        if (!plugin.currencies().withdraw(p.getUniqueId(), it.currency, it.buy)) {
+        long finalPrice = scaledBuy(p, it);
+        if (!plugin.currencies().withdraw(p.getUniqueId(), it.currency, finalPrice)) {
             Msg.error(p, "화폐가 부족합니다.");
             return;
         }
         if (it.stock > 0) it.stock--;
         p.getInventory().addItem(new ItemStack(it.material, 1));
-        Bukkit.getPluginManager().callEvent(new RebornShopBuyEvent(p, shopId, it.id, 1, it.buy));
-        Msg.send(p, "&a구매 완료: " + it.id);
+        Bukkit.getPluginManager().callEvent(new RebornShopBuyEvent(p, shopId, it.id, 1, finalPrice));
+        Msg.send(p, "&a구매 완료: " + it.id + " &7(" + finalPrice + " "
+                + it.currency + (finalPrice != it.buy ? " §6(시세 적용)" : "") + ")");
     }
 
     private void sell(Player p, String shopId, ShopItem it) {
@@ -133,7 +135,29 @@ public final class ShopManager {
             return;
         }
         p.getInventory().removeItem(new ItemStack(it.material, 1));
-        plugin.currencies().deposit(p.getUniqueId(), it.currency, it.sell);
-        Msg.send(p, "&a판매 완료: " + it.id + " (+" + it.sell + " " + it.currency + ")");
+        long finalSell = scaledSell(p, it);
+        plugin.currencies().deposit(p.getUniqueId(), it.currency, finalSell);
+        Msg.send(p, "&a판매 완료: " + it.id + " (+" + finalSell + " " + it.currency
+                + (finalSell != it.sell ? " §6(시세 적용)" : "") + ")");
+    }
+
+    /** 플레이어 현재 세계의 시세를 적용한 구매가. */
+    private long scaledBuy(Player p, ShopItem it) {
+        try {
+            var data = kr.reborn.core.RebornCore.get().api().getPlayerData(p.getUniqueId());
+            if (data == null) return it.buy;
+            double m = plugin.priceController().multiplier(data.worldKey(), it.material);
+            return Math.max(1, Math.round(it.buy * m));
+        } catch (Throwable t) { return it.buy; }
+    }
+
+    /** 시세 적용 판매가 (판매는 보통 구매가의 25% 정도 — 시세 영향 동일). */
+    private long scaledSell(Player p, ShopItem it) {
+        try {
+            var data = kr.reborn.core.RebornCore.get().api().getPlayerData(p.getUniqueId());
+            if (data == null) return it.sell;
+            double m = plugin.priceController().multiplier(data.worldKey(), it.material);
+            return Math.max(0, Math.round(it.sell * m));
+        } catch (Throwable t) { return it.sell; }
     }
 }

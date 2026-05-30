@@ -15,6 +15,7 @@ import kr.reborn.economy.manager.ExchangeManager;
 import kr.reborn.economy.manager.MailboxManager;
 import kr.reborn.economy.manager.ShopManager;
 import kr.reborn.economy.manager.TradeManager;
+import kr.reborn.economy.price.PriceController;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class RebornEconomy extends JavaPlugin {
@@ -27,6 +28,7 @@ public final class RebornEconomy extends JavaPlugin {
     private AuctionManager auctions;
     private TradeManager trades;
     private MailboxManager mailbox;
+    private PriceController priceController;
     private Gui gui;
 
     public static RebornEconomy get() { return instance; }
@@ -45,6 +47,7 @@ public final class RebornEconomy extends JavaPlugin {
         this.gui = new Gui(this);
         this.currencies = new CurrencyManager(this);
         this.exchange = new ExchangeManager(this);
+        this.priceController = new PriceController(this);
         this.shops = new ShopManager(this);
         this.auctions = new AuctionManager(this);
         this.trades = new TradeManager(this);
@@ -81,5 +84,6 @@ public final class RebornEconomy extends JavaPlugin {
     public AuctionManager auctions() { return auctions; }
     public TradeManager trades() { return trades; }
     public MailboxManager mailbox() { return mailbox; }
+    public PriceController priceController() { return priceController; }
     public Gui gui() { return gui; }
 }

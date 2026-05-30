@@ -21,6 +21,10 @@ commands:
   craftitem:
     description: 커스텀 아이템 지급 (관리자)
     usage: /craftitem <id>
+  specialty:
+    description: 특화 제작 — 연단/마도공학/사이버해킹/연금술/결정학/룬각/영조/단조/직조/보석세공/향수술/약학
+    aliases: [sp, craft2]
+    usage: /specialty list|recipes|craft|info
 permissions:
   reborncraft.use:
     default: true

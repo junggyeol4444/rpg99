@@ -78,6 +78,26 @@ public final class ClanCommand implements CommandExecutor {
                 Player tg = Bukkit.getPlayerExact(a[1]);
                 if (tg != null) Msg.send(tg, "&d" + p.getName() + "이(가) 가문에 초대했다.");
                 break;
+            case "war":
+                if (a.length < 2) {
+                    Msg.send(p, "&7/clan war declare <clanId> | join <clanId> | list");
+                    return true;
+                }
+                String wsub = a[1].toLowerCase();
+                if ("declare".equals(wsub) && a.length >= 3) {
+                    plugin.wars().declareWar(p, a[2]);
+                } else if ("join".equals(wsub) && a.length >= 3) {
+                    plugin.wars().joinAsAlly(p, a[2]);
+                } else if ("list".equals(wsub)) {
+                    var active = plugin.wars().activeWars();
+                    Msg.send(p, "&6=== 활성 가문 전쟁 (" + active.size() + ") ===");
+                    for (var w : active) {
+                        p.sendMessage("§c⚔ §f" + w.challengerClanId + " §c vs §f"
+                                + w.defenderClanId + " §7점수 "
+                                + (int) w.challengerScore + " : " + (int) w.defenderScore);
+                    }
+                }
+                break;
         }
         return true;
     }

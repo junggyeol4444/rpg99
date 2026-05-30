@@ -24,6 +24,7 @@ public final class RebornCraft extends JavaPlugin {
     private CraftingManager crafting;
     private ProficiencyManager proficiency;
     private AccessoryManager accessories;
+    private kr.reborn.craft.specialty.SpecialtyManager specialty;
     private Gui gui;
 
     public static RebornCraft get() { return instance; }
@@ -45,12 +46,16 @@ public final class RebornCraft extends JavaPlugin {
         this.proficiency = new ProficiencyManager(this);
         this.crafting = new CraftingManager(this);
         this.accessories = new AccessoryManager(this);
+        this.specialty = new kr.reborn.craft.specialty.SpecialtyManager(this);
 
         getCommand("craft").setExecutor(new CraftCommand(this));
         getCommand("accessory").setExecutor(new AccessoryCommand(this));
         getCommand("repair").setExecutor(new RepairCommand(this));
         getCommand("enchant").setExecutor(new EnchantCommand(this));
         getCommand("craftitem").setExecutor(new CraftItemCommand(this));
+        if (getCommand("specialty") != null) {
+            getCommand("specialty").setExecutor(new kr.reborn.craft.command.SpecialtyCommand(this));
+        }
 
         getServer().getPluginManager().registerEvents(new ConsumeListener(this), this);
 
@@ -67,5 +72,6 @@ public final class RebornCraft extends JavaPlugin {
     public CraftingManager crafting() { return crafting; }
     public ProficiencyManager proficiency() { return proficiency; }
     public AccessoryManager accessories() { return accessories; }
+    public kr.reborn.craft.specialty.SpecialtyManager specialty() { return specialty; }
     public Gui gui() { return gui; }
 }

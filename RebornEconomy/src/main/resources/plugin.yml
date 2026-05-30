@@ -29,6 +29,9 @@ commands:
   mailbox:
     description: 우편함 GUI
     aliases: [mail]
+  bank:
+    description: 은행 — 예금/인출/대출/상환/이자
+    usage: /bank open|deposit|withdraw|maturity|loan|repay|status
 permissions:
   reborneconomy.use:
     default: true

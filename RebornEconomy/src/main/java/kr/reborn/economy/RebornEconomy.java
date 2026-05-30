@@ -29,6 +29,7 @@ public final class RebornEconomy extends JavaPlugin {
     private TradeManager trades;
     private MailboxManager mailbox;
     private PriceController priceController;
+    private kr.reborn.economy.bank.BankManager bank;
     private Gui gui;
 
     public static RebornEconomy get() { return instance; }
@@ -52,6 +53,7 @@ public final class RebornEconomy extends JavaPlugin {
         this.auctions = new AuctionManager(this);
         this.trades = new TradeManager(this);
         this.mailbox = new MailboxManager(this);
+        this.bank = new kr.reborn.economy.bank.BankManager(this);
 
         getCommand("money").setExecutor(new MoneyCommand(this));
         getCommand("pay").setExecutor(new PayCommand(this));
@@ -60,6 +62,9 @@ public final class RebornEconomy extends JavaPlugin {
         getCommand("auction").setExecutor(new AuctionCommand(this));
         getCommand("trade").setExecutor(new TradeCommand(this));
         getCommand("mailbox").setExecutor(new MailboxCommand(this));
+        if (getCommand("bank") != null) {
+            getCommand("bank").setExecutor(new kr.reborn.economy.command.BankCommand(this));
+        }
 
         // 경매 만료 체크: 1분마다
         RebornCore.get().scheduler().runTimerAsync(() -> auctions.tickExpire(), 1200L, 1200L);
@@ -85,5 +90,6 @@ public final class RebornEconomy extends JavaPlugin {
     public TradeManager trades() { return trades; }
     public MailboxManager mailbox() { return mailbox; }
     public PriceController priceController() { return priceController; }
+    public kr.reborn.economy.bank.BankManager bank() { return bank; }
     public Gui gui() { return gui; }
 }

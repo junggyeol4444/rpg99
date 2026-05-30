@@ -32,7 +32,10 @@ public final class DeathListener implements Listener {
         // 명계 이동
         plugin.underworld().sendToUnderworld(p);
 
-        // PvP면 범죄 처리
-        if (killer != null) plugin.crime().onPvpKill(killer, p);
+        // PvP면 범죄 처리 + 현상금 지급
+        if (killer != null) {
+            plugin.crime().onPvpKill(killer, p);
+            plugin.bounty().onKilled(killer, p.getUniqueId());
+        }
     }
 }

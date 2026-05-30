@@ -22,9 +22,47 @@ public final class CrimeManager {
     public void onPvpKill(Player killer, Player victim) {
         double inc = plugin.getConfig().getDouble("crime.pk-crime", 100);
         double dec = plugin.getConfig().getDouble("crime.pk-fame", -50);
+        // 전시·광폭화 면책 적용
+        double reduction = computeImmunityReduction(killer);
+        inc *= (1.0 - reduction);
+        dec *= (1.0 - reduction);
         crime.merge(killer.getUniqueId(), inc, Double::sum);
         fame.merge(killer.getUniqueId(), dec, Double::sum);
+        if (reduction > 0) {
+            Bukkit.getPlayer(killer.getUniqueId()).sendMessage(
+                "§7전시/광폭 면책 — 범죄 -" + (int)(reduction * 100) + "%");
+        }
         announceLevel(killer);
+    }
+
+    /** RebornClan 전시 면책 + RebornCurse 광폭화 면책 합산. */
+    private double computeImmunityReduction(Player killer) {
+        double reduction = 0;
+        // RebornClan ClanWar 면책
+        try {
+            var cp = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornClan");
+            if (cp != null) {
+                Object wars = cp.getClass().getMethod("wars").invoke(cp);
+                if (wars != null) {
+                    Object res = wars.getClass().getMethod("isImmuneByWar", java.util.UUID.class)
+                            .invoke(wars, killer.getUniqueId());
+                    if (Boolean.TRUE.equals(res)) reduction = Math.max(reduction, 1.0);
+                }
+            }
+        } catch (Throwable ignored) {}
+        // RebornCurse 광폭화 PK 감면
+        try {
+            var cp = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornCurse");
+            if (cp != null) {
+                Object berserk = cp.getClass().getMethod("berserk").invoke(cp);
+                if (berserk != null) {
+                    Object res = berserk.getClass().getMethod("pkReductionFor", java.util.UUID.class)
+                            .invoke(berserk, killer.getUniqueId());
+                    if (res instanceof Number n) reduction = Math.max(reduction, n.doubleValue());
+                }
+            }
+        } catch (Throwable ignored) {}
+        return Math.min(1.0, reduction);
     }
 
     public void tickHourlyDecay() {

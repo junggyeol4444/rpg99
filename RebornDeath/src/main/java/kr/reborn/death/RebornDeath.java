@@ -16,6 +16,7 @@ public final class RebornDeath extends JavaPlugin {
     private static RebornDeath instance;
     private UnderworldManager underworld;
     private CrimeManager crime;
+    private kr.reborn.death.bounty.BountyManager bounty;
 
     public static RebornDeath get() { return instance; }
 
@@ -25,6 +26,7 @@ public final class RebornDeath extends JavaPlugin {
         saveDefaultConfig();
         this.underworld = new UnderworldManager(this);
         this.crime = new CrimeManager(this);
+        this.bounty = new kr.reborn.death.bounty.BountyManager(this);
 
         getCommand("death").setExecutor(new DeathCommand(this));
         getCommand("underworld").setExecutor(new UnderworldCommand(this));
@@ -44,4 +46,5 @@ public final class RebornDeath extends JavaPlugin {
 
     public UnderworldManager underworld() { return underworld; }
     public CrimeManager crime() { return crime; }
+    public kr.reborn.death.bounty.BountyManager bounty() { return bounty; }
 }

@@ -24,6 +24,7 @@ public final class RebornSkill extends JavaPlugin {
     private EnergyManager energy;
     private SkillCreator creator;
     private kr.reborn.skill.technique.TechniqueRegistry techniques;
+    private kr.reborn.skill.combo.ComboTracker combo;
 
     public static RebornSkill get() { return instance; }
 
@@ -37,6 +38,7 @@ public final class RebornSkill extends JavaPlugin {
         this.caster = new SkillCaster(this);
         this.energy = new EnergyManager(this);
         this.creator = new SkillCreator(this);
+        this.combo = new kr.reborn.skill.combo.ComboTracker();
         registry.load();
         techniques.load();  // 초식 데이터 로드 (techniques.yml)
         creator.load();  // 이전에 창조된 스킬 복원
@@ -69,4 +71,5 @@ public final class RebornSkill extends JavaPlugin {
     public EnergyManager energy() { return energy; }
     public SkillCreator creator() { return creator; }
     public kr.reborn.skill.technique.TechniqueRegistry techniques() { return techniques; }
+    public kr.reborn.skill.combo.ComboTracker combo() { return combo; }
 }

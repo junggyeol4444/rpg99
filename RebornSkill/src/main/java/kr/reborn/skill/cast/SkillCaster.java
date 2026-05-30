@@ -92,10 +92,14 @@ public final class SkillCaster {
             if (tech.elementOverride != null) {
                 // 속성 덮어쓰기 — 임시 SkillDef를 생성해 EffectExecutor에 넘김
                 SkillDef shadow = withElement(def, tech.elementOverride);
+                // 콤보 배수 적용
+                power *= plugin.combo().onCast(p, shadow);
                 effects.execute(p, shadow, power);
                 return;
             }
         }
+        // 콤보 배수 적용
+        power *= plugin.combo().onCast(p, def);
         effects.execute(p, def, power);
     }
 

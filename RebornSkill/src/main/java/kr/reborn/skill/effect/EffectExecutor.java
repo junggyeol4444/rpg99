@@ -53,6 +53,11 @@ public final class EffectExecutor {
             case DOT:        dot(caster, def, power); break;
             case CHAIN:      chain(caster, def, power); break;
             case SUMMON:     summon(caster, def); break;
+            case SHIELD:     shield(caster, def, power); break;
+            case DEBUFF:     debuff(caster, def, power); break;
+            case CHANNELED:  channeled(caster, def, power); break;
+            case TRANSFORM:  transform(caster, def); break;
+            case GRAB:       grab(caster, def); break;
             default:         melee(caster, def, power); break;
         }
     }
@@ -351,4 +356,98 @@ public final class EffectExecutor {
     }
 
     private String fmt(double d) { return String.format("%.1f", d); }
+
+    /* ───────────────── 신규 스킬 타입 구현 ───────────────── */
+
+    /** 보호막 - 일시 흡수치 + 반사. */
+    private void shield(Player caster, SkillDef def, double power) {
+        try {
+            int dur = def.durationTicks > 0 ? def.durationTicks : 200;
+            caster.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, dur, 3));
+            caster.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, dur, 3));
+            caster.getWorld().spawnParticle(Particle.END_ROD, caster.getLocation(), 50, 1, 1, 1);
+            caster.getWorld().playSound(caster.getLocation(), Sound.BLOCK_ANVIL_LAND, 0.8f, 1.5f);
+            Msg.send(caster, "&b보호막 — " + (dur / 20) + "초 흡수 + 저항 3.");
+        } catch (Throwable ignored) {}
+    }
+
+    /** 광역 디버프 (피해 없음, 상태이상만). */
+    private void debuff(Player caster, SkillDef def, double power) {
+        double r = def.radius > 0 ? def.radius : 10;
+        int dur = def.durationTicks > 0 ? def.durationTicks : 200;
+        int amp = (int) Math.min(4, power / 30);
+        for (Entity e : caster.getNearbyEntities(r, r, r)) {
+            if (e instanceof LivingEntity le && e != caster) {
+                try {
+                    le.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, dur, amp));
+                    le.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, dur, amp));
+                    le.getWorld().spawnParticle(Particle.SQUID_INK, le.getLocation(), 20, 1, 1, 1);
+                } catch (Throwable ignored) {}
+            }
+        }
+        Msg.send(caster, "&8광역 디버프 — 반경 " + r + " amp " + amp);
+    }
+
+    /** 지속 시전 - 매 0.5초마다 시선 방향에 빔, dur 동안. */
+    private void channeled(Player caster, SkillDef def, double power) {
+        int ticks = def.durationTicks > 0 ? def.durationTicks : 100;
+        final int[] elapsed = {0};
+        final int every = 10;
+        Runnable beam = new Runnable() {
+            @Override
+            public void run() {
+                if (elapsed[0] >= ticks) return;
+                if (!caster.isOnline() || caster.isDead()) return;
+                Location origin = caster.getEyeLocation();
+                Vector dir = origin.getDirection().normalize();
+                for (int i = 0; i < 20; i++) {
+                    Location p = origin.clone().add(dir.clone().multiply(i));
+                    try { p.getWorld().spawnParticle(Particle.FLAME, p, 5, 0.2, 0.2, 0.2); }
+                    catch (Throwable ignored) {}
+                    for (Entity e : p.getWorld().getNearbyEntities(p, 1.2, 1.2, 1.2)) {
+                        if (e instanceof LivingEntity le && e != caster) {
+                            try { le.damage(power * 0.15, caster); } catch (Throwable ignored) {}
+                        }
+                    }
+                }
+                elapsed[0] += every;
+                RebornCore.get().scheduler().runTaskLater(this, every);
+            }
+        };
+        beam.run();
+        Msg.send(caster, "&c지속 시전 — " + (ticks / 20) + "초 빔.");
+    }
+
+    /** 변신 - 모든 스탯 일시 강화. */
+    private void transform(Player caster, SkillDef def) {
+        int dur = def.durationTicks > 0 ? def.durationTicks : 600;
+        try {
+            caster.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, dur, 2));
+            caster.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, dur, 1));
+            caster.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, dur, 2));
+            caster.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, dur, 1));
+            caster.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, dur, 0));
+            caster.getWorld().playSound(caster.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1.5f, 1.0f);
+            caster.getWorld().spawnParticle(Particle.PORTAL, caster.getLocation(), 200, 1, 2, 1);
+        } catch (Throwable ignored) {}
+        Msg.send(caster, "&5변신 — " + (dur / 20) + "초간 종합 강화.");
+    }
+
+    /** 끌어당기기 - 반경 내 적을 자기에게로. */
+    private void grab(Player caster, SkillDef def) {
+        double r = def.radius > 0 ? def.radius : 10;
+        for (Entity e : caster.getNearbyEntities(r, r, r)) {
+            if (e instanceof LivingEntity le && e != caster) {
+                try {
+                    Vector dir = caster.getLocation().toVector().subtract(e.getLocation().toVector())
+                            .normalize().multiply(2).setY(0.5);
+                    le.setVelocity(dir);
+                    le.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 60, 3));
+                } catch (Throwable ignored) {}
+            }
+        }
+        try { caster.getWorld().spawnParticle(Particle.PORTAL, caster.getLocation(), 100, 3, 3, 3); }
+        catch (Throwable ignored) {}
+        Msg.send(caster, "&5끌어당기기 — 반경 " + r);
+    }
 }

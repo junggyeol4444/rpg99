@@ -26,6 +26,8 @@ public class RebornNpc {
     public String faction = "";
     public String job = "VILLAGER";
     public NpcState state = NpcState.IDLE;
+    /** 대화 트리 ID — null이면 job 매핑 사용. */
+    public String dialogId;
 
     /** 단순 스탯 (StatType 이름 → 값). */
     public final Map<String, Double> stats = new HashMap<>();

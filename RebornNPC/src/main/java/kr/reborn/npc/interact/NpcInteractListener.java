@@ -60,6 +60,9 @@ public final class NpcInteractListener implements Listener {
         }
         e.getPlayer().sendMessage("§6[" + npc.displayName + "] §f" + greeting);
 
+        // 대화 트리 열기 — 정의된 dialog이 있으면
+        try { plugin.dialogueManager().open(e.getPlayer(), npc); } catch (Throwable ignored) {}
+
         // 환생의 여신 클릭 시 룰렛 발동
         if ("reincarnation_goddess".equals(npc.id)) {
             try {

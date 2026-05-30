@@ -1,0 +1,236 @@
+# 환생 NPC 대화 트리 — 직업별 디폴트 + 특수 NPC.
+# 조건/액션 grammar는 DialogueManager 클래스 주석 참조.
+
+dialogues:
+
+  # ──── 평민 ────
+  common_villager:
+    root: greet
+    nodes:
+      greet:
+        text: "&7외지인이로구나. 무슨 일이오?"
+        choices:
+          - { label: "마을 사정을 묻는다", next: village_news }
+          - { label: "도움을 청한다", next: ask_help }
+          - { label: "그냥 인사한다", next: simple_hi, actions: ["addFavor:2"] }
+          - { label: "헤어진다", next: null }
+      village_news:
+        text: "&7요즘 도적이 자주 출몰해서… 안전한 사람을 본 적이 없네."
+        choices:
+          - { label: "도적 처리해주마", next: hunter_offer, actions: ["addFavor:10", "giveQuest:protect_village"] }
+          - { label: "관심없다", next: cold_response, actions: ["addFavor:-5"] }
+      ask_help:
+        text: "&7도움이 필요한가? 빵 한 조각이라도 줄까?"
+        choices:
+          - { label: "감사히 받겠소", next: gift_bread, actions: ["giveItem:bread:2", "addFavor:5"] }
+          - { label: "괜찮소", next: politely_decline }
+      simple_hi:
+        text: "&a반갑소. 오늘도 무사하시길."
+      hunter_offer:
+        text: "&a고맙소이다! 도적 우두머리는 동쪽 숲에 있다더이다."
+      cold_response:
+        text: "&8…"
+      gift_bread:
+        text: "&6잘 가시오."
+      politely_decline:
+        text: "&7그럼 부디 무사히."
+
+  # ──── 상인 ────
+  common_merchant:
+    root: greet
+    nodes:
+      greet:
+        text: "&e어서오시오! 이 마을 최고의 물품만 모았소이다."
+        choices:
+          - { label: "상점을 본다", next: open_shop, actions: ["broadcast:&7/shop common_merchant 명령으로 상점 열기"] }
+          - { label: "가격 협상", next: barter, conditions: ["favor>=20"] }
+          - { label: "정보 구입", next: info_purchase, conditions: ["hasItem:gold_ingot:5"] }
+          - { label: "헤어진다", next: null }
+      barter:
+        text: "&6음, 자네라면 10% 할인이오."
+        actions: ["broadcast:&a상인 할인 적용됨"]
+      info_purchase:
+        text: "&3특별 정보가 있소이다 — 동쪽 폐허에 보물이 잠들었다는 소문이오."
+        actions: ["takeItem:gold_ingot:5", "addFavor:15"]
+      open_shop:
+        text: "&7편히 둘러보시오."
+
+  # ──── 대장장이 ────
+  common_blacksmith:
+    root: greet
+    nodes:
+      greet:
+        text: "&c쟁쟁! 망치질 소리가 멈추지 않는 곳, 환영하오."
+        choices:
+          - { label: "강화 의뢰", next: enchant_offer, conditions: ["hasItem:iron_ingot:3"] }
+          - { label: "제련법 묻기", next: lore }
+          - { label: "헤어진다", next: null }
+      enchant_offer:
+        text: "&c철 3개 받았소. 다음번에 무기 가져오시오 — 강화 비기를 전수하리다."
+        actions: ["takeItem:iron_ingot:3", "addFavor:8"]
+      lore:
+        text: "&6내 가문은 7대째 이 자리를 지켜왔소. 비밀 비기는 후계자에게만…"
+
+  # ──── 경비 ────
+  common_guard:
+    root: greet
+    nodes:
+      greet:
+        text: "&7경계 중이오. 무슨 일이오?"
+        choices:
+          - { label: "도적 신고", next: bandit_report }
+          - { label: "마을 안내", next: village_tour, conditions: ["favor>=10"] }
+          - { label: "검술 한 수 부탁", next: spar_offer, conditions: ["personality:PRIDE>=50"] }
+          - { label: "물러난다", next: null }
+      bandit_report:
+        text: "&e흠… 자세히 말해주시오. 동료와 함께 출동하겠소."
+        actions: ["addFavor:5"]
+      village_tour:
+        text: "&7동문은 시장, 서문은 신전. 잘 기억해두시오."
+      spar_offer:
+        text: "&c좋소. 한 수 부탁하리다."
+        actions: ["addEmotion:JOY:10"]
+
+  # ──── 왕·황제 ────
+  court_king:
+    root: greet
+    nodes:
+      greet:
+        text: "&6짐 앞에 무릎을 꿇어라."
+        choices:
+          - { label: "무릎을 꿇는다", next: respectful, actions: ["addFavor:10"] }
+          - { label: "조용히 듣는다", next: neutral }
+          - { label: "고개를 들고 응시한다", next: defiant, actions: ["addFavor:-15"], conditions: ["personality:PRIDE>=70"] }
+      respectful:
+        text: "&6일어나라. 그대에게 임무를 내리노라."
+        autoNext: royal_quest
+      neutral:
+        text: "&7…그래, 용건을 말하라."
+      defiant:
+        text: "&c감히 짐을 응시하다니!"
+        actions: ["addEmotion:ANGER:30"]
+      royal_quest:
+        text: "&6변방에서 반란이 일어났다. 처리하라."
+        actions: ["giveQuest:royal_rebellion"]
+
+  # ──── 마왕 ────
+  demon_lord:
+    root: greet
+    nodes:
+      greet:
+        text: "&4작은 자야, 어찌 내 옥좌에 다다랐는가?"
+        choices:
+          - { label: "굴복한다", next: bow, actions: ["addFavor:20", "stat:DEMON_KI:+50"] }
+          - { label: "도전한다", next: challenge, conditions: ["stat:STRENGTH>=500"] }
+          - { label: "거래를 제안한다", next: deal, conditions: ["personality:GREED>=60"] }
+      bow:
+        text: "&4...훌륭하다. 너에게 마기를 내리노라."
+        actions: ["broadcast:&4&l[마왕] §f%player%이(가) 마왕에 굴복했다"]
+      challenge:
+        text: "&4감히! 너의 용맹을 인정하노니, 결투를 받아들이마."
+        actions: ["giveQuest:demon_lord_duel"]
+      deal:
+        text: "&5...무엇을 원하는가?"
+
+  # ──── 천마(마교주) ────
+  cult_master:
+    root: greet
+    nodes:
+      greet:
+        text: "&5천마님께 인사하라."
+        choices:
+          - { label: "예 천마님!", next: loyal, actions: ["addFavor:15"] }
+          - { label: "...", next: silent }
+          - { label: "교주, 한 수 가르쳐주시오", next: lesson_request, conditions: ["stat:INNER_KI>=1000"] }
+      loyal:
+        text: "&5훌륭하다. 마교의 일원으로 받아들이마."
+        actions: ["giveQuest:join_cult"]
+      silent:
+        text: "&8...너는 마음 속에 무엇을 품었는가?"
+      lesson_request:
+        text: "&5천마신공 한 자락을 전수하마."
+        actions: ["stat:INNER_KI:+500"]
+
+  # ──── 무림맹주 ────
+  wulin_alliance_master:
+    root: greet
+    nodes:
+      greet:
+        text: "&3무림에 들어선 자여, 정의의 길을 걷겠는가?"
+        choices:
+          - { label: "정파에 충성합니다", next: orthodox, actions: ["giveQuest:join_alliance", "addFavor:20"] }
+          - { label: "관망하겠습니다", next: neutral }
+          - { label: "사파의 길을 묻고 싶소", next: unorthodox_q, conditions: ["personality:GREED>=50"] }
+      orthodox:
+        text: "&3훌륭하오. 정파의 일원으로 받아들이리다."
+      neutral:
+        text: "&7…그렇소. 자네 길을 가시오."
+      unorthodox_q:
+        text: "&c사파의 길은 가시밭이오. 후회하지 마시오."
+        actions: ["addEmotion:SADNESS:10"]
+
+  # ──── 용왕 ────
+  dragon_lord:
+    root: greet
+    nodes:
+      greet:
+        text: "&6작은 자여, 용의 영토에 발을 들였는가."
+        choices:
+          - { label: "경의를 표한다", next: bow, actions: ["addFavor:15"] }
+          - { label: "보물에 관심을 보인다", next: hoard_interest, actions: ["addEmotion:ANGER:20", "addFavor:-10"] }
+          - { label: "용의 시험을 청한다", next: trial_request, conditions: ["stat:ENDURANCE>=500"] }
+      bow:
+        text: "&6훌륭한 자세로다."
+      hoard_interest:
+        text: "&c감히! 내 보물을 탐하는가?!"
+      trial_request:
+        text: "&6용의 시험을 견딜 자격이 있는지 보자."
+        actions: ["giveQuest:dragon_trial"]
+
+  # ──── 헌터 ────
+  common_hunter:
+    root: greet
+    nodes:
+      greet:
+        text: "&b게이트 헌터다. 협회 소속이라면 말 걸지 마라."
+        choices:
+          - { label: "협력 의뢰", next: hunt_offer, conditions: ["stat:LEVEL>=20"] }
+          - { label: "정보 묻기", next: info }
+          - { label: "물러난다", next: null }
+      hunt_offer:
+        text: "&b좋다. 사냥에 동행하자."
+        actions: ["giveQuest:hunter_coop"]
+      info:
+        text: "&7요즘은 A급 게이트가 잦다. 조심해라."
+
+  # ──── 은둔고수 ────
+  common_hermit:
+    root: greet
+    nodes:
+      greet:
+        text: "&7노부에게 무슨 일인고?"
+        choices:
+          - { label: "한 수 가르침을 청합니다", next: lesson_request, conditions: ["favor>=80"] }
+          - { label: "정중히 인사", next: polite, actions: ["addFavor:3"] }
+          - { label: "물러난다", next: null }
+      lesson_request:
+        text: "&5…노부의 비기를 전수하겠노라."
+        actions: ["stat:INNER_KI:+1000", "stat:MENTAL:+5", "broadcast:&5&l[비기 전수] §f%player%이(가) 은둔고수의 비기를 전수받았다!"]
+      polite:
+        text: "&7…그래, 자네는 예의를 아는구나."
+
+  # ──── 사제 ────
+  common_priest:
+    root: greet
+    nodes:
+      greet:
+        text: "&b신의 평화가 함께하기를."
+        choices:
+          - { label: "기도", next: prayer, actions: ["stat:HEAVEN_KI:+20", "addFavor:5"] }
+          - { label: "축복을 청합니다", next: blessing_request, conditions: ["favor>=30"] }
+          - { label: "물러난다", next: null }
+      prayer:
+        text: "&b신은 그대의 기도를 들으셨다."
+      blessing_request:
+        text: "&6신의 가호가 그대와 함께!"
+        actions: ["stat:LUCK:+10", "stat:DIVINITY:+1"]

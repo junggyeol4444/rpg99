@@ -17,6 +17,11 @@ public enum SkillType {
     DOT,         // 지속 피해 (출혈·중독·연소)
     CHAIN,       // 연쇄 (대상→근처 대상으로 튐)
     SUMMON,      // 소환수
+    SHIELD,      // 보호막·반사·흡수
+    DEBUFF,      // 디버프 부여 (광역 SLOW/WEAKNESS 등)
+    CHANNELED,   // 지속 시전 (매 tick 데미지·자원 소모)
+    TRANSFORM,   // 변신 (자신에게 강한 종합 버프)
+    GRAB,        // 끌어당기기
     UTILITY;     // 기타 자기효과 (감응·항해 등)
 
     public static SkillType infer(String explicit, String damage, double aoeRadius,
@@ -31,6 +36,11 @@ public enum SkillType {
         if (containsAny(key, "순간이동", "블링크", "blink", "축지", "순보", "teleport", "gate", "게이트")) return BLINK;
         if (containsAny(key, "소환", "summon", "골렘", "golem", "드론", "drone")) return SUMMON;
         if (containsAny(key, "비행", "flight", "수중", "호흡", "navigation", "항해")) return UTILITY;
+        if (containsAny(key, "방벽", "보호막", "방패", "shield", "barrier", "반사")) return SHIELD;
+        if (containsAny(key, "변신", "transform", "morph", "변화", "수신")) return TRANSFORM;
+        if (containsAny(key, "끌어당기", "포획", "grab", "pull", "snare")) return GRAB;
+        if (containsAny(key, "약화", "둔화", "debuff", "저주", "curse", "위압", "공포")) return DEBUFF;
+        if (containsAny(key, "지속", "지향", "빔", "beam", "channel", "ray", "방류")) return CHANNELED;
         // 피해 수식 기반
         boolean hasDamage = damage != null && !damage.isBlank();
         if (hasDamage && damage.trim().startsWith("-")) return HEAL;

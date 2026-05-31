@@ -19,6 +19,7 @@ public final class RebornCore extends JavaPlugin {
     private RebornScheduler scheduler;
     private RebornAPI api;
     private kr.reborn.core.reincarnation.ReincarnationMemory reincarnationMemory;
+    private kr.reborn.core.discovery.HiddenWorldUnlock hiddenWorld;
 
     public static RebornCore get() {
         return instance;
@@ -48,6 +49,7 @@ public final class RebornCore extends JavaPlugin {
         this.tierManager = new TierManager(this);
         this.api = new RebornAPI(this);
         this.reincarnationMemory = new kr.reborn.core.reincarnation.ReincarnationMemory(this);
+        this.hiddenWorld = new kr.reborn.core.discovery.HiddenWorldUnlock(this);
 
         getServer().getPluginManager().registerEvents(new PlayerDataListener(dataManager), this);
 
@@ -57,6 +59,9 @@ public final class RebornCore extends JavaPlugin {
         }
         if (getCommand("pastlife") != null) {
             getCommand("pastlife").setExecutor(new kr.reborn.core.command.PastLifeCommand(this));
+        }
+        if (getCommand("hidden") != null) {
+            getCommand("hidden").setExecutor(new kr.reborn.core.command.HiddenWorldCommand(this));
         }
 
         long interval = getConfig().getLong("auto-save-interval", 300L) * 20L;
@@ -79,4 +84,5 @@ public final class RebornCore extends JavaPlugin {
     public kr.reborn.core.reincarnation.ReincarnationMemory reincarnationMemory() {
         return reincarnationMemory;
     }
+    public kr.reborn.core.discovery.HiddenWorldUnlock hiddenWorld() { return hiddenWorld; }
 }

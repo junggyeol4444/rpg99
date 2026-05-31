@@ -17,6 +17,9 @@ commands:
   pastlife:
     description: 전생 회상 - 모든 전생 기록 + 잔존 효과
     aliases: [past, reincarnation]
+  hidden:
+    description: 6 히든 월드 발견 상태 + 해금 조건
+    aliases: [hiddenworld]
 permissions:
   reborncore.admin:
     default: op

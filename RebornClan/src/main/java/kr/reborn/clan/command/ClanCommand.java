@@ -98,6 +98,16 @@ public final class ClanCommand implements CommandExecutor {
                     }
                 }
                 break;
+            case "will":
+                if (a.length < 2) {
+                    var existing = plugin.inheritance().willOf(p.getUniqueId());
+                    if (existing != null) {
+                        Msg.send(p, "&6내 유언장 — 상속인: §f" + existing.heirId);
+                    } else Msg.send(p, "&7/clan will <heirId> — 유언장 작성");
+                    break;
+                }
+                plugin.inheritance().writeWill(p, a[1]);
+                break;
         }
         return true;
     }

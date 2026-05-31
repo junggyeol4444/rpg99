@@ -16,6 +16,7 @@ public final class RebornClan extends JavaPlugin {
     private KingdomManager kingdoms;
     private kr.reborn.clan.power.PowerEngine powers;
     private kr.reborn.clan.war.ClanWarManager wars;
+    private kr.reborn.clan.inheritance.InheritanceManager inheritance;
 
     public static RebornClan get() { return instance; }
 
@@ -29,6 +30,7 @@ public final class RebornClan extends JavaPlugin {
         this.kingdoms = new KingdomManager(this);
         this.powers = new kr.reborn.clan.power.PowerEngine(this);
         this.wars = new kr.reborn.clan.war.ClanWarManager(this);
+        this.inheritance = new kr.reborn.clan.inheritance.InheritanceManager(this);
 
         getCommand("clan").setExecutor(new ClanCommand(this));
         getCommand("marry").setExecutor(new MarryCommand(this));
@@ -40,6 +42,7 @@ public final class RebornClan extends JavaPlugin {
         getServer().getPluginManager().registerEvents(marriages, this);
         getServer().getPluginManager().registerEvents(territories, this);
         getServer().getPluginManager().registerEvents(wars, this);
+        getServer().getPluginManager().registerEvents(inheritance, this);
         getServer().getPluginManager().registerEvents(
                 new kr.reborn.clan.listener.ClanWorldImpactListener(this), this);
 
@@ -58,4 +61,5 @@ public final class RebornClan extends JavaPlugin {
     public KingdomManager kingdoms() { return kingdoms; }
     public kr.reborn.clan.power.PowerEngine powers() { return powers; }
     public kr.reborn.clan.war.ClanWarManager wars() { return wars; }
+    public kr.reborn.clan.inheritance.InheritanceManager inheritance() { return inheritance; }
 }

@@ -12,5 +12,8 @@ commands:
   rnpc:
     description: NPC 관리
     permission: rebornnpc.admin
+  famous:
+    description: 유명 NPC (기획서 명명 인물 50+) - list/world/info/top
+    aliases: [legend]
 permissions:
   rebornnpc.admin: { default: op }

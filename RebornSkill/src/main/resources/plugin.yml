@@ -18,5 +18,8 @@ commands:
   manual:
     description: 비급 - 발견·연구·도난·양도
     usage: /manual list|owned|info|discover|research|progress|steal|transfer
+  school:
+    description: 무공 학파 - 5종 (정파/사파/마교/황궁/은둔파)
+    usage: /school join <SCHOOL> | list
 permissions:
   rebornskill.use: { default: true }

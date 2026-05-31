@@ -15,6 +15,10 @@ commands:
   ranking:
     description: 랭킹 GUI
     aliases: [rank]
+  achievement:
+    description: 업적 시스템 - 50종, 6 등급
+    aliases: [ach, achi]
+    usage: /achievement list|earned|progress|info|points
 permissions:
   reborntitle.use:
     default: true

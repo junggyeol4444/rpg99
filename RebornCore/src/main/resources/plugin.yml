@@ -14,6 +14,9 @@ commands:
   dashboard:
     description: 통합 대시보드 - 모든 플러그인 상태 한 화면
     aliases: [db, status]
+  pastlife:
+    description: 전생 회상 - 모든 전생 기록 + 잔존 효과
+    aliases: [past, reincarnation]
 permissions:
   reborncore.admin:
     default: op

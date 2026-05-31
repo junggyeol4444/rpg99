@@ -18,5 +18,9 @@ commands:
   bounty:
     description: 현상수배 정보
     permission: reborndeath.use
+  duel:
+    description: 1v1 결투 - 명예 시스템
+    usage: /duel challenge|accept|reject|honor|top
+    permission: reborndeath.use
 permissions:
   reborndeath.use: { default: true }

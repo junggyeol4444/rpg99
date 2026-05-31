@@ -8,7 +8,10 @@ import kr.reborn.death.RebornDeath;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
 public final class DeathListener implements Listener {
@@ -48,5 +51,31 @@ public final class DeathListener implements Listener {
                 }
             }
         } catch (Throwable ignored) {}
+    }
+
+    /** 결투 중 HP <=1 도달 시 죽지 않게 가로채고 결투 종료. */
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onDamage(EntityDamageEvent e) {
+        if (!(e.getEntity() instanceof Player victim)) return;
+        if (!plugin.duels().isInActiveDuel(victim.getUniqueId())) return;
+        double newHp = victim.getHealth() - e.getFinalDamage();
+        if (newHp <= 1) {
+            e.setCancelled(true);
+            try { victim.setHealth(1.0); } catch (Throwable ignored) {}
+            plugin.duels().onDamage(victim);
+        }
+    }
+
+    /** 결투 상대가 아니면 PvP 면책 (다른 사람이 결투 중 사람 못 침). */
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onPvP(EntityDamageByEntityEvent e) {
+        if (!(e.getEntity() instanceof Player victim)) return;
+        if (!(e.getDamager() instanceof Player attacker)) return;
+        if (!plugin.duels().isInActiveDuel(victim.getUniqueId())
+                && !plugin.duels().isInActiveDuel(attacker.getUniqueId())) return;
+        // 결투 중 → 결투 상대만 데미지 입힘
+        if (!plugin.duels().areOpponents(attacker.getUniqueId(), victim.getUniqueId())) {
+            e.setCancelled(true);
+        }
     }
 }

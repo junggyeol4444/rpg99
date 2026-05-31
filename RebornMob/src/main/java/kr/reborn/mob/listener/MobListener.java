@@ -49,7 +49,15 @@ public final class MobListener implements Listener {
                 e.getDrops().add(new ItemStack(m, amt));
             }
         }
-        if (def.boss) plugin.bosses().onDeath(le);
+        if (def.boss) {
+            plugin.bosses().onDeath(le);
+            // 던전 진행 갱신
+            Player killer = e.getEntity().getKiller();
+            if (killer != null) {
+                try { plugin.dungeons().onBossKill(killer, def.id); }
+                catch (Throwable ignored) {}
+            }
+        }
         plugin.controller().unregister(le.getUniqueId());
     }
 }

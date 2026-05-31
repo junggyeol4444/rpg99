@@ -18,6 +18,7 @@ public final class RebornDeath extends JavaPlugin {
     private CrimeManager crime;
     private kr.reborn.death.bounty.BountyManager bounty;
     private kr.reborn.death.underworld.UnderworldQuests underworldQuests;
+    private kr.reborn.death.duel.DuelManager duels;
 
     public static RebornDeath get() { return instance; }
 
@@ -29,10 +30,14 @@ public final class RebornDeath extends JavaPlugin {
         this.crime = new CrimeManager(this);
         this.bounty = new kr.reborn.death.bounty.BountyManager(this);
         this.underworldQuests = new kr.reborn.death.underworld.UnderworldQuests(this);
+        this.duels = new kr.reborn.death.duel.DuelManager(this);
 
         getCommand("death").setExecutor(new DeathCommand(this));
         getCommand("underworld").setExecutor(new UnderworldCommand(this));
         getCommand("bounty").setExecutor(new BountyCommand(this));
+        if (getCommand("duel") != null) {
+            getCommand("duel").setExecutor(new kr.reborn.death.command.DuelCommand(this));
+        }
 
         getServer().getPluginManager().registerEvents(new DeathListener(this), this);
         getServer().getPluginManager().registerEvents(new AbyssWorld(this), this);
@@ -50,4 +55,5 @@ public final class RebornDeath extends JavaPlugin {
     public CrimeManager crime() { return crime; }
     public kr.reborn.death.bounty.BountyManager bounty() { return bounty; }
     public kr.reborn.death.underworld.UnderworldQuests underworldQuests() { return underworldQuests; }
+    public kr.reborn.death.duel.DuelManager duels() { return duels; }
 }

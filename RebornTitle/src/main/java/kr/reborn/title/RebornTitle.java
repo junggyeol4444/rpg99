@@ -15,6 +15,7 @@ public final class RebornTitle extends JavaPlugin {
 
     private TitleManager titles;
     private RankingManager rankings;
+    private kr.reborn.title.achievement.AchievementManager achievements;
     private Gui gui;
 
     public static RebornTitle get() { return instance; }
@@ -33,9 +34,14 @@ public final class RebornTitle extends JavaPlugin {
         this.gui = new Gui(this);
         this.titles = new TitleManager(this);
         this.rankings = new RankingManager(this);
+        this.achievements = new kr.reborn.title.achievement.AchievementManager(this);
 
         getCommand("title").setExecutor(new TitleCommand(this));
         getCommand("ranking").setExecutor(new RankingCommand(this));
+        if (getCommand("achievement") != null) {
+            getCommand("achievement").setExecutor(
+                    new kr.reborn.title.command.AchievementCommand(this));
+        }
         getServer().getPluginManager().registerEvents(new TitleProgressListener(this), this);
         getServer().getPluginManager().registerEvents(
                 new kr.reborn.title.listener.TitleAutoGrantListener(this), this);
@@ -53,5 +59,6 @@ public final class RebornTitle extends JavaPlugin {
 
     public TitleManager titles() { return titles; }
     public RankingManager rankings() { return rankings; }
+    public kr.reborn.title.achievement.AchievementManager achievements() { return achievements; }
     public Gui gui() { return gui; }
 }

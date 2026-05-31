@@ -25,6 +25,7 @@ public final class RebornSkill extends JavaPlugin {
     private SkillCreator creator;
     private kr.reborn.skill.technique.TechniqueRegistry techniques;
     private kr.reborn.skill.combo.ComboTracker combo;
+    private kr.reborn.skill.manual.ManualManager manuals;
 
     public static RebornSkill get() { return instance; }
 
@@ -40,11 +41,16 @@ public final class RebornSkill extends JavaPlugin {
         this.creator = new SkillCreator(this);
         this.combo = new kr.reborn.skill.combo.ComboTracker();
         registry.load();
+        this.manuals = new kr.reborn.skill.manual.ManualManager(this);
         techniques.load();  // 초식 데이터 로드 (techniques.yml)
         creator.load();  // 이전에 창조된 스킬 복원
 
         getCommand("skill").setExecutor(new SkillCommand(this));
         getCommand("energy").setExecutor(new EnergyCommand(this));
+        if (getCommand("manual") != null) {
+            getCommand("manual").setExecutor(
+                    new kr.reborn.skill.command.ManualCommand(this));
+        }
         getServer().getPluginManager().registerEvents(
                 new kr.reborn.skill.effect.SkillProjectileListener(this), this);
         getServer().getPluginManager().registerEvents(
@@ -72,4 +78,5 @@ public final class RebornSkill extends JavaPlugin {
     public SkillCreator creator() { return creator; }
     public kr.reborn.skill.technique.TechniqueRegistry techniques() { return techniques; }
     public kr.reborn.skill.combo.ComboTracker combo() { return combo; }
+    public kr.reborn.skill.manual.ManualManager manuals() { return manuals; }
 }

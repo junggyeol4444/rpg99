@@ -35,9 +35,13 @@ public final class CrimeManager {
         announceLevel(killer);
     }
 
-    /** RebornClan 전시 면책 + RebornCurse 광폭화 면책 합산. */
+    /** RebornClan 전시 면책 + RebornCurse 광폭화 면책 + Duel 면책 합산. */
     private double computeImmunityReduction(Player killer) {
         double reduction = 0;
+        // Duel 결투 중 PvP는 완전 면책
+        try {
+            if (plugin.duels().isInActiveDuel(killer.getUniqueId())) reduction = 1.0;
+        } catch (Throwable ignored) {}
         // RebornClan ClanWar 면책
         try {
             var cp = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornClan");

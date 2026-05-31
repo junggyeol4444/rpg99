@@ -18,6 +18,7 @@ public final class RebornCore extends JavaPlugin {
     private TierManager tierManager;
     private RebornScheduler scheduler;
     private RebornAPI api;
+    private kr.reborn.core.reincarnation.ReincarnationMemory reincarnationMemory;
 
     public static RebornCore get() {
         return instance;
@@ -46,12 +47,16 @@ public final class RebornCore extends JavaPlugin {
         this.dataManager = new DataManager(this, database);
         this.tierManager = new TierManager(this);
         this.api = new RebornAPI(this);
+        this.reincarnationMemory = new kr.reborn.core.reincarnation.ReincarnationMemory(this);
 
         getServer().getPluginManager().registerEvents(new PlayerDataListener(dataManager), this);
 
         getCommand("reborncore").setExecutor(new CoreCommand(this));
         if (getCommand("dashboard") != null) {
             getCommand("dashboard").setExecutor(new kr.reborn.core.command.DashboardCommand(this));
+        }
+        if (getCommand("pastlife") != null) {
+            getCommand("pastlife").setExecutor(new kr.reborn.core.command.PastLifeCommand(this));
         }
 
         long interval = getConfig().getLong("auto-save-interval", 300L) * 20L;
@@ -71,4 +76,7 @@ public final class RebornCore extends JavaPlugin {
     public TierManager tierManager() { return tierManager; }
     public RebornScheduler scheduler() { return scheduler; }
     public RebornAPI api() { return api; }
+    public kr.reborn.core.reincarnation.ReincarnationMemory reincarnationMemory() {
+        return reincarnationMemory;
+    }
 }

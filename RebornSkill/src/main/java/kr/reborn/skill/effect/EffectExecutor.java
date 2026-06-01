@@ -37,10 +37,26 @@ import java.util.UUID;
 public final class EffectExecutor {
 
     private final RebornSkill plugin;
+    private final kr.reborn.skill.signature.SignatureExecutor sigExec =
+            new kr.reborn.skill.signature.SignatureExecutor();
+    /** 현재 실행 중인 스킬의 시그니처 — damageTarget이 hit 렌더에 사용. */
+    private kr.reborn.skill.signature.SkillSignature currentSig;
 
     public EffectExecutor(RebornSkill plugin) { this.plugin = plugin; }
 
     public void execute(Player caster, SkillDef def, double power) {
+        // 시그니처 룩업 + 시전 시각·청각 효과
+        kr.reborn.skill.signature.SkillSignature sig =
+                kr.reborn.skill.signature.SignatureRegistry.lookup(def.id);
+        this.currentSig = sig;
+        if (sig != null) {
+            try { sigExec.renderCast(caster, sig); }
+            catch (Throwable ignored) {}
+            if (sig.flavorText != null && !sig.flavorText.isEmpty()) {
+                try { kr.reborn.core.util.Msg.send(caster, sig.flavorText); }
+                catch (Throwable ignored) {}
+            }
+        }
         switch (def.type) {
             case MELEE:      melee(caster, def, power); break;
             case PROJECTILE: projectile(caster, def, power); break;
@@ -133,6 +149,26 @@ public final class EffectExecutor {
 
     private void buff(Player p, SkillDef def) {
         int dur = def.durationTicks > 0 ? def.durationTicks : 200;
+        // 1. 고유 BuffProfile 룩업 (40+ 고유 스킬별 차별화)
+        kr.reborn.skill.buff.BuffProfile profile = kr.reborn.skill.buff.BuffRegistry.get(def.id);
+        if (profile != null) {
+            for (var st : profile.statuses) {
+                int d = st.duration < 0 ? Integer.MAX_VALUE : st.duration;
+                try { p.addPotionEffect(new PotionEffect(st.type, d, st.amplifier, st.ambient, st.particles)); }
+                catch (Throwable ignored) {}
+            }
+            for (String side : profile.sideEffects) {
+                applySideEffect(p, side, dur);
+            }
+            // 시그니처가 있으면 별도 입자 — 없으면 약식 입자
+            if (kr.reborn.skill.signature.SignatureRegistry.lookup(def.id) == null) {
+                try { p.getWorld().spawnParticle(Particle.TOTEM, p.getLocation().add(0, 1, 0), 15, 0.4, 0.6, 0.4, 0.1); }
+                catch (Throwable ignored) {}
+            }
+            Msg.send(p, "&e" + def.name + " &7시전 (" + dur / 20 + "초)");
+            return;
+        }
+        // 2. Fallback: 기존 키워드 5분류 (등록 안 된 스킬)
         String key = (def.id + " " + (def.name == null ? "" : def.name)).toLowerCase();
         if (containsAny(key, "방패", "실드", "shield", "보호", "철벽", "금강", "방어")) {
             p.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, dur, 1));
@@ -151,6 +187,26 @@ public final class EffectExecutor {
         p.getWorld().spawnParticle(Particle.TOTEM, p.getLocation().add(0, 1, 0), 15, 0.4, 0.6, 0.4, 0.1);
         p.getWorld().playSound(p.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 1f, 1.2f);
         Msg.send(p, "&e" + def.name + " &7시전 (" + dur / 20 + "초)");
+    }
+
+    /** 부수 효과 — sideEffects 문자열로 코드 분기. */
+    private void applySideEffect(Player p, String side, int dur) {
+        switch (side) {
+            case "ALLOW_FLIGHT" -> grantFlight(p, dur);
+            case "REMOVE_CONFUSION_POISON" -> {
+                if (p.hasPotionEffect(PotionEffectType.CONFUSION)) p.removePotionEffect(PotionEffectType.CONFUSION);
+                if (p.hasPotionEffect(PotionEffectType.POISON)) p.removePotionEffect(PotionEffectType.POISON);
+            }
+            case "DREAM_TRAINING" -> {
+                if (p.getFoodLevel() < 10) {
+                    try {
+                        kr.reborn.core.RebornCore.get().api().addStat(p.getUniqueId(),
+                                kr.reborn.core.data.StatType.MENTAL, 0.05, "dream-training");
+                    } catch (Throwable ignored) {}
+                }
+            }
+            default -> { /* unknown side effect */ }
+        }
     }
 
     private void grantFlight(Player p, int dur) {
@@ -280,6 +336,11 @@ public final class EffectExecutor {
         if (mult > 1.0) Msg.send(caster, "&c" + tag + " &7→ " + fmt(dmg) + " §a상성 우위 ×" + fmt(mult));
         else if (mult < 1.0) Msg.send(caster, "&c" + tag + " &7→ " + fmt(dmg) + " §c상성 불리 ×" + fmt(mult));
         else Msg.send(caster, "&c" + tag + " &7→ " + fmt(dmg) + " 피해");
+        // 시그니처 hit 렌더
+        if (currentSig != null) {
+            try { sigExec.renderHit(caster, t, currentSig); }
+            catch (Throwable ignored) {}
+        }
     }
 
     private void healEntity(LivingEntity le, double amt) {

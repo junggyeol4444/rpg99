@@ -69,11 +69,28 @@ public final class PlayerEffectManager {
         // 특수 효과 캐시 등록
         plugin.special().onApply(p, def);
 
+        // 시그니처 룩업 — 고유 시청각 + 플레이버 텍스트
+        var sig = kr.reborn.curse.signature.BlessingSignatureRegistry.lookup(id);
+        if (sig != null) {
+            try {
+                if (sig.applyParticle != null) {
+                    p.getWorld().spawnParticle(sig.applyParticle,
+                            p.getLocation().add(0, 1, 0), 50, 0.5, 1, 0.5, 0.1);
+                }
+                if (sig.applySound != null) {
+                    p.getWorld().playSound(p.getLocation(), sig.applySound, 1.0f, 1.0f);
+                }
+                if (sig.applyMessage != null && !sig.applyMessage.isEmpty()) {
+                    Msg.send(p, sig.applyMessage);
+                }
+            } catch (Throwable ignored) {}
+        }
+
         if (def.kind == EffectDef.Kind.BLESSING) {
-            Msg.send(p, "&b[축복] " + def.name);
+            if (sig == null) Msg.send(p, "&b[축복] " + def.name);
             Bukkit.getPluginManager().callEvent(new RebornBlessingApplyEvent(p, def));
         } else {
-            Msg.send(p, "&c[저주] " + def.name);
+            if (sig == null) Msg.send(p, "&c[저주] " + def.name);
             Bukkit.getPluginManager().callEvent(new RebornCurseApplyEvent(p, def));
         }
         return true;
@@ -139,6 +156,16 @@ public final class PlayerEffectManager {
         }
         // SpecialEffectEngine 위임 — hp_tick, out_of_ship, stats_tick_day_only, npc_favor_tick
         plugin.special().applyTick(p, def, a);
+
+        // 시그니처 tick 입자 — 활성 중 주기적 시각 효과
+        var sig = kr.reborn.curse.signature.BlessingSignatureRegistry.lookup(def.id);
+        if (sig != null && sig.tickParticle != null && sig.tickParticleCount > 0) {
+            try {
+                p.getWorld().spawnParticle(sig.tickParticle,
+                        p.getLocation().add(0, 1, 0), sig.tickParticleCount,
+                        0.3, 0.8, 0.3, 0.02);
+            } catch (Throwable ignored) {}
+        }
 
         // 광폭화 발동 — BerserkEngine 위임
         if (def.berserkChance > 0 && Rand.chance(def.berserkChance) && !a.berserkActive) {

@@ -66,8 +66,63 @@ public final class TitleManager {
         if (s.contains(id)) return false;
         s.add(id);
         Bukkit.getPluginManager().callEvent(new RebornTitleGrantEvent(p, t));
-        Msg.send(p, "&6&l[칭호 획득] " + t.name);
+        // Title 종류별 고유 연출
+        renderGrant(p, t);
         return true;
+    }
+
+    private void renderGrant(Player p, Title t) {
+        org.bukkit.Sound sound;
+        org.bukkit.Particle particle;
+        String prefix;
+        boolean broadcast = false;
+        switch (t.type) {
+            case TIER -> {
+                sound = org.bukkit.Sound.BLOCK_BEACON_POWER_SELECT;
+                particle = org.bukkit.Particle.END_ROD;
+                prefix = "&5&l✦ 경지 칭호 ✦ &r";
+            }
+            case ACHIEVEMENT -> {
+                sound = org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE;
+                particle = org.bukkit.Particle.TOTEM;
+                prefix = "&6&l[업적] ";
+            }
+            case CLAN -> {
+                sound = org.bukkit.Sound.BLOCK_BELL_USE;
+                particle = org.bukkit.Particle.CRIT_MAGIC;
+                prefix = "&3&l[가문 명예] ";
+            }
+            case NPC -> {
+                sound = org.bukkit.Sound.ENTITY_VILLAGER_TRADE;
+                particle = org.bukkit.Particle.HEART;
+                prefix = "&d&l[인연] ";
+            }
+            case WORLD_QUEST -> {
+                sound = org.bukkit.Sound.BLOCK_BELL_RESONATE;
+                particle = org.bukkit.Particle.PORTAL;
+                prefix = "&6&l[세계의 영웅] ";
+                broadcast = true;
+            }
+            case AI -> {
+                sound = org.bukkit.Sound.BLOCK_AMETHYST_BLOCK_CHIME;
+                particle = org.bukkit.Particle.SPELL_INSTANT;
+                prefix = "&7&l[행적의 증거] ";
+            }
+            default -> {
+                sound = org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE;
+                particle = org.bukkit.Particle.TOTEM;
+                prefix = "&6&l[칭호 획득] ";
+            }
+        }
+        Msg.send(p, prefix + t.name);
+        try {
+            p.playSound(p.getLocation(), sound, 1.0f, 1.2f);
+            p.getWorld().spawnParticle(particle, p.getLocation().add(0, 1.5, 0), 40, 0.5, 0.8, 0.5, 0.1);
+            p.sendTitle("§6✦ 칭호 ✦", "§f" + t.name, 10, 50, 20);
+        } catch (Throwable ignored) {}
+        if (broadcast) {
+            Bukkit.broadcastMessage(Msg.PREFIX + Msg.c(prefix + p.getName() + " §7가 " + t.name + " §7칭호 획득!"));
+        }
     }
 
     public void revoke(Player p, String id) {

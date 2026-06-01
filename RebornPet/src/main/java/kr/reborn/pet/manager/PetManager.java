@@ -32,14 +32,62 @@ public final class PetManager {
         if (Rand.chance(chance)) {
             Pet pet = new Pet(p.getUniqueId(), target.getType().name() + "_pet", target.getType().name());
             byOwner.computeIfAbsent(p.getUniqueId(), x -> new ArrayList<>()).add(pet);
+            // 몬스터 종류별 고유 길들이기 메시지
+            String successMsg = tameMessage(target.getType().name());
             target.remove();
-            Msg.send(p, "&a길들이기 성공!");
+            Msg.send(p, successMsg);
+            try {
+                p.getWorld().spawnParticle(org.bukkit.Particle.HEART,
+                        p.getLocation().add(0, 1.5, 0), 20, 0.5, 0.5, 0.5);
+                p.playSound(p.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.5f);
+            } catch (Throwable ignored) {}
             return true;
         }
-        // 광폭화
+        // 광폭화 — 종별로 메시지 다르게
         target.setHealth(Math.min(target.getMaxHealth(), target.getHealth() * 2));
-        Msg.error(p, "길들이기 실패 — 광폭화!");
+        Msg.error(p, ragingMessage(target.getType().name()));
         return false;
+    }
+
+    /** 몬스터 종별 길들이기 성공 메시지. */
+    private String tameMessage(String mobType) {
+        switch (mobType) {
+            case "WOLF": return "&a늑대가 너의 명에 복종한다 — 충실한 동반자.";
+            case "CAT": case "OCELOT": return "&a고양이가 다가와 너의 다리에 몸을 부빈다.";
+            case "PARROT": return "&a앵무새가 너의 어깨에 내려앉았다.";
+            case "FOX": return "&a여우가 너의 손을 핥는다 — 영물이 너를 받아들였다.";
+            case "DOLPHIN": return "&a돌고래가 너에게 노래한다 — 바다의 친구.";
+            case "AXOLOTL": return "&a&l새끼 드래곤이 너를 어미로 인식한다.";
+            case "POLAR_BEAR": return "&a&l쇠가죽 곰이 너의 강함을 인정했다.";
+            case "BLAZE": return "&c화염 정령이 너의 단호함에 무릎을 꿇었다.";
+            case "GUARDIAN": return "&3해양 수호자가 너를 인정한다 — 바다의 일원.";
+            case "IRON_GOLEM": return "&7대지 정령 — 골렘이 너를 주인으로 받아들였다.";
+            case "WITHER_SKELETON": return "&8&l죽음의 영혼이 너를 따른다.";
+            case "PIGLIN": case "PIGLIN_BRUTE": return "&c피글린이 무릎을 꿇었다 — 강함을 인정.";
+            case "ZOMBIE": return "&2언데드가 너의 명을 받들겠다.";
+            case "SLIME": case "MAGMA_CUBE": return "&a슬라임이 흔들거리며 따라온다.";
+            case "PHANTOM": return "&8&l환영이 너의 그림자가 되었다.";
+            case "ALLAY": return "&b&l정령이 노래하며 너에게 다가왔다.";
+            case "VEX": return "&5요괴가 너에게 굴복했다.";
+            case "GLOW_SQUID": return "&b심해의 발광 오징어 — 빛으로 너를 따른다.";
+            case "WARDEN": return "&0&l심연의 수호자 — 그 깊은 어둠을 너에게 맡겼다.";
+            case "ENDER_DRAGON": return "&5&l용이 너를 주인으로 인정했다 — 전설적인 순간.";
+            default: return "&a길들이기 성공 — " + mobType + " 이(가) 너를 따른다.";
+        }
+    }
+
+    /** 몬스터 종별 길들이기 실패 (광폭화) 메시지. */
+    private String ragingMessage(String mobType) {
+        switch (mobType) {
+            case "WOLF": return "늑대가 분노한다 — 이빨을 드러낸다!";
+            case "CAT": case "OCELOT": return "고양이가 발톱을 세웠다.";
+            case "FOX": return "여우가 너의 손을 물었다.";
+            case "ENDER_DRAGON": return "용이 분노했다 — 도망쳐라!";
+            case "WARDEN": return "심연의 수호자가 너의 거짓을 보았다.";
+            case "POLAR_BEAR": return "곰이 너에게 돌진한다.";
+            case "BLAZE": return "화염 정령이 분노 — 불이 사방으로 튄다.";
+            default: return mobType + " 가 광폭화했다 — 도망쳐라!";
+        }
     }
 
     public List<Pet> petsOf(UUID owner) {

@@ -87,9 +87,32 @@ public final class AbilityEngine {
     }
 
     private void apply(Player p, HiddenAbility ab, String targetName) {
-        Bukkit.broadcastMessage(Msg.PREFIX + Msg.c("&6&l[히든능력] &f" + p.getName()
+        // 능력별 고유 시그니처 (입자·사운드·플레이버·broadcast 태그)
+        AbilitySignature sig = AbilitySignature.lookup(ab);
+        String tag = sig != null && sig.broadcastTag != null ? sig.broadcastTag : "[히든능력]";
+        Bukkit.broadcastMessage(Msg.PREFIX + Msg.c("&6&l" + tag + " &f" + p.getName()
                 + " &7→ &e" + ab.classId + "&7 발동!"));
-        try { p.playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 1.5f); } catch (Throwable ignored) {}
+        if (sig != null) {
+            try {
+                if (sig.particle != null) {
+                    p.getWorld().spawnParticle(sig.particle, p.getLocation().add(0, 1, 0),
+                            80, 2, 2, 2, 0.1);
+                }
+                if (sig.secondaryParticle != null) {
+                    p.getWorld().spawnParticle(sig.secondaryParticle, p.getLocation().add(0, 1, 0),
+                            40, 1.5, 1.5, 1.5, 0.05);
+                }
+                if (sig.castSound != null) {
+                    p.playSound(p.getLocation(), sig.castSound, 1.5f, 1.0f);
+                }
+                if (sig.flavorText != null) {
+                    Msg.send(p, sig.flavorText);
+                }
+            } catch (Throwable ignored) {}
+        } else {
+            // Fallback (시그니처 없는 능력)
+            try { p.playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 1.5f); } catch (Throwable ignored) {}
+        }
         switch (ab) {
             case CHAOS_BURST -> chaosBurst(p);
             case DEMON_KI_OVERFLOW -> demonKiOverflow(p);

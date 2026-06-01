@@ -45,18 +45,20 @@ public final class NpcInteractListener implements Listener {
                     Memory.Kind.HELPED_ME, 2, "대화");
         }
 
-        // 성격에 따른 인사말
-        String greeting = "무슨 일이오?";
+        // 성격 + 직업 기반 인사 — ResponseBank가 50+ 변형 중에서 무작위 선택
+        String greeting;
         if (npc.soul != null) {
-            int empathy = npc.soul.personality.get(Personality.Trait.EMPATHY);
-            int pride = npc.soul.personality.get(Personality.Trait.PRIDE);
-            int soc = npc.soul.personality.get(Personality.Trait.SOCIABILITY);
             double sent = npc.soul.relationToward(e.getPlayer().getUniqueId().toString());
-            if (sent > 60) greeting = "오, 자네 왔는가! 늘 반갑네.";
-            else if (sent < -40) greeting = "...왜 또 왔나.";
-            else if (pride > 50) greeting = "감히 나에게 말을 거는가?";
-            else if (empathy > 50) greeting = "오, 반갑네. 무엇이 필요한가?";
-            else if (soc < -30) greeting = "...";
+            // 50% 확률로 직업별 인사, 50% 확률로 성격 기반
+            String jobLine = ResponseBank.jobGreeting(npc.job);
+            if (jobLine != null && kr.reborn.core.util.Rand.chance(0.5)) {
+                greeting = jobLine;
+            } else {
+                greeting = ResponseBank.pickGreeting(npc, sent);
+            }
+        } else {
+            String jobLine = ResponseBank.jobGreeting(npc.job);
+            greeting = jobLine != null ? jobLine : "무슨 일이오?";
         }
         e.getPlayer().sendMessage("§6[" + npc.displayName + "] §f" + greeting);
 

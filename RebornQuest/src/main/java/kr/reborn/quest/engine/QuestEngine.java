@@ -133,8 +133,8 @@ public final class QuestEngine {
     public void complete(Player p, Quest q) {
         Map<String, Progress> map = active.get(p.getUniqueId());
         if (map != null) map.remove(q.id);
-        Msg.send(p, "&6&l퀘스트 완료: &r&f" + q.name);
-        p.getWorld().playSound(p.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f);
+        // 퀘스트 종류·세계별 고유 완료 연출
+        renderCompletion(p, q);
         applyRewards(p, q);
         Bukkit.getPluginManager().callEvent(new RebornQuestCompleteEvent(p, q.id));
         if (q.linkedQuestId != null && !q.linkedQuestId.isEmpty()) {
@@ -143,6 +143,86 @@ public final class QuestEngine {
                 accept(p, q.linkedQuestId);  // 후속 퀘스트 자동 수락
             }
         }
+    }
+
+    /** 퀘스트 종류·세계별 다른 완료 연출. */
+    private void renderCompletion(Player p, Quest q) {
+        String type = q.type == null ? "" : q.type.toUpperCase();
+        String world = q.world == null ? "" : q.world;
+        org.bukkit.Sound sound;
+        org.bukkit.Particle particle;
+        String msg;
+        switch (type) {
+            case "KILL" -> {
+                sound = org.bukkit.Sound.ENTITY_PLAYER_LEVELUP;
+                particle = org.bukkit.Particle.CRIT;
+                msg = "&c&l⚔ 퀘스트 완료: &r&f" + q.name;
+            }
+            case "GATHER" -> {
+                sound = org.bukkit.Sound.ENTITY_VILLAGER_YES;
+                particle = org.bukkit.Particle.HAPPY_VILLAGER;
+                msg = "&a&l📦 수집 완료: &r&f" + q.name;
+            }
+            case "TALK" -> {
+                sound = org.bukkit.Sound.ENTITY_PLAYER_LEVELUP;
+                particle = org.bukkit.Particle.HEART;
+                msg = "&d&l💬 대화 완료: &r&f" + q.name;
+            }
+            case "ESCORT" -> {
+                sound = org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE;
+                particle = org.bukkit.Particle.END_ROD;
+                msg = "&e&l🛡 호위 완료: &r&f" + q.name;
+            }
+            case "CRAFT" -> {
+                sound = org.bukkit.Sound.BLOCK_ANVIL_USE;
+                particle = org.bukkit.Particle.SPELL_INSTANT;
+                msg = "&6&l⚒ 제작 완료: &r&f" + q.name;
+            }
+            case "DELIVER" -> {
+                sound = org.bukkit.Sound.ENTITY_VILLAGER_TRADE;
+                particle = org.bukkit.Particle.HEART;
+                msg = "&e&l📜 배달 완료: &r&f" + q.name;
+            }
+            case "EXPLORE" -> {
+                sound = org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE;
+                particle = org.bukkit.Particle.PORTAL;
+                msg = "&b&l🗺 탐험 완료: &r&f" + q.name;
+            }
+            case "SURVIVE" -> {
+                sound = org.bukkit.Sound.ITEM_TOTEM_USE;
+                particle = org.bukkit.Particle.TOTEM;
+                msg = "&7&l⌛ 생존 완료: &r&f" + q.name;
+            }
+            case "DEFEND" -> {
+                sound = org.bukkit.Sound.BLOCK_BEACON_ACTIVATE;
+                particle = org.bukkit.Particle.END_ROD;
+                msg = "&9&l🛡 방어 완료: &r&f" + q.name;
+            }
+            case "WORLD" -> {
+                sound = org.bukkit.Sound.BLOCK_BELL_RESONATE;
+                particle = org.bukkit.Particle.TOTEM;
+                msg = "&6&l✦ 세계 퀘스트 완료: &r&f" + q.name;
+                // 월드 퀘스트는 전체 broadcast
+                org.bukkit.Bukkit.broadcastMessage("§6§l[" + world + " 세계 퀘스트] §f"
+                        + p.getName() + " §7가 " + q.name + " 완료!");
+            }
+            case "SKILL_USE" -> {
+                sound = org.bukkit.Sound.BLOCK_ENCHANTMENT_TABLE_USE;
+                particle = org.bukkit.Particle.CRIT_MAGIC;
+                msg = "&5&l✺ 스킬 수련: &r&f" + q.name;
+            }
+            default -> {
+                sound = org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE;
+                particle = org.bukkit.Particle.TOTEM;
+                msg = "&6&l퀘스트 완료: &r&f" + q.name;
+            }
+        }
+        Msg.send(p, msg);
+        try {
+            p.getWorld().playSound(p.getLocation(), sound, 1.0f, 1.0f);
+            p.getWorld().spawnParticle(particle, p.getLocation().add(0, 1.5, 0), 50, 0.5, 0.8, 0.5, 0.1);
+            p.sendTitle("§6✦ 완료 ✦", "§f" + q.name, 10, 40, 20);
+        } catch (Throwable ignored) {}
     }
 
     private void applyRewards(Player p, Quest q) {

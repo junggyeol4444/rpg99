@@ -41,16 +41,29 @@ public final class Calendar {
     public int dayOfYear()  { return ((day() - 1) % 360) + 1; }
 
     private int lastBroadcastDay = -1;
+    /** 절기 24절 — 누적일 기준. */
+    private static final String[] SEASONS = {
+        "입춘 — 봄의 시작이다.", "우수 — 눈이 비가 된다.", "경칩 — 곤충이 깨어난다.",
+        "춘분 — 낮과 밤이 같다.", "청명 — 하늘이 맑다.", "곡우 — 곡식에 비가 내린다.",
+        "입하 — 여름이 시작된다.", "소만 — 만물이 가득 차오른다.", "망종 — 보리를 거둔다.",
+        "하지 — 가장 긴 낮.", "소서 — 더위가 시작된다.", "대서 — 가장 더운 날.",
+        "입추 — 가을이 시작된다.", "처서 — 더위가 물러난다.", "백로 — 이슬이 맺힌다.",
+        "추분 — 낮과 밤이 같다.", "한로 — 찬 이슬.", "상강 — 서리가 내린다.",
+        "입동 — 겨울이 시작된다.", "소설 — 첫 눈.", "대설 — 큰 눈.",
+        "동지 — 가장 긴 밤.", "소한 — 추위가 시작된다.", "대한 — 가장 추운 날."
+    };
+
     private void tick() {
         int d = day();
         if (d == lastBroadcastDay) return;
         lastBroadcastDay = d;
-        // 매일 자정 broadcast
+        // 매일 자정 broadcast + 절기 표시
+        int seasonIdx = (d / 15) % 24;
         Bukkit.broadcastMessage("§e§l[환생력] §6Y" + year() + "M" + month() + "D" + dayOfMonth()
-                + " §7(누적 " + d + "일)");
+                + " §7(누적 " + d + "일) §8| §7" + SEASONS[seasonIdx]);
         // 7일 주간 시장
         if (d % 7 == 0) {
-            Bukkit.broadcastMessage("§a§l[주간 시장] §7오늘 모든 시세 -10%");
+            Bukkit.broadcastMessage("§a§l[주간 시장] §7오늘 모든 시세 -10% — 상인들이 분주하다.");
             // PriceController에 reflection으로 전체 카테고리 0.9 곱
             try {
                 var ep = Bukkit.getPluginManager().getPlugin("RebornEconomy");
@@ -68,13 +81,22 @@ public final class Calendar {
                 }
             } catch (Throwable ignored) {}
         }
-        // 30일 보름달
+        // 30일 보름달 — 누적 횟수 표시
         if (d % 30 == 0) {
-            Bukkit.broadcastMessage("§5§l[보름달] §7요계 보너스 ×2 — 오늘 하루.");
+            int moonNum = d / 30;
+            Bukkit.broadcastMessage("§5§l[보름달] §7요계 보너스 ×2 §8— §7" + moonNum + "번째 보름달. 요괴가 활동을 시작한다.");
         }
-        // 90일 분기 축제
+        // 90일 분기 축제 — 분기명 표시
         if (d % 90 == 0) {
-            Bukkit.broadcastMessage("§e§l[분기 축제] §7전 세계 모든 가문 treasury +1000");
+            int quarter = (d / 90) % 4;
+            String[] festivals = {
+                "춘제 — 봄의 축제. 만물이 깨어난다.",
+                "하제 — 여름의 축제. 풍요가 넘친다.",
+                "추제 — 가을의 축제. 수확을 기린다.",
+                "동제 — 겨울의 축제. 한 해를 마감한다."
+            };
+            Bukkit.broadcastMessage("§e§l[" + festivals[quarter].split(" — ")[0] + "] §7"
+                    + festivals[quarter].split(" — ")[1] + " §6모든 가문 treasury +1000");
         }
         // 360일 신년
         if (d % 360 == 0) {

@@ -102,6 +102,42 @@ public final class CrimeManager {
 
     private void announceLevel(Player killer) {
         int lv = level(killer.getUniqueId());
-        Bukkit.broadcastMessage("§c[현상수배] §f" + killer.getName() + " — " + label(killer.getUniqueId()));
+        String label = label(killer.getUniqueId());
+        // 범죄 레벨별 다른 헤더 + 메시지
+        String header;
+        String flavor;
+        switch (lv) {
+            case 0 -> {
+                header = "&7[범죄 기록]";
+                flavor = "한 번의 실수일까.";
+            }
+            case 1 -> {
+                header = "&e[범죄 기록]";
+                flavor = "경비병이 너의 행적을 주시하기 시작했다.";
+            }
+            case 2 -> {
+                header = "&6[수배 중]";
+                flavor = "범행이 누적되어 수배가 떨어졌다.";
+            }
+            case 3 -> {
+                header = "&c[현상수배]";
+                flavor = "도시들이 너의 머리에 가격을 매겼다.";
+            }
+            case 4 -> {
+                header = "&c&l[고위 현상수배]";
+                flavor = "헌터들이 너를 쫓는다.";
+            }
+            case 5 -> {
+                header = "&4&l[악명 높은 수배자]";
+                flavor = "너의 이름이 모든 도시의 공고판에 박혔다.";
+            }
+            default -> {
+                header = "&4&l[전설적 흉포자]";
+                flavor = "역사에 남을 만한 악행자.";
+            }
+        }
+        Bukkit.broadcastMessage(kr.reborn.core.util.Msg.PREFIX
+                + kr.reborn.core.util.Msg.c(header + " &f" + killer.getName()
+                + " — " + label + " §8(" + flavor + ")"));
     }
 }

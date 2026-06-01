@@ -102,7 +102,27 @@ public final class PlayerEffectManager {
         if (a == null) return false;
         EffectDef def = plugin.registry().get(id);
         if (def != null) plugin.special().onRemove(p, def);
-        Msg.send(p, "&a효과 해제: " + id);
+        // 효과 종류(축복/저주)별 다른 해제 메시지
+        if (def != null) {
+            String label = def.name != null ? def.name : id;
+            if (def.kind == EffectDef.Kind.CURSE) {
+                Msg.send(p, "&a&l✦ 저주 해제 ✦ &r&7" + label + " §a이(가) 풀렸다.");
+                try {
+                    p.getWorld().spawnParticle(org.bukkit.Particle.SPELL_INSTANT,
+                            p.getLocation().add(0, 1.5, 0), 30, 0.5, 1, 0.5, 0.05);
+                    p.playSound(p.getLocation(),
+                            org.bukkit.Sound.BLOCK_AMETHYST_BLOCK_CHIME, 1.0f, 1.2f);
+                } catch (Throwable ignored) {}
+            } else {
+                Msg.send(p, "&7&l[축복 소멸] &r&7" + label + " §7의 가호가 사라졌다.");
+                try {
+                    p.getWorld().spawnParticle(org.bukkit.Particle.SMOKE_NORMAL,
+                            p.getLocation().add(0, 1.5, 0), 20, 0.5, 0.5, 0.5);
+                } catch (Throwable ignored) {}
+            }
+        } else {
+            Msg.send(p, "&a효과 해제: " + id);
+        }
         Bukkit.getPluginManager().callEvent(new RebornCurseCureEvent(p, id));
         return true;
     }

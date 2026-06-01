@@ -22,6 +22,7 @@ public final class RebornNPC extends JavaPlugin {
     private DialogueRegistry dialogues;
     private DialogueManager dialogueManager;
     private kr.reborn.npc.famous.FamousNpcRegistry famous;
+    private kr.reborn.npc.famous.FamousEncounter famousEncounter;
 
     public static RebornNPC get() { return instance; }
 
@@ -34,6 +35,7 @@ public final class RebornNPC extends JavaPlugin {
         this.dialogues = new DialogueRegistry(this);
         this.dialogueManager = new DialogueManager(this);
         this.famous = new kr.reborn.npc.famous.FamousNpcRegistry(this);
+        this.famousEncounter = new kr.reborn.npc.famous.FamousEncounter(this);
         registry.loadAll();
 
         getCommand("rnpc").setExecutor(new NpcCommand(this));
@@ -62,6 +64,7 @@ public final class RebornNPC extends JavaPlugin {
     public DialogueRegistry dialogues() { return dialogues; }
     public DialogueManager dialogueManager() { return dialogueManager; }
     public kr.reborn.npc.famous.FamousNpcRegistry famous() { return famous; }
+    public kr.reborn.npc.famous.FamousEncounter famousEncounter() { return famousEncounter; }
 
     /** 채팅에 숫자만 입력 시 대화 선택지로 처리. */
     public final class DialogueChatListener implements Listener {

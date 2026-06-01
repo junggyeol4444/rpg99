@@ -60,6 +60,10 @@ public final class NpcInteractListener implements Listener {
         }
         e.getPlayer().sendMessage("§6[" + npc.displayName + "] §f" + greeting);
 
+        // 유명 NPC 첫 만남 — 특별 연출 (한 번만)
+        try { plugin.famousEncounter().tryFirstEncounter(e.getPlayer(), npc.id); }
+        catch (Throwable ignored) {}
+
         // 대화 트리 열기 — 정의된 dialog이 있으면
         try { plugin.dialogueManager().open(e.getPlayer(), npc); } catch (Throwable ignored) {}
 

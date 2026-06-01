@@ -158,8 +158,99 @@ public final class PatternEngine {
                 }
             }
         }
-        try { boss.getWorld().spawnParticle(Particle.SMOKE_LARGE, l, 30, 2, 2, 2); }
-        catch (Throwable ignored) {}
+        // 패턴별 고유 마무리 입자/사운드
+        renderPatternSignature(boss, l, pattern);
+    }
+
+    /** 각 패턴마다 다른 마무리 시각·청각 효과 — 기존엔 모두 SMOKE_LARGE였음. */
+    private void renderPatternSignature(LivingEntity boss, Location l, BossPattern pattern) {
+        try {
+            switch (pattern) {
+                case AOE_SLOW -> {
+                    boss.getWorld().spawnParticle(Particle.SNOWFLAKE, l, 50, 4, 1, 4);
+                    boss.getWorld().playSound(l, org.bukkit.Sound.BLOCK_GLASS_BREAK, 1.0f, 0.5f);
+                }
+                case AOE_WITHER -> {
+                    boss.getWorld().spawnParticle(Particle.SQUID_INK, l, 60, 3, 2, 3);
+                    boss.getWorld().playSound(l, org.bukkit.Sound.ENTITY_WITHER_HURT, 1.0f, 1.0f);
+                }
+                case AOE_BURST -> {
+                    boss.getWorld().spawnParticle(Particle.CRIT, l, 80, 4, 2, 4);
+                    boss.getWorld().playSound(l, org.bukkit.Sound.ENTITY_PLAYER_ATTACK_STRONG, 1.5f, 0.8f);
+                }
+                case AOE_EXPLOSION -> {
+                    boss.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, l, 5, 1, 1, 1);
+                    boss.getWorld().playSound(l, org.bukkit.Sound.ENTITY_GENERIC_EXPLODE, 2.0f, 0.5f);
+                }
+                case METEOR_RAIN -> {
+                    boss.getWorld().spawnParticle(Particle.LAVA, l, 100, 8, 5, 8);
+                    boss.getWorld().playSound(l, org.bukkit.Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 2.0f, 0.7f);
+                }
+                case BEAM_LINE -> {
+                    boss.getWorld().spawnParticle(Particle.FLAME, l, 30, 0.5, 0.5, 0.5);
+                    boss.getWorld().playSound(l, org.bukkit.Sound.ITEM_TRIDENT_THUNDER, 1.5f, 1.5f);
+                }
+                case SELF_HEAL -> {
+                    boss.getWorld().spawnParticle(Particle.HEART, l, 30, 1.5, 2, 1.5);
+                    boss.getWorld().playSound(l, org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.5f);
+                }
+                case SELF_BUFF -> {
+                    boss.getWorld().spawnParticle(Particle.END_ROD, l, 40, 1, 2, 1);
+                    boss.getWorld().playSound(l, org.bukkit.Sound.BLOCK_BEACON_POWER_SELECT, 1.5f, 1.2f);
+                }
+                case INVULNERABLE_BRIEF -> {
+                    boss.getWorld().spawnParticle(Particle.SPELL_INSTANT, l, 60, 1.5, 2, 1.5);
+                    boss.getWorld().playSound(l, org.bukkit.Sound.BLOCK_BEACON_ACTIVATE, 1.5f, 0.8f);
+                }
+                case SUMMON_MINIONS -> {
+                    boss.getWorld().spawnParticle(Particle.PORTAL, l, 100, 3, 2, 3);
+                    boss.getWorld().playSound(l, org.bukkit.Sound.ENTITY_WITHER_SPAWN, 1.0f, 1.5f);
+                }
+                case TELEPORT_TO_TARGET -> {
+                    boss.getWorld().spawnParticle(Particle.PORTAL, l, 80, 0.5, 2, 0.5);
+                    boss.getWorld().playSound(l, org.bukkit.Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 0.5f);
+                }
+                case PULL_PLAYERS -> {
+                    boss.getWorld().spawnParticle(Particle.PORTAL, l, 60, 4, 1, 4);
+                    boss.getWorld().playSound(l, org.bukkit.Sound.ENTITY_FISHING_BOBBER_RETRIEVE, 2.0f, 0.5f);
+                }
+                case KNOCKBACK -> {
+                    boss.getWorld().spawnParticle(Particle.CLOUD, l, 60, 3, 1, 3);
+                    boss.getWorld().playSound(l, org.bukkit.Sound.ENTITY_RAVAGER_ROAR, 1.5f, 0.7f);
+                }
+                case ENRAGE -> {
+                    boss.getWorld().spawnParticle(Particle.LAVA, l, 80, 2, 2, 2);
+                    boss.getWorld().spawnParticle(Particle.FLAME, l, 60, 2, 2, 2);
+                    boss.getWorld().playSound(l, org.bukkit.Sound.ENTITY_ENDER_DRAGON_GROWL, 2.0f, 0.5f);
+                }
+                case FREEZE_AOE -> {
+                    boss.getWorld().spawnParticle(Particle.SNOWFLAKE, l, 60, 3, 1, 3);
+                    boss.getWorld().playSound(l, org.bukkit.Sound.BLOCK_GLASS_BREAK, 2.0f, 0.3f);
+                }
+                case POISON_FOG -> {
+                    boss.getWorld().spawnParticle(Particle.SPELL_WITCH, l, 80, 4, 2, 4);
+                    boss.getWorld().spawnParticle(Particle.SLIME, l, 30, 3, 1, 3);
+                    boss.getWorld().playSound(l, org.bukkit.Sound.ENTITY_SPIDER_HURT, 1.5f, 0.7f);
+                }
+                case BLIND_AOE -> {
+                    boss.getWorld().spawnParticle(Particle.SQUID_INK, l, 50, 4, 2, 4);
+                    boss.getWorld().playSound(l, org.bukkit.Sound.ENTITY_PHANTOM_AMBIENT, 1.5f, 0.5f);
+                }
+                case TELEPORT_RANDOM -> {
+                    boss.getWorld().spawnParticle(Particle.PORTAL, l, 60, 1, 2, 1);
+                    boss.getWorld().playSound(l, org.bukkit.Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 1.2f);
+                }
+                case OPRESSIVE_AURA -> {
+                    boss.getWorld().spawnParticle(Particle.SOUL, l, 80, 5, 2, 5);
+                    boss.getWorld().playSound(l, org.bukkit.Sound.ENTITY_WITHER_AMBIENT, 1.5f, 0.5f);
+                }
+                case DIMENSIONAL_SLASH -> {
+                    boss.getWorld().spawnParticle(Particle.SWEEP_ATTACK, l, 30, 1, 1, 1);
+                    boss.getWorld().spawnParticle(Particle.PORTAL, l, 80, 5, 1, 5);
+                    boss.getWorld().playSound(l, org.bukkit.Sound.ITEM_TRIDENT_THUNDER, 2.0f, 0.5f);
+                }
+            }
+        } catch (Throwable ignored) {}
     }
 
     private void applyToNearby(LivingEntity boss, double r, java.util.function.Consumer<Player> fn) {

@@ -37,6 +37,12 @@ public final class SignatureRegistry {
         seedOcean();
         seedCyber();
         seedSpecial();
+        seedMartialExtra();
+        seedFantasyExtra();
+        seedCyberExtra();
+        seedApocExtra();
+        seedImmortalExtra();
+        seedExtra();
     }
 
     // ──────────────────── 무공 (15) ────────────────────
@@ -492,6 +498,213 @@ public final class SignatureRegistry {
                 Particle.HEART, Sound.BLOCK_ANVIL_USE, null,
                 "&e만물의 장인 — 제작 30% 절감.",
                 Integer.MAX_VALUE, 0, 0);
+    }
+
+    // ──────────────────── 무공 추가 (15) ────────────────────
+    private static void seedMartialExtra() {
+        s("byeoksa_geombeop", SkillSignature.ParticlePattern.SLASH_ARC, Particle.SWEEP_ATTACK,
+                Particle.CRIT, Sound.ITEM_TRIDENT_RIPTIDE_2, Sound.ENTITY_PLAYER_ATTACK_SWEEP,
+                "&7&l벽사검법 — 사이한 모든 것을 베어낸다.", 0, 0, 0);
+        s("cheolposam", SkillSignature.ParticlePattern.WAVE_FRONT, Particle.CRIT,
+                Particle.SMOKE_LARGE, Sound.ENTITY_RAVAGER_ATTACK, Sound.ENTITY_PLAYER_ATTACK_STRONG,
+                "&8&l철포삼 — 한 주먹으로 산을 무너뜨린다.", 0, 0, 0);
+        s("bukmyeong_singong", SkillSignature.ParticlePattern.AURA_OUT, Particle.SOUL,
+                Particle.SQUID_INK, Sound.ENTITY_VEX_AMBIENT, Sound.BLOCK_BEACON_AMBIENT,
+                "&5&l북명신공 — 거대한 바다처럼 끝없이 흡수한다.", 200, 1, 200);
+        s("cheonjam_gong", SkillSignature.ParticlePattern.SPIRAL, Particle.SPELL_WITCH,
+                Particle.SOUL, Sound.BLOCK_PORTAL_AMBIENT, Sound.ENTITY_WITCH_DRINK,
+                "&5&l천잠신공 — 누에가 비단을 짜듯 내공을 짠다.", 600, 1, 0);
+        s("cheonin_hapil_gong", SkillSignature.ParticlePattern.TWIN_BEAM, Particle.END_ROD,
+                Particle.SOUL, Sound.BLOCK_BELL_USE, Sound.UI_TOAST_CHALLENGE_COMPLETE,
+                "&e&l천인합일공 — 사람과 하늘이 하나가 된다.", 400, 3, 0);
+        s("cheonsan_jeolmaesu", SkillSignature.ParticlePattern.WAVE_FRONT, Particle.CRIT_MAGIC,
+                Particle.SWEEP_ATTACK, Sound.ENTITY_PLAYER_ATTACK_STRONG, Sound.ENTITY_PLAYER_BIG_FALL,
+                "&6&l천산절매수 — 매화 한 송이로 적을 베는 절기.", 0, 0, 0);
+        s("cheonsan_yukyangjang", SkillSignature.ParticlePattern.WAVE_FRONT, Particle.FLAME,
+                Particle.LAVA, Sound.ENTITY_BLAZE_AMBIENT, Sound.ENTITY_PLAYER_ATTACK_STRONG,
+                "&c&l천산육양장 — 여섯 양기로 펼치는 거대 장법.", 0, 0, 0);
+        s("cheonsu_gwaneumjang", SkillSignature.ParticlePattern.STAR_BURST, Particle.HEART,
+                Particle.END_ROD, Sound.BLOCK_BELL_RESONATE, Sound.ENTITY_PLAYER_ATTACK_STRONG,
+                "&b&l천수관음장 — 천 손이 동시에 펼쳐진다.", 0, 0, 0);
+        s("chilsanggwon", SkillSignature.ParticlePattern.RING, Particle.CRIT,
+                Particle.SMOKE_LARGE, Sound.ENTITY_PLAYER_ATTACK_STRONG, Sound.ENTITY_RAVAGER_ATTACK,
+                "&c&l칠상권 — 일곱 가지 변화의 권법.", 0, 0, 0);
+        s("amyeon_sohonjang", SkillSignature.ParticlePattern.AURA_IN, Particle.SOUL,
+                Particle.SPELL_WITCH, Sound.ENTITY_VEX_DEATH, Sound.ENTITY_VAMPIRE_HURT,
+                "&8&l암련소혼장 — 영혼을 태워 펼치는 사악한 장법.", 100, 2, 0);
+        s("cheonma_bi", SkillSignature.ParticlePattern.BEAM, Particle.SQUID_INK,
+                Particle.SOUL_FIRE_FLAME, Sound.ITEM_TRIDENT_THROW, Sound.ENTITY_WITHER_HURT,
+                "&5&l천마비 — 천마의 비기 일격.", 0, 0, 0);
+        s("cheonma_talhonsoo", SkillSignature.ParticlePattern.SOUL_DRAIN, Particle.SOUL,
+                Particle.SQUID_INK, Sound.ENTITY_WITHER_AMBIENT, Sound.ENTITY_VEX_HURT,
+                "&5&l천마탈혼수 — 영혼을 빨아들이는 마수.", 80, 3, 0);
+        s("baekbo_singwon", SkillSignature.ParticlePattern.BEAM, Particle.CRIT_MAGIC,
+                Particle.END_ROD, Sound.ITEM_TRIDENT_THROW, Sound.ENTITY_LIGHTNING_BOLT_THUNDER,
+                "&7&l백보신권 — 백 보 떨어진 적도 격살한다.", 0, 0, 0);
+        s("bicheon_singong", SkillSignature.ParticlePattern.AURA_OUT, Particle.CLOUD,
+                Particle.SWEEP_ATTACK, Sound.ENTITY_PHANTOM_FLAP, Sound.ENTITY_ELYTRA_FLYING,
+                "&b&l비천신공 — 하늘을 나는 듯한 신법.", 600, 2, 0);
+        s("daena_cheonsoo", SkillSignature.ParticlePattern.AURA_OUT, Particle.END_ROD,
+                Particle.HEART, Sound.BLOCK_BEACON_POWER_SELECT, null,
+                "&e&l대애천수 — 큰 자비의 손길.", 600, 2, 0);
+    }
+
+    // ──────────────────── 판타지 추가 (15) ────────────────────
+    private static void seedFantasyExtra() {
+        s("meteor_strike", SkillSignature.ParticlePattern.METEOR_RAIN, Particle.LAVA,
+                Particle.EXPLOSION_HUGE, Sound.ENTITY_LIGHTNING_BOLT_THUNDER, Sound.ENTITY_GENERIC_EXPLODE,
+                "&c&l메테오 스트라이크 — 단발 운석.", 80, 3, 0);
+        s("wish_spell", SkillSignature.ParticlePattern.STAR_BURST, Particle.TOTEM,
+                Particle.END_ROD, Sound.UI_TOAST_CHALLENGE_COMPLETE, Sound.BLOCK_BELL_RESONATE,
+                "&6&l소원 마법 — 무엇이든 한 가지.", 0, 0, 0);
+        s("soul_bind", SkillSignature.ParticlePattern.SOUL_DRAIN, Particle.SOUL,
+                Particle.SOUL_FIRE_FLAME, Sound.ENTITY_VEX_AMBIENT, Sound.ENTITY_WITHER_AMBIENT,
+                "&5&l영혼 결박 — 도망갈 수 없다.", 200, 3, 0);
+        s("dragon_word", SkillSignature.ParticlePattern.WAVE_FRONT, Particle.DRAGON_BREATH,
+                Particle.FLAME, Sound.ENTITY_ENDER_DRAGON_GROWL, Sound.ENTITY_GHAST_SCREAM,
+                "&c&l용의 언어 — 들은 자는 무릎을 꿇는다.", 100, 4, 0);
+        s("dimension_gate", SkillSignature.ParticlePattern.AURA_IN, Particle.PORTAL,
+                Particle.END_ROD, Sound.BLOCK_PORTAL_AMBIENT, Sound.ENTITY_ENDERMAN_TELEPORT,
+                "&5&l차원의 문 — 어디로든.", 0, 0, 0);
+        s("necromancy_codex", SkillSignature.ParticlePattern.AURA_OUT, Particle.SOUL,
+                Particle.SQUID_INK, Sound.ENTITY_VEX_AMBIENT, Sound.ENTITY_SKELETON_AMBIENT,
+                "&0&l네크로맨시 코덱스 — 죽은 자가 일어난다.", 200, 0, 0);
+        s("elemental_overlord", SkillSignature.ParticlePattern.STAR_BURST, Particle.SPELL_MOB,
+                Particle.END_ROD, Sound.BLOCK_AMETHYST_BLOCK_RESONATE, Sound.UI_TOAST_CHALLENGE_COMPLETE,
+                "&d&l원소의 대공 — 모든 원소가 너에게 복종한다.", 400, 4, 0);
+        s("eternal_sleep", SkillSignature.ParticlePattern.AURA_IN, Particle.SPELL_WITCH,
+                Particle.HEART, Sound.ENTITY_PHANTOM_AMBIENT, null,
+                "&1&l영원한 잠 — 시전자만 깨울 수 있다.", 2400, 9, 0);
+        s("gate_of_babylon", SkillSignature.ParticlePattern.STORM, Particle.END_ROD,
+                Particle.CRIT_MAGIC, Sound.BLOCK_PORTAL_AMBIENT, Sound.ITEM_TRIDENT_THUNDER,
+                "&6&l바빌론의 문 — 수많은 무기가 솟아오른다.", 100, 4, 0);
+        s("absolute_zero", SkillSignature.ParticlePattern.AURA_OUT, Particle.SNOWFLAKE,
+                Particle.CLOUD, Sound.BLOCK_GLASS_BREAK, Sound.BLOCK_PACKED_ICE_BREAK,
+                "&b&l절대 영도 — 모든 것이 멈춘다.", 200, 7, 0);
+        s("space_distortion", SkillSignature.ParticlePattern.TIME_RIPPLE, Particle.PORTAL,
+                Particle.SPELL_WITCH, Sound.BLOCK_END_PORTAL_FRAME_FILL, Sound.ENTITY_ENDERMAN_TELEPORT,
+                "&5&l공간 왜곡 — 좌표가 흐려진다.", 100, 5, 0);
+        s("life_drain", SkillSignature.ParticlePattern.SOUL_DRAIN, Particle.REDSTONE,
+                Particle.HEART, Sound.ENTITY_VAMPIRE_HURT, Sound.ENTITY_VEX_DEATH,
+                "&4&l생명 흡수 — 적의 생명이 너에게로.", 100, 2, 0);
+        s("summon_elemental_lord", SkillSignature.ParticlePattern.STAR_BURST, Particle.SPELL_MOB,
+                Particle.END_ROD, Sound.BLOCK_BEACON_ACTIVATE, Sound.ENTITY_ENDER_DRAGON_GROWL,
+                "&a&l원소 군주 소환 — 그들이 강림한다.", 0, 0, 0);
+        s("create_golem", SkillSignature.ParticlePattern.VERTICAL_PILLAR, Particle.BLOCK_DUST,
+                Particle.LANDING_OBSIDIAN_TEAR, Sound.BLOCK_STONE_PLACE, Sound.ENTITY_IRON_GOLEM_REPAIR,
+                "&7&l골렘 창조 — 흙에서 일어선다.", 0, 0, 0);
+        s("illusion_world", SkillSignature.ParticlePattern.AURA_OUT, Particle.SPELL_WITCH,
+                Particle.PORTAL, Sound.BLOCK_PORTAL_AMBIENT, null,
+                "&d&l환영 세계 — 진실과 환영이 뒤바뀐다.", 600, 4, 0);
+        s("resurrection", SkillSignature.ParticlePattern.VERTICAL_PILLAR, Particle.TOTEM,
+                Particle.END_ROD, Sound.ITEM_TOTEM_USE, Sound.BLOCK_BELL_RESONATE,
+                "&6&l부활 — 죽음을 거스른다.", 0, 0, 0);
+    }
+
+    // ──────────────────── 사이버 추가 (8) ────────────────────
+    private static void seedCyberExtra() {
+        s("cyber_mantis_blade", SkillSignature.ParticlePattern.SLASH_ARC, Particle.ELECTRIC_SPARK,
+                Particle.CRIT, Sound.ITEM_TRIDENT_THROW, Sound.ENTITY_PLAYER_ATTACK_SWEEP,
+                "&b&l맨티스 블레이드 — 사이버 칼날이 솟아난다.", 0, 0, 0);
+        s("cyber_optical_camo", SkillSignature.ParticlePattern.AURA_OUT, Particle.ELECTRIC_SPARK,
+                Particle.SPELL_INSTANT, Sound.BLOCK_PISTON_EXTEND, null,
+                "&7&l광학 위장 — 보이지 않는다.", 400, 0, 0);
+        s("cyber_overload_hack", SkillSignature.ParticlePattern.TIME_RIPPLE, Particle.ELECTRIC_SPARK,
+                Particle.REDSTONE, Sound.BLOCK_END_PORTAL_FRAME_FILL, Sound.UI_TOAST_CHALLENGE_COMPLETE,
+                "&5&l오버로드 해킹 — 시스템 강제 종료.", 100, 5, 0);
+        s("cyber_sandevistan", SkillSignature.ParticlePattern.AURA_OUT, Particle.ELECTRIC_SPARK,
+                Particle.SPELL_INSTANT, Sound.BLOCK_BEACON_POWER_SELECT, Sound.BLOCK_PISTON_EXTEND,
+                "&b&l샌데비스탄 — 시간이 느려진다.", 80, 4, 0);
+        s("cyber_smartgun", SkillSignature.ParticlePattern.STORM, Particle.ELECTRIC_SPARK,
+                Particle.CRIT, Sound.ENTITY_FIREWORK_ROCKET_SHOOT, Sound.ENTITY_PLAYER_ATTACK_STRONG,
+                "&e&l스마트건 — 추적 미사일이 적을 따라간다.", 0, 0, 0);
+        s("cyber_kerenzikov", SkillSignature.ParticlePattern.AURA_OUT, Particle.ELECTRIC_SPARK,
+                Particle.CLOUD, Sound.BLOCK_PISTON_EXTEND, null,
+                "&b&l케렌지코프 — 슬로우 모션 회피.", 80, 1, 0);
+        s("energy_shield", SkillSignature.ParticlePattern.AURA_OUT, Particle.END_ROD,
+                Particle.ELECTRIC_SPARK, Sound.BLOCK_BEACON_ACTIVATE, null,
+                "&b&l에너지 실드.", 200, 3, 0);
+        s("hack_virus", SkillSignature.ParticlePattern.SOUL_DRAIN, Particle.ELECTRIC_SPARK,
+                Particle.SQUID_INK, Sound.BLOCK_END_PORTAL_FRAME_FILL, Sound.ENTITY_VEX_HURT,
+                "&5&l바이러스 침투 — 적의 시스템을 오염시킨다.", 200, 2, 0);
+    }
+
+    // ──────────────────── 아포 추가 (5) ────────────────────
+    private static void seedApocExtra() {
+        s("apoc_adren_shot", SkillSignature.ParticlePattern.AURA_OUT, Particle.SPELL_INSTANT,
+                Particle.HEART, Sound.ITEM_BOTTLE_FILL, null,
+                "&c아드레날린 — 모든 감각이 일어선다.", 200, 2, 0);
+        s("apoc_molotov", SkillSignature.ParticlePattern.EXPLOSION, Particle.FLAME,
+                Particle.LAVA, Sound.ITEM_BOTTLE_FILL, Sound.ENTITY_GENERIC_EXPLODE,
+                "&c&l몰로토프 칵테일 — 화염 폭발.", 100, 1, 200);
+        s("apoc_mutant_smash", SkillSignature.ParticlePattern.WAVE_FRONT, Particle.SOUL_FIRE_FLAME,
+                Particle.BLOCK_DUST, Sound.ENTITY_RAVAGER_ATTACK, Sound.ENTITY_PLAYER_ATTACK_STRONG,
+                "&2&l변종 분쇄 — 거대한 일격.", 60, 3, 0);
+        s("apoc_radiation_burst", SkillSignature.ParticlePattern.EXPLOSION, Particle.SPELL_WITCH,
+                Particle.SOUL_FIRE_FLAME, Sound.BLOCK_AMETHYST_BLOCK_CHIME, Sound.ENTITY_GENERIC_EXPLODE,
+                "&2&l방사능 폭발 — 모든 것이 오염된다.", 200, 3, 60);
+        s("apoc_rifle_burst", SkillSignature.ParticlePattern.BEAM, Particle.CRIT,
+                Particle.SMOKE_NORMAL, Sound.ENTITY_FIREWORK_ROCKET_SHOOT, Sound.ENTITY_PLAYER_ATTACK_CRIT,
+                "&7라이플 연사.", 0, 0, 0);
+    }
+
+    // ──────────────────── 선계 추가 (5) ────────────────────
+    private static void seedImmortalExtra() {
+        s("yeongi_basic", SkillSignature.ParticlePattern.AURA_OUT, Particle.END_ROD,
+                Particle.SPELL_INSTANT, Sound.BLOCK_BEACON_AMBIENT, null,
+                "&b영기 운기 — 천기가 몸을 돈다.", 400, 0, 0);
+        s("talisman_basic", SkillSignature.ParticlePattern.BEAM, Particle.SPELL_INSTANT,
+                Particle.END_ROD, Sound.ENTITY_VILLAGER_HURT, Sound.ITEM_BOOK_PAGE_TURN,
+                "&f부적 발동.", 0, 0, 0);
+        s("chuhon_daebeop", SkillSignature.ParticlePattern.SOUL_DRAIN, Particle.SOUL,
+                Particle.PORTAL, Sound.ENTITY_VEX_DEATH, Sound.ENTITY_ENDER_EYE_DEATH,
+                "&5&l추혼대법 — 영혼을 끌어당긴다.", 100, 4, 0);
+        s("cheonhwa_bongsin_gyeol", SkillSignature.ParticlePattern.STAR_BURST, Particle.END_ROD,
+                Particle.TOTEM, Sound.BLOCK_BELL_RESONATE, Sound.UI_TOAST_CHALLENGE_COMPLETE,
+                "&e&l천화봉신결 — 천 송이 꽃이 신을 봉한다.", 200, 5, 100);
+        s("cheongi_birok", SkillSignature.ParticlePattern.AURA_OUT, Particle.END_ROD,
+                Particle.NOTE, Sound.BLOCK_AMETHYST_BLOCK_CHIME, null,
+                "&3&l천기비록 — 천기가 누설된다.", 600, 1, 0);
+    }
+
+    // ──────────────────── 잡 추가 (12) ────────────────────
+    private static void seedExtra() {
+        s("dark_smasher", SkillSignature.ParticlePattern.WAVE_FRONT, Particle.SQUID_INK,
+                Particle.SOUL, Sound.ENTITY_WITHER_HURT, Sound.ENTITY_PLAYER_ATTACK_STRONG,
+                "&0&l다크 스매셔 — 어둠으로 짓이긴다.", 0, 0, 0);
+        s("storm_swordplay", SkillSignature.ParticlePattern.STORM, Particle.CLOUD,
+                Particle.SWEEP_ATTACK, Sound.ITEM_TRIDENT_THUNDER, Sound.ITEM_TRIDENT_RIPTIDE_2,
+                "&3&l스톰 검술 — 폭풍처럼 베어낸다.", 80, 2, 0);
+        s("iron_breaker", SkillSignature.ParticlePattern.WAVE_FRONT, Particle.CRIT,
+                Particle.BLOCK_DUST, Sound.BLOCK_ANVIL_LAND, Sound.ENTITY_RAVAGER_ATTACK,
+                "&7&l아이언 브레이커 — 갑옷을 부순다.", 60, 3, 0);
+        s("night_fang", SkillSignature.ParticlePattern.SLASH_ARC, Particle.SQUID_INK,
+                Particle.CRIT, Sound.ENTITY_VEX_HURT, Sound.ENTITY_PLAYER_ATTACK_CRIT,
+                "&8&l나이트 팽 — 어둠의 송곳니.", 40, 2, 0);
+        s("dragonslayer_blade", SkillSignature.ParticlePattern.TWIN_BEAM, Particle.DRAGON_BREATH,
+                Particle.CRIT_MAGIC, Sound.ENTITY_ENDER_DRAGON_HURT, Sound.ITEM_TRIDENT_THUNDER,
+                "&6&l용살검 — 용의 비늘도 베는 검.", 60, 4, 0);
+        s("silvania_green_blade", SkillSignature.ParticlePattern.SLASH_ARC, Particle.HAPPY_VILLAGER,
+                Particle.SWEEP_ATTACK, Sound.BLOCK_GRASS_BREAK, Sound.ITEM_TRIDENT_THROW,
+                "&a실바니아 녹색 검 — 자연의 칼.", 0, 0, 0);
+        s("kaiser_imperial", SkillSignature.ParticlePattern.WAVE_FRONT, Particle.END_ROD,
+                Particle.TOTEM, Sound.UI_TOAST_CHALLENGE_COMPLETE, Sound.ENTITY_PLAYER_ATTACK_STRONG,
+                "&6&l카이저 임페리얼 — 황제의 일격.", 0, 0, 0);
+        s("nameless_swordplay", SkillSignature.ParticlePattern.SLASH_ARC, Particle.CRIT_MAGIC,
+                null, Sound.ITEM_TRIDENT_THROW, Sound.ENTITY_PLAYER_ATTACK_SWEEP,
+                "&8무명 검술 — 이름 없는 자의 검.", 0, 0, 0);
+        s("arteon_royal_blade", SkillSignature.ParticlePattern.STAR_BURST, Particle.END_ROD,
+                Particle.CRIT_MAGIC, Sound.ITEM_TRIDENT_THUNDER, Sound.ENTITY_PLAYER_ATTACK_CRIT,
+                "&6&l아르테온 로얄 블레이드 — 왕가의 검.", 60, 3, 0);
+        s("heart_sword", SkillSignature.ParticlePattern.AURA_OUT, Particle.HEART,
+                Particle.CRIT, Sound.ITEM_TRIDENT_THROW, Sound.BLOCK_AMETHYST_BLOCK_CHIME,
+                "&d&l심검 — 마음의 검.", 0, 0, 0);
+        s("nightmare_grimoire", SkillSignature.ParticlePattern.AURA_IN, Particle.SPELL_WITCH,
+                Particle.SOUL, Sound.ENTITY_VEX_AMBIENT, Sound.ENTITY_PHANTOM_AMBIENT,
+                "&8&l악몽의 마도서.", 200, 4, 0);
+        s("nameless_assassin", SkillSignature.ParticlePattern.AURA_IN, Particle.SQUID_INK,
+                Particle.SPELL_WITCH, Sound.ENTITY_VEX_AMBIENT, Sound.ENTITY_PLAYER_ATTACK_CRIT,
+                "&8무명 암살 — 보이지 않는 죽음.", 100, 0, 0);
     }
 
     private static void s(String id, SkillSignature.ParticlePattern p, Particle prim, Particle sec,

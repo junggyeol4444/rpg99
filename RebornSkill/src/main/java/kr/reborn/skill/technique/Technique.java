@@ -14,11 +14,25 @@ public final class Technique {
     /** 속성 덮어쓰기 (비어있으면 비급의 element 유지). */
     public final String elementOverride;
     public final String description;
+    /** 초식별 고유 입자 (없으면 부모 스킬 시그니처 사용). */
+    public final org.bukkit.Particle particleOverride;
+    /** 초식별 고유 사운드. */
+    public final org.bukkit.Sound soundOverride;
+    /** 시전 시 표시할 플레이버 한 줄 (자동 등록된 경우). */
+    public final String flavor;
 
     public Technique(String name, double mult, String elementOverride, String description) {
+        this(name, mult, elementOverride, description, null, null, null);
+    }
+
+    public Technique(String name, double mult, String elementOverride, String description,
+                     org.bukkit.Particle particle, org.bukkit.Sound sound, String flavor) {
         this.name = name;
         this.mult = mult;
         this.elementOverride = (elementOverride == null || elementOverride.isEmpty()) ? null : elementOverride;
         this.description = description == null ? "" : description;
+        this.particleOverride = particle;
+        this.soundOverride = sound;
+        this.flavor = flavor;
     }
 }

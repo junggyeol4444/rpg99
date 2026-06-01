@@ -89,6 +89,20 @@ public final class SkillCaster {
             power *= tech.mult;
             Msg.send(p, "&5[" + def.name + "] §d→ §f" + tech.name);
             if (!tech.description.isEmpty()) Msg.send(p, "&7  " + tech.description);
+            // 초식별 고유 입자/사운드 (이름 키워드로 매칭)
+            var flavor = kr.reborn.skill.technique.TechniqueFlavor.lookup(tech.name);
+            if (flavor != null) {
+                try {
+                    if (flavor.particle != null) {
+                        p.getWorld().spawnParticle(flavor.particle,
+                                p.getLocation().add(0, 1, 0), 40, 1, 1.5, 1, 0.05);
+                    }
+                    if (flavor.sound != null) {
+                        p.getWorld().playSound(p.getLocation(), flavor.sound, 1.0f, 1.0f);
+                    }
+                    if (flavor.flavor != null) Msg.send(p, flavor.flavor);
+                } catch (Throwable ignored) {}
+            }
             if (tech.elementOverride != null) {
                 // 속성 덮어쓰기 — 임시 SkillDef를 생성해 EffectExecutor에 넘김
                 SkillDef shadow = withElement(def, tech.elementOverride);

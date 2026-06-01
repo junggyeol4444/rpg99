@@ -58,8 +58,17 @@ public final class BerserkEngine {
             p.getWorld().playSound(p.getLocation(), Sound.ENTITY_RAVAGER_ROAR, 1.5f, 0.5f);
             p.getWorld().spawnParticle(Particle.SQUID_INK, p.getLocation(), 100, 1, 1, 1);
         } catch (Throwable ignored) {}
-        Bukkit.broadcastMessage(Msg.PREFIX + Msg.c("&c&l[광폭화] &f" + p.getName()
-                + " &7의 의식이 무너졌다 — 닿는 모든 것을 공격한다."));
+        // 무작위 광폭화 broadcast — 6 변형
+        String[] msgs = {
+            "&c&l[광폭화] &f" + p.getName() + " &7의 의식이 무너졌다 — 닿는 모든 것을 공격한다.",
+            "&c&l[광폭화] &f" + p.getName() + " &7가 피의 갈증에 휩싸였다.",
+            "&c&l[광폭화] &f" + p.getName() + " &7의 눈이 붉게 변했다.",
+            "&c&l[광폭화] &f" + p.getName() + " &7가 분노에 사로잡혔다 — 도망쳐라!",
+            "&c&l[광폭화] &f" + p.getName() + " &7의 이성이 끊어졌다.",
+            "&c&l[광폭화] &f" + p.getName() + " &7가 짐승처럼 포효한다."
+        };
+        Bukkit.broadcastMessage(Msg.PREFIX + Msg.c(
+                msgs[kr.reborn.core.util.Rand.range(0, msgs.length - 1)]));
     }
 
     /** 광폭화 종료 후유증. */

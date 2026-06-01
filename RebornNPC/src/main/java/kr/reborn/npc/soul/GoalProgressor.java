@@ -157,10 +157,56 @@ public final class GoalProgressor {
             npc.emotion.add(kr.reborn.npc.emotion.Emotion.Kind.ANGER, -50);
             npc.emotion.add(kr.reborn.npc.emotion.Emotion.Kind.SADNESS, -30);
         }
-        // 공개 메시지 — 큰 목표만
+        // 공개 메시지 — 큰 목표만, GoalKind별 다른 표현
         if (g.priority >= 70) {
-            Bukkit.broadcastMessage("§6§l[NPC 성취] §f" + npc.displayName
-                    + " — " + g.description + " §a✓");
+            Bukkit.broadcastMessage("§6§l" + goalAchievementTag(g.kind) + " §f" + npc.displayName
+                    + " §7가 " + goalAchievementVerb(g.kind) + " §a✓ §8(" + g.description + ")");
+        }
+    }
+
+    private String goalAchievementTag(GoalKind k) {
+        switch (k) {
+            case GAIN_POWER:          return "[권력 쟁취]";
+            case SERVE_LORD:          return "[충성 완수]";
+            case FOUND_TOWN:          return "[마을 창설]";
+            case FOUND_RELIGION:      return "[교단 창설]";
+            case DEFEAT_RIVAL:        return "[숙적 격파]";
+            case GAIN_WEALTH:         return "[부의 성취]";
+            case START_BUSINESS:      return "[사업 개창]";
+            case FIND_LOVE:           return "[인연 성취]";
+            case PROTECT_FAMILY:      return "[가문 수호]";
+            case AVENGE:              return "[복수 완성]";
+            case MASTER_ART:          return "[기예의 극의]";
+            case EXPLORE:             return "[미지의 발견]";
+            case ACCUMULATE_KNOWLEDGE:return "[지식의 정수]";
+            case ASCEND:              return "[초월의 경지]";
+            case DESTROY_RIVAL_FACTION:return "[세력의 멸망]";
+            case BETRAY:              return "[배신의 칼날]";
+            case HIDE:                return "[은둔 완성]";
+            default: return "[NPC 성취]";
+        }
+    }
+
+    private String goalAchievementVerb(GoalKind k) {
+        switch (k) {
+            case GAIN_POWER: return "마침내 권력을 손에 넣었다";
+            case SERVE_LORD: return "주군에게 충성을 다했다";
+            case FOUND_TOWN: return "새 마을을 세웠다";
+            case FOUND_RELIGION: return "교단을 창시했다";
+            case DEFEAT_RIVAL: return "라이벌을 쓰러뜨렸다";
+            case GAIN_WEALTH: return "재물을 모두 모았다";
+            case START_BUSINESS: return "사업을 시작했다";
+            case FIND_LOVE: return "운명의 짝을 찾았다";
+            case PROTECT_FAMILY: return "가족을 지켜냈다";
+            case AVENGE: return "복수를 완수했다";
+            case MASTER_ART: return "기예의 극의에 닿았다";
+            case EXPLORE: return "미지의 땅을 발견했다";
+            case ACCUMULATE_KNOWLEDGE: return "지식의 정수에 닿았다";
+            case ASCEND: return "초월에 이르렀다";
+            case DESTROY_RIVAL_FACTION: return "적대 세력을 멸했다";
+            case BETRAY: return "배신의 칼을 휘둘렀다";
+            case HIDE: return "조용히 사라졌다";
+            default: return "큰 일을 이루었다";
         }
     }
 

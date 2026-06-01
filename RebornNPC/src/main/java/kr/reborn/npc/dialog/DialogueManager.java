@@ -99,10 +99,30 @@ public final class DialogueManager {
         show(p, npc, ses);
     }
 
+    private static final String[] FAREWELLS = {
+            "&7…그럼 또 봅시다.",
+            "&7가던 길 잘 가시오.",
+            "&7(고개를 끄덕인다)",
+            "&7차 한 잔 더 하고 가도 좋소.",
+            "&7길이 평탄하기를.",
+            "&7부디 살펴 가시오.",
+            "&7대화가 즐거웠소.",
+            "&7…(말없이 손을 흔든다)",
+            "&7혹시 또 부탁할 일이 있으면 찾아오시오.",
+            "&7…(다시 자신의 일로 돌아간다)"
+    };
+
     public void end(Player p) {
         DialogueSession ses = active.remove(p.getUniqueId());
         if (ses == null) return;
-        Msg.send(p, "&7대화 종료.");
+        // NPC별 작별 인사 — 무작위 변형
+        String farewell = FAREWELLS[kr.reborn.core.util.Rand.range(0, FAREWELLS.length - 1)];
+        kr.reborn.npc.entity.RebornNpc npc = plugin.registry().get(ses.npcId);
+        if (npc != null) {
+            Msg.send(p, "&6[" + npc.displayName + "] §f" + farewell);
+        } else {
+            Msg.send(p, farewell);
+        }
     }
 
     public boolean inSession(UUID p) {

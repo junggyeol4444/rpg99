@@ -50,8 +50,13 @@ public final class RebornNPC extends JavaPlugin {
         RebornCore.get().scheduler().runTimer(registry::tickAll, tick, tick);
         // 패킷 가시성 갱신은 1초 간격
         RebornCore.get().scheduler().runTimer(packetController::updateVisibility, 20L, 20L);
+        // 5초 뒤 Famous NPC 자동 spawn (다른 월드 로드 대기)
+        RebornCore.get().scheduler().runTaskLater(() -> {
+            try { famous.spawnAllToWorld(); } catch (Throwable ignored) {}
+        }, 100L);
 
-        getLogger().info("RebornNPC 활성화 — Dialogue " + dialogues.all().size() + "종");
+        getLogger().info("RebornNPC 활성화 — Dialogue " + dialogues.all().size()
+                + "종, Famous " + famous.all().size() + "체");
     }
 
     @Override

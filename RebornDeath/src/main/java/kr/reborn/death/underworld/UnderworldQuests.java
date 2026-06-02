@@ -113,4 +113,21 @@ public final class UnderworldQuests {
             default -> "?";
         };
     }
+
+    /** /underworld quest list — 모든 의뢰 표시. */
+    public java.util.List<String> allQuestIds() {
+        return java.util.List.of("collect_bone", "escape_scout", "burnt_offering", "rescue_lost");
+    }
+
+    /** /underworld quest <id> 현재 진척 + 목표 텍스트. */
+    public String progressOf(java.util.UUID p, String questId) {
+        int cur = progress.getOrDefault(p, java.util.Collections.emptyMap())
+                .getOrDefault(questId, 0);
+        return cur + "/" + targetOf(questId) + " — " + labelOf(questId)
+                + " (보상 명기 +" + rewardOf(questId) + ")";
+    }
+
+    public boolean alreadyReincarnationEligible(java.util.UUID p) {
+        return reincarnationGranted.contains(p);
+    }
 }

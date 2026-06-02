@@ -264,9 +264,17 @@ public final class DungeonManager {
             Msg.error(p, "다른 던전 진행 중 — /dungeon exit");
             return false;
         }
+        // 진입 전 위치 저장 (exit 시 복귀용)
         ActiveSession sess = new ActiveSession(d.id, 1);
+        sess.entryLocation = p.getLocation().clone();
         activeSessions.put(p.getUniqueId(), sess);
         Msg.send(p, "&5&l[" + d.name + "] §7진입 — 1층에서 시작.");
+        try {
+            p.sendTitle("§5§l" + d.name, "§71층 / " + d.totalFloors, 10, 60, 20);
+            p.playSound(p.getLocation(), org.bukkit.Sound.BLOCK_END_PORTAL_FRAME_FILL, 1.5f, 0.5f);
+            p.getWorld().spawnParticle(org.bukkit.Particle.PORTAL,
+                    p.getLocation().add(0, 1, 0), 100, 1, 2, 1);
+        } catch (Throwable ignored) {}
         spawnFloorMobs(p, d, 1);
         return true;
     }
@@ -275,6 +283,10 @@ public final class DungeonManager {
         ActiveSession sess = activeSessions.remove(p.getUniqueId());
         if (sess == null) return;
         Msg.send(p, "&7던전 퇴장.");
+        // 진입 전 위치로 복귀
+        if (sess.entryLocation != null) {
+            try { p.teleport(sess.entryLocation); } catch (Throwable ignored) {}
+        }
     }
 
     /** 보스 처치 시 호출 — 다음 층 또는 완료. */
@@ -384,6 +396,7 @@ public final class DungeonManager {
         public final String dungeonId;
         public int currentFloor;
         public final long startedAt;
+        public org.bukkit.Location entryLocation;
         public ActiveSession(String d, int f) {
             this.dungeonId = d; this.currentFloor = f;
             this.startedAt = System.currentTimeMillis();

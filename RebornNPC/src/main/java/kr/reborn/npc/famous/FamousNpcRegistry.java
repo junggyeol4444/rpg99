@@ -255,4 +255,41 @@ public final class FamousNpcRegistry {
                 .limit(n)
                 .collect(java.util.stream.Collectors.toList());
     }
+
+    /**
+     * 시드된 50+ 유명 NPC를 실제 NpcRegistry에 spawn 등록.
+     * RebornNPC onEnable 후 자동 호출. 이미 spawn된 famous NPC는 스킵.
+     * 위치: 해당 세계의 첫 로드된 청크 (월드 spawn 근처).
+     */
+    public int spawnAllToWorld() {
+        int spawned = 0;
+        for (FamousNpc fn : npcs.values()) {
+            if (plugin.registry().get(fn.id) != null) continue;  // 이미 등록됨
+            // 해당 세계명과 일치하는 Bukkit 월드 찾기 (소문자 매칭)
+            org.bukkit.World world = null;
+            for (org.bukkit.World w : org.bukkit.Bukkit.getWorlds()) {
+                if (w.getName().equalsIgnoreCase(fn.world.name())
+                        || w.getName().toLowerCase().contains(fn.world.name().toLowerCase())) {
+                    world = w; break;
+                }
+            }
+            if (world == null) continue;  // 해당 월드가 로드 안 됨
+            org.bukkit.Location loc = world.getSpawnLocation().clone()
+                    .add(Math.random() * 30 - 15, 0, Math.random() * 30 - 15);
+            try {
+                var npc = plugin.registry().spawn(fn.id, fn.displayName, fn.world, loc, fn.faction, fn.job);
+                if (npc != null) {
+                    // 권력 등급에 따라 스탯 강화
+                    npc.stats.put("STRENGTH", (double) fn.powerRank * 1000);
+                    npc.stats.put("ENDURANCE", (double) fn.powerRank * 1000);
+                    npc.stats.put("CHARISMA", (double) fn.powerRank * 100);
+                    spawned++;
+                }
+            } catch (Throwable ignored) {}
+        }
+        if (spawned > 0) {
+            plugin.getLogger().info("Famous NPC 자동 spawn: " + spawned + "/" + npcs.size());
+        }
+        return spawned;
+    }
 }

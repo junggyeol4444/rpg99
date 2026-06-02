@@ -164,13 +164,21 @@ public final class AchievementManager {
         }
     }
 
+    private static final String NS = "RebornTitle.achievement";
+
     public void grant(Player p, String achievementId) {
         Achievement def = defs.get(achievementId);
         if (def == null) return;
         Set<String> set = earned.computeIfAbsent(p.getUniqueId(), k -> new HashSet<>());
         if (set.contains(achievementId)) return;
         set.add(achievementId);
-        totalPoints.merge(p.getUniqueId(), def.rarity.points, Integer::sum);
+        int newPts = totalPoints.merge(p.getUniqueId(), def.rarity.points, Integer::sum);
+        // 영속화 — earned set은 콤마 join, points는 따로
+        try {
+            kr.reborn.core.RebornCore.get().kv().put(NS, p.getUniqueId(), "earned",
+                    String.join(",", set));
+            kr.reborn.core.RebornCore.get().kv().putInt(NS, p.getUniqueId(), "points", newPts);
+        } catch (Throwable ignored) {}
         Msg.send(p, def.rarity.color + "&l[업적 달성] §f" + def.name
                 + " &7+§e" + def.rarity.points + " §7점");
         if (def.rarity == Achievement.Rarity.LEGEND || def.rarity == Achievement.Rarity.DIAMOND) {
@@ -186,10 +194,23 @@ public final class AchievementManager {
     }
 
     public Set<String> earnedOf(UUID p) {
-        return earned.getOrDefault(p, java.util.Collections.emptySet());
+        Set<String> s = earned.get(p);
+        if (s != null) return s;
+        // DB 로드
+        String earnedStr = kr.reborn.core.RebornCore.get().kv().get(NS, p, "earned");
+        if (earnedStr == null || earnedStr.isEmpty()) return java.util.Collections.emptySet();
+        Set<String> loaded = new HashSet<>(java.util.Arrays.asList(earnedStr.split(",")));
+        earned.put(p, loaded);
+        return loaded;
     }
 
-    public int pointsOf(UUID p) { return totalPoints.getOrDefault(p, 0); }
+    public int pointsOf(UUID p) {
+        Integer cached = totalPoints.get(p);
+        if (cached != null) return cached;
+        int pts = kr.reborn.core.RebornCore.get().kv().getInt(NS, p, "points", 0);
+        totalPoints.put(p, pts);
+        return pts;
+    }
 
     public Map<String, Integer> progressOf(UUID p) {
         return progress.getOrDefault(p, java.util.Collections.emptyMap());

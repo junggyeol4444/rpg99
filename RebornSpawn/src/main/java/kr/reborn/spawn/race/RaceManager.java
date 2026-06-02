@@ -24,6 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class RaceManager {
 
+    private static final String NS = "RebornSpawn.race";
+
     private final RebornSpawn plugin;
     private final Map<UUID, Race> playerRace = new ConcurrentHashMap<>();
 
@@ -36,6 +38,7 @@ public final class RaceManager {
         Race chosen = weightedPick(candidates);
         playerRace.put(p.getUniqueId(), chosen);
         applyBonuses(p, chosen);
+        persist(p.getUniqueId(), chosen);
         announce(p, chosen);
         return chosen;
     }
@@ -44,10 +47,29 @@ public final class RaceManager {
     public void setRace(Player p, Race r) {
         playerRace.put(p.getUniqueId(), r);
         applyBonuses(p, r);
+        persist(p.getUniqueId(), r);
         Msg.send(p, "&6종족이 §6" + r.koreanName + " §7으로 설정되었다.");
     }
 
-    public Race raceOf(UUID p) { return playerRace.get(p); }
+    public Race raceOf(UUID p) {
+        Race r = playerRace.get(p);
+        if (r != null) return r;
+        // 캐시에 없으면 DB에서 로드
+        String stored = RebornCore.get().kv().get(NS, p, "race");
+        if (stored != null) {
+            try {
+                r = Race.valueOf(stored);
+                playerRace.put(p, r);
+                return r;
+            } catch (IllegalArgumentException ignored) {}
+        }
+        return null;
+    }
+
+    private void persist(UUID p, Race r) {
+        try { RebornCore.get().kv().put(NS, p, "race", r.name()); }
+        catch (Throwable ignored) {}
+    }
 
     private Race weightedPick(List<Race> list) {
         double total = list.stream().mapToDouble(r -> r.weight).sum();

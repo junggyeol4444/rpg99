@@ -23,6 +23,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class SchoolManager {
 
+    private static final String NS = "RebornSkill.school";
+
     /** 학파 간 적대 관계 */
     private static final Map<MartialSchool, MartialSchool> RIVALS = new HashMap<>();
     static {
@@ -35,6 +37,11 @@ public final class SchoolManager {
     private final Map<UUID, MartialSchool> schools = new ConcurrentHashMap<>();
 
     public SchoolManager(RebornSkill plugin) { this.plugin = plugin; }
+
+    private void persist(UUID p, MartialSchool ms) {
+        try { RebornCore.get().kv().put(NS, p, "school", ms.name()); }
+        catch (Throwable ignored) {}
+    }
 
     public boolean setSchool(Player p, MartialSchool newSchool) {
         MartialSchool old = schools.get(p.getUniqueId());
@@ -55,6 +62,7 @@ public final class SchoolManager {
                     e.getKey(), e.getValue(), "school-join:" + newSchool);
         }
         schools.put(p.getUniqueId(), newSchool);
+        persist(p.getUniqueId(), newSchool);
         Bukkit.broadcastMessage(newSchool.colorCode + "&l[학파 가입] §f"
                 + p.getName() + " §7→ §6" + newSchool.koreanName);
         Msg.send(p, "&6학파 변경: §f" + newSchool.koreanName);
@@ -74,7 +82,19 @@ public final class SchoolManager {
         } catch (Throwable ignored) {}
     }
 
-    public MartialSchool of(UUID p) { return schools.get(p); }
+    public MartialSchool of(UUID p) {
+        MartialSchool ms = schools.get(p);
+        if (ms != null) return ms;
+        String stored = RebornCore.get().kv().get(NS, p, "school");
+        if (stored != null) {
+            try {
+                ms = MartialSchool.valueOf(stored);
+                schools.put(p, ms);
+                return ms;
+            } catch (IllegalArgumentException ignored) {}
+        }
+        return null;
+    }
 
     public boolean areRivals(UUID a, UUID b) {
         MartialSchool sa = schools.get(a);

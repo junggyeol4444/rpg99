@@ -151,11 +151,17 @@ public final class DuelManager {
         duels.remove(d.defender);
         if (winner != null) {
             try { winner.setHealth(winner.getMaxHealth()); } catch (Throwable ignored) {}
-            honor.merge(winnerId, 10, Integer::sum);
+            int newH = honor.merge(winnerId, 10, Integer::sum);
+            try { kr.reborn.core.RebornCore.get().kv()
+                    .putInt("RebornDeath.duel", winnerId, "honor", newH); }
+            catch (Throwable ignored) {}
         }
         if (loser != null) {
             try { loser.setHealth(loser.getMaxHealth()); } catch (Throwable ignored) {}
-            honor.merge(loserId, -10, Integer::sum);
+            int newH = honor.merge(loserId, -10, Integer::sum);
+            try { kr.reborn.core.RebornCore.get().kv()
+                    .putInt("RebornDeath.duel", loserId, "honor", newH); }
+            catch (Throwable ignored) {}
             // 원위치로 복귀
             if (d.savedPosA != null && loserId.equals(d.challenger)) loser.teleport(d.savedPosA);
             else if (d.savedPosB != null) loser.teleport(d.savedPosB);
@@ -186,7 +192,15 @@ public final class DuelManager {
         }
     }
 
-    public int honorOf(UUID p) { return honor.getOrDefault(p, 50); }
+    public int honorOf(UUID p) {
+        Integer cached = honor.get(p);
+        if (cached != null) return cached;
+        // DB에서 로드 (없으면 50 기본)
+        int h = kr.reborn.core.RebornCore.get().kv()
+                .getInt("RebornDeath.duel", p, "honor", 50);
+        honor.put(p, h);
+        return h;
+    }
 
     public Map<UUID, Integer> honorAll() { return honor; }
 }

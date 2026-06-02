@@ -18,6 +18,7 @@ public final class RebornCore extends JavaPlugin {
     private TierManager tierManager;
     private RebornScheduler scheduler;
     private RebornAPI api;
+    private kr.reborn.core.data.KVStore kv;
     private kr.reborn.core.reincarnation.ReincarnationMemory reincarnationMemory;
     private kr.reborn.core.discovery.HiddenWorldUnlock hiddenWorld;
 
@@ -48,6 +49,7 @@ public final class RebornCore extends JavaPlugin {
         this.dataManager = new DataManager(this, database);
         this.tierManager = new TierManager(this);
         this.api = new RebornAPI(this);
+        this.kv = new kr.reborn.core.data.KVStore(this, database);
         this.reincarnationMemory = new kr.reborn.core.reincarnation.ReincarnationMemory(this);
         this.hiddenWorld = new kr.reborn.core.discovery.HiddenWorldUnlock(this);
 
@@ -77,6 +79,7 @@ public final class RebornCore extends JavaPlugin {
     }
 
     public Database database() { return database; }
+    public kr.reborn.core.data.KVStore kv() { return kv; }
     public DataManager dataManager() { return dataManager; }
     public TierManager tierManager() { return tierManager; }
     public RebornScheduler scheduler() { return scheduler; }

@@ -337,13 +337,16 @@ public final class AbilityEngine {
     }
 
     private void labyrinthTeleport(Player p) {
-        // 임의 층 = 랜덤 Y -50~200 + 같은 월드 안 거리 100~500 무작위 이동
+        // 임의 위치로 이동 — 안전 위치 찾기 (highest block + 1)
         try {
             double dx = (Math.random() - 0.5) * 1000;
             double dz = (Math.random() - 0.5) * 1000;
-            double y = -50 + Math.random() * 250;
             Location dest = p.getLocation().add(dx, 0, dz);
-            dest.setY(Math.max(0, y));
+            // World height의 가장 높은 블록 위로 — 매장/추락 방지
+            int safeY = dest.getWorld().getHighestBlockYAt((int) dest.getX(), (int) dest.getZ()) + 1;
+            dest.setY(Math.max(dest.getWorld().getMinHeight() + 1, safeY));
+            // SLOW_FALLING 5초 — 떨어져도 살아남음
+            p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, 100, 0));
             p.teleport(dest);
             p.getWorld().spawnParticle(Particle.PORTAL, dest, 200, 1, 2, 1);
         } catch (Throwable ignored) {}

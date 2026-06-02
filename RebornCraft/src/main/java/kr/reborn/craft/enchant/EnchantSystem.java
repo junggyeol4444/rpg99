@@ -141,16 +141,45 @@ public final class EnchantSystem {
         if (stoneId == null) return 0;
         var sec = plugin.getConfig().getConfigurationSection("enchant.stones." + stoneId);
         if (sec == null) return 0;
-        return sec.getDouble("rate-bonus", 0);
+        // 둘 다 지원 — rate-bonus (0~1) 또는 bonus-percent (0~100 → /100)
+        if (sec.contains("rate-bonus")) return sec.getDouble("rate-bonus");
+        if (sec.contains("bonus-percent")) return sec.getDouble("bonus-percent") / 100.0;
+        return 0;
     }
 
     private boolean consumeStone(Player p, String stoneId) {
-        // 강화석은 NAME_TAG로 가정 (간단화) — 정확한 매핑은 RebornCraft.ItemRegistry hook 필요.
-        // 우선 PAPER 1개로 fallback (PoC)
-        Material proxy = Material.PAPER;
-        if (countItem(p, proxy) < 1) return false;
-        removeItem(p, proxy, 1);
+        // stoneId → Material 매핑:
+        //   1순위: config의 명시적 material
+        //   2순위: stoneId 자체가 Material (예: "DIAMOND")
+        //   3순위: grade별 기본 (config grade 필드 활용)
+        Material mat = null;
+        var sec = plugin.getConfig().getConfigurationSection("enchant.stones." + stoneId);
+        if (sec != null && sec.isString("material")) {
+            mat = Material.matchMaterial(sec.getString("material"));
+        }
+        if (mat == null) mat = Material.matchMaterial(stoneId.toUpperCase());
+        if (mat == null && sec != null) {
+            // grade로 fallback (시드된 stones와 일치)
+            mat = stoneByGrade(sec.getString("grade", "COMMON"));
+        }
+        if (mat == null) mat = Material.PAPER;
+        int amount = sec != null ? sec.getInt("amount", 1) : 1;
+        if (countItem(p, mat) < amount) return false;
+        removeItem(p, mat, amount);
         return true;
+    }
+
+    private Material stoneByGrade(String grade) {
+        switch (grade.toUpperCase()) {
+            case "COMMON": return Material.IRON_INGOT;
+            case "UNCOMMON": return Material.IRON_BLOCK;
+            case "RARE": return Material.GOLD_INGOT;
+            case "HEROIC": return Material.DIAMOND;
+            case "LEGENDARY": return Material.NETHERITE_INGOT;
+            case "MYTHIC": return Material.NETHER_STAR;
+            case "GENESIS": return Material.BEACON;
+            default: return Material.PAPER;
+        }
     }
 
     private void applyLevel(ItemStack item, int lv) {

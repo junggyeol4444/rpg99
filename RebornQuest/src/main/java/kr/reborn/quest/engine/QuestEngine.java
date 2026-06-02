@@ -276,7 +276,35 @@ public final class QuestEngine {
         // 단일 아이템 (item: <customId>)
         Object singleItem = q.rewards.get("item");
         if (singleItem != null) {
-            Msg.send(p, "&6보상: §f" + singleItem + " §7(CraftItem 시스템)");
+            String id = String.valueOf(singleItem);
+            // RebornCraft ItemRegistry에서 실제 ItemStack 생성 시도
+            boolean given = false;
+            try {
+                var cp = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornCraft");
+                if (cp != null) {
+                    Object items = cp.getClass().getMethod("items").invoke(cp);
+                    Object def = items.getClass().getMethod("get", String.class)
+                            .invoke(items, id);
+                    if (def != null) {
+                        Object stack = items.getClass().getMethod("render", def.getClass())
+                                .invoke(items, def);
+                        if (stack instanceof org.bukkit.inventory.ItemStack is) {
+                            p.getInventory().addItem(is);
+                            given = true;
+                        }
+                    }
+                }
+            } catch (Throwable ignored) {}
+            // fallback: Material로 시도
+            if (!given) {
+                org.bukkit.Material mat = org.bukkit.Material.matchMaterial(id.toUpperCase());
+                if (mat != null) {
+                    p.getInventory().addItem(new org.bukkit.inventory.ItemStack(mat, 1));
+                    given = true;
+                }
+            }
+            Msg.send(p, given ? "&6보상: §f" + id + " §7지급됨"
+                              : "&6보상: §f" + id + " §c(아이템 시스템 미연결)");
         }
         // 아이템 보상
         Object items = q.rewards.get("items");

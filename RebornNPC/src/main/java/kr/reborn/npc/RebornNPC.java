@@ -66,6 +66,47 @@ public final class RebornNPC extends JavaPlugin {
     public kr.reborn.npc.famous.FamousNpcRegistry famous() { return famous; }
     public kr.reborn.npc.famous.FamousEncounter famousEncounter() { return famousEncounter; }
 
+    /**
+     * 외부 호출 API — 반경 내 같은 faction NPC에 임시 직속 명령.
+     * HiddenAbility(CULT_COMMAND/YOKAI_EMPEROR/AI_COMMAND/SEA_KING_COMMAND)가 리플렉션으로 호출.
+     */
+    public int commandNearbyNpcs(Player p, double radius, long durationMs, String factionFilter) {
+        int affected = 0;
+        long expireAt = System.currentTimeMillis() + durationMs;
+        for (var npc : registry.all()) {
+            if (npc.dead) continue;
+            if (npc.location == null) continue;
+            if (npc.location.getWorld() != p.getWorld()) continue;
+            if (npc.location.distanceSquared(p.getLocation()) > radius * radius) continue;
+            if (factionFilter != null && !factionFilter.isEmpty()) {
+                if (npc.faction == null || !npc.faction.toUpperCase().contains(factionFilter.toUpperCase())) continue;
+            }
+            // 임시 직속 표시 — aiData에 저장
+            npc.aiData.put("commanded_by", p.getUniqueId());
+            npc.aiData.put("command_until", expireAt);
+            // 호감도 +50 (강제 충성)
+            npc.relations.addPlayer(p.getUniqueId(), 50);
+            affected++;
+        }
+        return affected;
+    }
+
+    /**
+     * 외부 호출 API — 반경 내 NPC들의 호감도 일괄 조정.
+     * HiddenAbility(HERO_AURA), Curse(NPC_FAVOR_TICK), MartialSchool 학파 변경 시 호출.
+     */
+    public int nudgeNearbyFavor(Player p, double radius, double delta) {
+        int affected = 0;
+        for (var npc : registry.all()) {
+            if (npc.dead || npc.location == null) continue;
+            if (npc.location.getWorld() != p.getWorld()) continue;
+            if (npc.location.distanceSquared(p.getLocation()) > radius * radius) continue;
+            npc.relations.addPlayer(p.getUniqueId(), delta);
+            affected++;
+        }
+        return affected;
+    }
+
     /** 채팅에 숫자만 입력 시 대화 선택지로 처리. */
     public final class DialogueChatListener implements Listener {
         @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)

@@ -68,4 +68,25 @@ public final class ClanManager {
         List<Integer> table = plugin.getConfig().getIntegerList("clan.level-thresholds");
         while (c.level < table.size() - 1 && c.xp >= table.get(c.level)) c.level++;
     }
+
+    /**
+     * HiddenClass CLAN_RANK 조건 체크용 외부 API.
+     * 랭크: "MEMBER" / "ELDER" / "LEADER" — 상위 권한 포함.
+     */
+    public boolean hasRankAtLeast(UUID p, String requiredRank) {
+        Clan c = ofPlayer(p);
+        if (c == null) return false;
+        if (p.equals(c.leader)) return true; // LEADER는 모든 랭크 포함
+        if ("LEADER".equalsIgnoreCase(requiredRank)) return false;
+        if (c.elders.contains(p)) return true; // ELDER는 ELDER/MEMBER 포함
+        if ("ELDER".equalsIgnoreCase(requiredRank)) return false;
+        // MEMBER만 요구되면 멤버이기만 하면 OK
+        return c.members.contains(p);
+    }
+
+    /** HiddenClass CLAN_RANK 조건 — 가문 인원 수. */
+    public int clanMemberCount(UUID p) {
+        Clan c = ofPlayer(p);
+        return c == null ? 0 : c.members.size();
+    }
 }

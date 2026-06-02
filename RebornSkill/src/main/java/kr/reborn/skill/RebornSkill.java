@@ -77,6 +77,40 @@ public final class RebornSkill extends JavaPlugin {
         if (p != null) Bukkit.getPluginManager().callEvent(new RebornSkillLearnEvent(p, skillId));
     }
 
+    /** HiddenClass ConditionEngine이 SKILL_LEARNED 조건 체크에 사용. */
+    public boolean hasSkill(UUID id, String skillId) {
+        return store.has(id, skillId);
+    }
+
+    /**
+     * HiddenAbility DUAL_CAST가 호출. 보유한 magic 카테고리 스킬 중 첫 번째 시전.
+     * 못 찾으면 false 반환 — 호출자가 fallback 데미지 처리.
+     */
+    public boolean castFirstMagic(Player p) {
+        return castFirstByCategory(p, "MAGIC", "ELEMENTAL", "ARCANE", "DIVINE", "DEMONIC", "SPIRIT");
+    }
+
+    /** DUAL_CAST가 호출 — 검술/무공 첫 스킬 시전. */
+    public boolean castFirstSword(Player p) {
+        return castFirstByCategory(p, "MARTIAL", "SWORD");
+    }
+
+    private boolean castFirstByCategory(Player p, String... categories) {
+        var owned = store.owned(p.getUniqueId());
+        if (owned.isEmpty()) return false;
+        for (String sid : owned) {
+            var def = registry.get(sid);
+            if (def == null || def.category == null) continue;
+            for (String cat : categories) {
+                if (cat.equalsIgnoreCase(def.category)) {
+                    caster.cast(p, sid);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public SkillRegistry registry() { return registry; }
     public PlayerSkillStore store() { return store; }
     public SkillCaster caster() { return caster; }

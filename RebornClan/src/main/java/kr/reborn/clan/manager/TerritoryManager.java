@@ -193,4 +193,24 @@ public final class TerritoryManager implements Listener {
             territoryKey = key; defender = def; attacker = atk; startAt = start;
         }
     }
+
+    /** ClanWarManager가 패전 영토 이양 시 사용. */
+    public java.util.Collection<kr.reborn.clan.data.Territory> ofClan(String clanId) {
+        if (clanId == null || clanId.isEmpty()) return java.util.Collections.emptyList();
+        java.util.List<kr.reborn.clan.data.Territory> list = new java.util.ArrayList<>();
+        for (kr.reborn.clan.data.Territory t : claims.values()) {
+            if (clanId.equals(t.clanId)) list.add(t);
+        }
+        return list;
+    }
+
+    /** 영토를 다른 가문으로 이양. */
+    public boolean transferTo(kr.reborn.clan.data.Territory t, String newClanId) {
+        if (t == null || newClanId == null) return false;
+        t.clanId = newClanId;
+        // owner도 새 가문의 가주로
+        kr.reborn.clan.data.Clan newClan = plugin.clans().get(newClanId);
+        if (newClan != null) t.owner = newClan.leader;
+        return true;
+    }
 }

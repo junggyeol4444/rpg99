@@ -115,6 +115,58 @@ public final class SkillCaster {
         // 콤보 배수 적용
         power *= plugin.combo().onCast(p, def);
         effects.execute(p, def, power);
+        // 판타지 마법 학파 마스터리 누적 — category가 마법 학파면 RebornStat 리플렉션 호출
+        notifyFantasySpellCast(p, def);
+        // 무공 사용 깨달음 — MARTIAL world의 SkillDef면 MartialGrowth.onSkillUse
+        notifyMartialSkillUse(p, def);
+    }
+
+    private void notifyMartialSkillUse(Player p, SkillDef def) {
+        if (def.world != kr.reborn.core.data.WorldKey.MARTIAL) return;
+        try {
+            var sp = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornStat");
+            if (sp == null) return;
+            Object growth = sp.getClass().getMethod("growth").invoke(sp);
+            Object strategy = growth.getClass().getMethod("of",
+                    kr.reborn.core.data.WorldKey.class)
+                    .invoke(growth, kr.reborn.core.data.WorldKey.MARTIAL);
+            if (strategy == null) return;
+            strategy.getClass().getMethod("onSkillUse",
+                    org.bukkit.entity.Player.class, double.class)
+                    .invoke(strategy, p, 0.5);  // 일반 시전 +0.5 깨달음
+        } catch (Throwable ignored) {}
+    }
+
+    /** SkillDef.category로 FantasyGrowth.School 매핑 시도, 일치 시 onSpellCast 호출. */
+    private void notifyFantasySpellCast(Player p, SkillDef def) {
+        if (def.category == null || def.category.isEmpty()) return;
+        // 6 학파: ELEMENTAL, ARCANE, HOLY, NECROMANCY, ILLUSION, RUNE
+        String upper = def.category.toUpperCase();
+        String school;
+        switch (upper) {
+            case "ELEMENTAL": case "FIRE": case "ICE": case "WATER": case "NATURE": school = "ELEMENTAL"; break;
+            case "ARCANE": case "MAGIC": school = "ARCANE"; break;
+            case "HOLY": case "DIVINE": school = "HOLY"; break;
+            case "NECROMANCY": case "DARK": school = "NECROMANCY"; break;
+            case "ILLUSION": case "MIND": school = "ILLUSION"; break;
+            case "RUNE": school = "RUNE"; break;
+            default: return;
+        }
+        try {
+            var sp = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornStat");
+            if (sp == null) return;
+            Object growth = sp.getClass().getMethod("growth").invoke(sp);
+            Object strategy = growth.getClass().getMethod("of",
+                    kr.reborn.core.data.WorldKey.class)
+                    .invoke(growth, kr.reborn.core.data.WorldKey.FANTASY);
+            if (strategy == null) return;
+            // FantasyGrowth.School은 nested enum
+            Class<?> schoolCls = Class.forName("kr.reborn.stat.growth.impl.FantasyGrowth$School");
+            Object schoolEnum = schoolCls.getMethod("valueOf", String.class).invoke(null, school);
+            strategy.getClass().getMethod("onSpellCast",
+                    org.bukkit.entity.Player.class, schoolCls)
+                    .invoke(strategy, p, schoolEnum);
+        } catch (Throwable ignored) {}
     }
 
     /** 초식이 속성을 덮어쓸 때 사용 — 한 번 캐스팅에만 쓰이는 그림자 SkillDef. */

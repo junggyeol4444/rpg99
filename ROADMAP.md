@@ -2,6 +2,36 @@
 
 기획서 ver.17.0 전부를 실제 동작 가능한 수준까지 단계별로 완성.
 
+## 운영 결함 일제 정리 (Audit Pass)
+
+전체 플러그인 코드 감사 후 발견·수정된 핵심 결함:
+
+**영속화 누락 (재시작 시 데이터 손실)** — 28개 시스템 KV 영속화:
+- ✓ 13개 세계 성장 strategy (Demon/Heaven/Yokai/Dragon/Martial/Immortal
+  /Ocean/Spirit/Earth/Cyber/Magitech/Fantasy/Apocalypse는 휘발성 유지)
+- ✓ 핵심 진행 4종 (Crime/Proficiency/HiddenClass/Title)
+- ✓ 핵심 시스템 4종 (Manual.research/PastLives/Pet/Price)
+- ✓ 경제 3종 (Mailbox/Auction/Contribution) + ItemSerializer 인프라
+- ✓ 추가 3종 (Accessory/Specialty/Combo)
+- ✓ 명계 3종 (UnderworldManager/UnderworldQuests/FamousEncounter)
+- ✓ **PlayerSkillStore** — 가장 큰 결함, 모든 보유 스킬·숙련도·8슬롯
+- ✓ **AbilityEngine** — 1회 한정 능력·IMMORTAL_REVIVE
+- ✓ **QuestEngine** — 다단계 36 WORLD 퀘스트의 count·phase
+
+**Folia·Async 안전성** — sync-only API를 async timer에서 호출하던 3 버그:
+- WorldAI.tickAll (callEvent + broadcast)
+- PetCombat.tickPassives (PotionEffect, entity scheduler)
+- BountyManager.tickAutoBounty (broadcastMessage)
+
+**실제 버그**:
+- LABYRINTH_TELEPORT 추락 (getHighestBlockYAt + SLOW_FALLING)
+- EnchantStone 등급별 Material 매핑 누락
+- Quest "item:" 보상이 실제 ItemStack을 지급하지 않던 버그
+- CurrencyManager.flush() = empty TODO (전 통화 손실)
+- Famous NPC가 자동 spawn되지 않던 결함
+- Reflection 타깃 메서드 7건 누락 → 구현
+
+
 ## Phase 1 — 기반 시스템 깊이 (모든 세계 공통)
 
 ### Step 1: 진짜 자율 NPC (sub-step으로 분할)

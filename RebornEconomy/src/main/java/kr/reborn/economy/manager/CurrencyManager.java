@@ -96,7 +96,10 @@ public final class CurrencyManager {
         boolean[] ok = { false };
         map.compute(currency, (k, cur) -> {
             long c = cur == null ? 0 : cur;
-            if (c < amount) { ok[0] = false; return c; }
+            if (c < amount) {
+                ok[0] = false;
+                return cur;  // 변경 안 함 (null은 null로 유지)
+            }
             ok[0] = true;
             return c - amount;
         });

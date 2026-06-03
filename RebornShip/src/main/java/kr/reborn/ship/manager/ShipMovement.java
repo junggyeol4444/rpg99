@@ -139,11 +139,11 @@ public final class ShipMovement {
         return true;
     }
 
-    /** 배 침몰: 블록을 5초에 걸쳐 한 칸씩 아래로 내림. */
+    /** 배 침몰: 5초 후 블록 일괄 제거. Folia 지역 스케줄러 사용. */
     public void sink(Ship ship) {
         ship.state = Ship.State.SUNK;
-        // 단순화: 5초 후 일괄 제거
-        org.bukkit.Bukkit.getScheduler().runTaskLater(plugin, () -> {
+        // helm 위치를 지역 키로 사용 (배는 한 지역 내에 존재)
+        kr.reborn.core.RebornCore.get().scheduler().runRegionTaskLater(ship.helm, () -> {
             World w = ship.helm.getWorld();
             if (w == null) return;
             for (String key : ship.blocks.keySet()) {

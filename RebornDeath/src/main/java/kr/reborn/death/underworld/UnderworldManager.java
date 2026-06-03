@@ -61,7 +61,8 @@ public final class UnderworldManager {
         }
         Location arrive = new Location(w, c.getDouble("arrive.x"), c.getDouble("arrive.y"), c.getDouble("arrive.z"));
         p.spigot().respawn();
-        Bukkit.getScheduler().runTask(plugin, () -> p.teleport(arrive));
+        // 텔레포트는 엔티티 스케줄러로 (Folia 안전)
+        RebornCore.get().scheduler().runEntityTask(p, () -> p.teleport(arrive));
         long now = System.currentTimeMillis();
         arrivalTime.put(p.getUniqueId(), now);
         RebornCore.get().kv().putLong(NS, p.getUniqueId(), "arrived", now);

@@ -30,12 +30,16 @@ public final class WorldTravelManager {
         if (w == null) { Msg.error(p, "월드 없음: " + to); return false; }
         // 페이드 아웃 (블라인드)
         p.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.BLINDNESS, 40, 1));
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            p.teleport(w.getSpawnLocation());
-            d.worldKey(to);
-            d.visited().add(to);
-            p.sendTitle("§6" + to + " §f도착", "§7" + System.currentTimeMillis(), 5, 40, 10);
-            Bukkit.getPluginManager().callEvent(new RebornWorldChangeEvent(p, from, to));
+        // Folia: 엔티티 스케줄러로 텔레포트 — 글로벌 스케줄러 사용 시 thread-affinity 위반
+        // 단, 엔티티 스케줄러에는 delay 지원이 제한적이므로, 글로벌에서 2초 후 엔티티에 위임
+        RebornCore.get().scheduler().runTaskLater(() -> {
+            RebornCore.get().scheduler().runEntityTask(p, () -> {
+                p.teleport(w.getSpawnLocation());
+                d.worldKey(to);
+                d.visited().add(to);
+                p.sendTitle("§6" + to + " §f도착", "§7" + System.currentTimeMillis(), 5, 40, 10);
+                Bukkit.getPluginManager().callEvent(new RebornWorldChangeEvent(p, from, to));
+            });
         }, 40L);
         return true;
     }

@@ -87,16 +87,10 @@ public final class DragonGrowth implements GrowthStrategy {
     /** 나이 증가 + 단계 보너스 적용. */
     public void ageUp(Player p, PlayerData d, int years) {
         if (years <= 0) return;
-        // RebornCore PlayerData에 dragonAge 누적 — reflection으로 갱신
-        try {
-            int cur = d.dragonAge();
-            int next = cur + years;
-            // PlayerData에 setter가 없으므로 field 리플렉션
-            java.lang.reflect.Field f = d.getClass().getDeclaredField("dragonAge");
-            f.setAccessible(true);
-            f.setInt(d, next);
-            checkTierMilestone(p, next);
-        } catch (Throwable ignored) {}
+        // PlayerData.dragonAge(int) 공개 setter 직접 호출 (markDirty 포함)
+        int next = d.dragonAge() + years;
+        d.dragonAge(next);
+        checkTierMilestone(p, next);
     }
 
     private void checkTierMilestone(Player p, int age) {

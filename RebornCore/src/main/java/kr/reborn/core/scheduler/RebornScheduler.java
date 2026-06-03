@@ -90,4 +90,13 @@ public final class RebornScheduler {
             Bukkit.getScheduler().runTask(plugin, task);
         }
     }
+
+    /** 특정 지역(청크)에서 delay 후 1회 실행 — Folia에서 블록 조작에 필요. */
+    public void runRegionTaskLater(Location loc, Runnable task, long delayTicks) {
+        if (folia) {
+            Bukkit.getRegionScheduler().runDelayed(plugin, loc, t -> task.run(), Math.max(1L, delayTicks));
+        } else {
+            Bukkit.getScheduler().runTaskLater(plugin, task, delayTicks);
+        }
+    }
 }

@@ -61,7 +61,10 @@ public final class RebornNPC extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        if (registry != null) registry.saveAll();
+        if (registry != null) {
+            registry.saveAll();
+            if (registry.factions() != null) registry.factions().saveAll();
+        }
     }
 
     public NpcRegistry registry() { return registry; }

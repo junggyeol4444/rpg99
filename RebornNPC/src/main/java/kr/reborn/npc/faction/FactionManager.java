@@ -38,10 +38,63 @@ public final class FactionManager {
     private static final int FORM_AMBITION = 55;      // 창설 최소 야망
     private static final int WAR_HOSTILITY = 3;       // 전쟁 발발 최소 구성원 간 원한 수
 
+    private static final String NS = "RebornNPC.faction";
+
     private final RebornNPC plugin;
     private final Map<String, Faction> factions = new HashMap<>();
 
-    public FactionManager(RebornNPC plugin) { this.plugin = plugin; }
+    public FactionManager(RebornNPC plugin) {
+        this.plugin = plugin;
+        loadAll();
+    }
+
+    private void loadAll() {
+        try {
+            var data = kr.reborn.core.RebornCore.get().kv().loadAll(NS, null);
+            // 각 키: "fid.field"
+            Map<String, Map<String, String>> grouped = new HashMap<>();
+            for (var e : data.entrySet()) {
+                int dot = e.getKey().indexOf('.');
+                if (dot < 0) continue;
+                String fid = e.getKey().substring(0, dot);
+                String field = e.getKey().substring(dot + 1);
+                grouped.computeIfAbsent(fid, k -> new HashMap<>()).put(field, e.getValue());
+            }
+            for (var e : grouped.entrySet()) {
+                String fid = e.getKey();
+                Map<String, String> fields = e.getValue();
+                String name = fields.getOrDefault("name", fid);
+                String leader = fields.getOrDefault("leader", "");
+                if (leader.isEmpty()) continue;
+                Faction f = new Faction(fid, name, leader);
+                try { f.treasury = Double.parseDouble(fields.getOrDefault("treasury", "0")); }
+                catch (Throwable ignored) {}
+                // relations: "rel.<otherId>" → FactionStance name
+                for (var fe : fields.entrySet()) {
+                    if (fe.getKey().startsWith("rel.")) {
+                        try {
+                            FactionStance st = FactionStance.valueOf(fe.getValue());
+                            f.relations.put(fe.getKey().substring(4), st);
+                        } catch (Throwable ignored) {}
+                    }
+                }
+                factions.put(fid, f);
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    /** 외부 호출 — 모든 활성 세력 영속화. plugin.onDisable 또는 주기적으로. */
+    public void saveAll() {
+        for (Faction f : factions.values()) {
+            kr.reborn.core.RebornCore.get().kv().put(NS, null, f.id + ".name", f.name);
+            kr.reborn.core.RebornCore.get().kv().put(NS, null, f.id + ".leader", f.leaderId);
+            kr.reborn.core.RebornCore.get().kv().putDouble(NS, null, f.id + ".treasury", f.treasury);
+            for (var re : f.relations.entrySet()) {
+                kr.reborn.core.RebornCore.get().kv().put(NS, null,
+                        f.id + ".rel." + re.getKey(), re.getValue().name());
+            }
+        }
+    }
 
     public Faction get(String id) { return factions.get(id); }
     public Collection<Faction> all() { return factions.values(); }

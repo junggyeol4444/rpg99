@@ -171,7 +171,13 @@ public final class NpcRegistry {
             factionTickCounter = 0;
             factionManager.tick();
         }
+        // 세력 영속화 — 100사이클마다 (크래시 대비 안전망)
+        if (++savePersistCounter >= 100) {
+            savePersistCounter = 0;
+            try { factionManager.saveAll(); } catch (Throwable ignored) {}
+        }
     }
+    private int savePersistCounter = 0;
 
     /** NPC 사망 시 친한 NPC들에게 복수 트리거 등록. */
     private void triggerRevengeForFriends(RebornNpc dead) {

@@ -283,9 +283,10 @@ public final class DungeonManager {
         ActiveSession sess = activeSessions.remove(p.getUniqueId());
         if (sess == null) return;
         Msg.send(p, "&7던전 퇴장.");
-        // 진입 전 위치로 복귀
+        // 진입 전 위치로 복귀 — Folia: 엔티티 스케줄러
         if (sess.entryLocation != null) {
-            try { p.teleport(sess.entryLocation); } catch (Throwable ignored) {}
+            kr.reborn.core.RebornCore.get().scheduler().runEntityTask(p,
+                    () -> { try { p.teleport(sess.entryLocation); } catch (Throwable ignored) {} });
         }
     }
 

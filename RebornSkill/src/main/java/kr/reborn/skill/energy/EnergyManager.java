@@ -77,6 +77,7 @@ public final class EnergyManager {
     public boolean consume(Player p, StatType t, double amount) {
         if (t == null || amount <= 0) return true;
         PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+        if (d == null) return false;  // 오프라인이거나 데이터 로드 실패
         if (d.getStat(t) < amount) return false;
         d.addStat(t, -amount);
         return true;

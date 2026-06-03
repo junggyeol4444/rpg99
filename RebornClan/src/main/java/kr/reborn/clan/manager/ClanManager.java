@@ -125,7 +125,8 @@ public final class ClanManager {
 
     public boolean join(Clan c, Player p) {
         c.members.add(p.getUniqueId());
-        RebornCore.get().api().getPlayerData(p.getUniqueId()).clanId(c.id);
+        var pd = RebornCore.get().api().getPlayerData(p.getUniqueId());
+        if (pd != null) pd.clanId(c.id);
         return true;
     }
 
@@ -139,7 +140,8 @@ public final class ClanManager {
             if (c.elders.isEmpty()) clans.remove(c.id);
             else c.leader = c.elders.iterator().next();
         }
-        RebornCore.get().api().getPlayerData(p.getUniqueId()).clanId("");
+        var pd = RebornCore.get().api().getPlayerData(p.getUniqueId());
+        if (pd != null) pd.clanId("");
         return true;
     }
 

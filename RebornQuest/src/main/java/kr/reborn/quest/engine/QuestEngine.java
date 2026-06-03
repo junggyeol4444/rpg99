@@ -27,17 +27,44 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class QuestEngine {
 
+    private static final String NS = "RebornQuest.active";
+
     private final RebornQuest plugin;
     private final ConcurrentHashMap<UUID, Map<String, Progress>> active = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = ConcurrentHashMap.newKeySet();
 
     public QuestEngine(RebornQuest p) { this.plugin = p; }
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            var all = RebornCore.get().kv().loadAll(NS, p);
+            Map<String, Progress> map = new HashMap<>();
+            for (var e : all.entrySet()) {
+                try {
+                    String[] parts = e.getValue().split(":", 2);
+                    Progress pr = new Progress();
+                    pr.count = Integer.parseInt(parts[0]);
+                    pr.phase = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
+                    map.put(e.getKey(), pr);
+                } catch (Throwable ignored) {}
+            }
+            if (!map.isEmpty()) active.put(p, map);
+        }
+    }
+
+    private void persist(UUID p, String questId, Progress pr) {
+        RebornCore.get().kv().put(NS, p, questId, pr.count + ":" + pr.phase);
+    }
 
     public boolean accept(Player p, String questId) {
         Quest q = plugin.registry().get(questId);
         if (q == null) return false;
+        ensureLoaded(p.getUniqueId());
         Map<String, Progress> map = active.computeIfAbsent(p.getUniqueId(), x -> new HashMap<>());
         if (map.containsKey(questId)) { Msg.warn(p, "이미 진행 중인 퀘스트."); return false; }
-        map.put(questId, new Progress());
+        Progress pr = new Progress();
+        map.put(questId, pr);
+        persist(p.getUniqueId(), questId, pr);
         Objective obj = currentObjective(q, map.get(questId));
         Msg.send(p, "&a퀘스트 수락: &f" + q.name);
         announce(p, q, obj, map.get(questId));
@@ -45,13 +72,16 @@ public final class QuestEngine {
     }
 
     public boolean abandon(Player p, String questId) {
+        ensureLoaded(p.getUniqueId());
         Map<String, Progress> map = active.get(p.getUniqueId());
         if (map == null || map.remove(questId) == null) return false;
+        RebornCore.get().kv().remove(NS, p.getUniqueId(), questId);
         Msg.warn(p, "퀘스트 포기: " + questId);
         return true;
     }
 
     public boolean has(UUID id, String questId) {
+        ensureLoaded(id);
         Map<String, Progress> map = active.get(id);
         return map != null && map.containsKey(questId);
     }
@@ -63,6 +93,7 @@ public final class QuestEngine {
      * 스냅샷을 순회하므로 complete()가 맵을 수정해도 안전.
      */
     public void progress(Player p, String type, String target, int n) {
+        ensureLoaded(p.getUniqueId());
         Map<String, Progress> map = active.get(p.getUniqueId());
         if (map == null || map.isEmpty()) return;
         for (Map.Entry<String, Progress> e : new ArrayList<>(map.entrySet())) {
@@ -74,7 +105,7 @@ public final class QuestEngine {
             if (!matchesTarget(obj.target, target)) continue;
             prog.count += n;
             if (prog.count >= obj.amount) advance(p, q, prog);
-            else announce(p, q, obj, prog);
+            else { persist(p.getUniqueId(), e.getKey(), prog); announce(p, q, obj, prog); }
         }
     }
 
@@ -91,6 +122,7 @@ public final class QuestEngine {
 
     /** 사망 시 — 생존 퀘스트 진행 초기화. */
     public void onPlayerDeath(Player p) {
+        ensureLoaded(p.getUniqueId());
         Map<String, Progress> map = active.get(p.getUniqueId());
         if (map == null) return;
         for (Map.Entry<String, Progress> e : map.entrySet()) {
@@ -98,6 +130,7 @@ public final class QuestEngine {
             if (q == null) continue;
             if ("SURVIVE".equalsIgnoreCase(currentObjective(q, e.getValue()).type)) {
                 e.getValue().count = 0;
+                persist(p.getUniqueId(), e.getKey(), e.getValue());
                 Msg.warn(p, "&c생존 퀘스트 진행이 초기화되었다: " + q.name);
             }
         }
@@ -121,6 +154,7 @@ public final class QuestEngine {
         if (!q.phases.isEmpty() && prog.phase < q.phases.size() - 1) {
             prog.phase++;
             prog.count = 0;
+            persist(p.getUniqueId(), q.id, prog);
             Quest.Phase next = q.phases.get(prog.phase);
             Msg.send(p, "&e[" + stripColor(q.name) + "] 단계 완료! 다음: &f" + next.name);
             p.getWorld().playSound(p.getLocation(),
@@ -133,6 +167,7 @@ public final class QuestEngine {
     public void complete(Player p, Quest q) {
         Map<String, Progress> map = active.get(p.getUniqueId());
         if (map != null) map.remove(q.id);
+        RebornCore.get().kv().remove(NS, p.getUniqueId(), q.id);
         // 퀘스트 종류·세계별 고유 완료 연출
         renderCompletion(p, q);
         applyRewards(p, q);
@@ -371,7 +406,7 @@ public final class QuestEngine {
 
     private String stripColor(String s) { return s == null ? "" : s.replaceAll("&.|§.", ""); }
 
-    public Map<String, Progress> activeFor(UUID id) { return active.getOrDefault(id, Map.of()); }
+    public Map<String, Progress> activeFor(UUID id) { ensureLoaded(id); return active.getOrDefault(id, Map.of()); }
 
     /** 진행 중 퀘스트 1개의 단계 인지(認知) 진행 문자열. 없으면 null. */
     public String describe(UUID id, String questId) {

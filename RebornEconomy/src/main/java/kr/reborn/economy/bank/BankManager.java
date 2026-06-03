@@ -29,6 +29,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class BankManager {
 
+    private static final String NS = "RebornEconomy.bank";
+
     private final RebornEconomy plugin;
     /** uuid → 통화ID → 계좌 */
     private final Map<UUID, Map<String, BankAccount>> accounts = new ConcurrentHashMap<>();
@@ -37,21 +39,77 @@ public final class BankManager {
         this.plugin = plugin;
         // 1분마다 이자 정산
         RebornCore.get().scheduler().runTimerAsync(this::tickInterest, 1200L, 1200L);
+        // 1분마다 영속화
+        RebornCore.get().scheduler().runTimerAsync(this::flush, 1200L, 1200L);
+    }
+
+    /** 계좌 → KV 저장 (deposit:cur, loan:cur, credit, maturityAt). */
+    private void persist(BankAccount a) {
+        try {
+            String prefix = a.currency + ".";
+            RebornCore.get().kv().putLong(NS, a.owner, prefix + "deposit", a.deposit);
+            RebornCore.get().kv().putLong(NS, a.owner, prefix + "loan", a.loan);
+            RebornCore.get().kv().putInt(NS, a.owner, prefix + "credit", a.credit);
+            RebornCore.get().kv().putLong(NS, a.owner, prefix + "maturityAt", a.maturityAt);
+            RebornCore.get().kv().putLong(NS, a.owner, prefix + "lastPaidAt", a.lastPaidAt);
+        } catch (Throwable ignored) {}
+    }
+
+    /** 플레이어 입장 시 (또는 lazy access 시) KV에서 계좌 복원. */
+    private BankAccount loadFromKV(UUID uuid, String currency) {
+        try {
+            String prefix = currency + ".";
+            long dep = RebornCore.get().kv().getLong(NS, uuid, prefix + "deposit", -1);
+            if (dep < 0) return null;  // 없음
+            BankAccount a = new BankAccount(uuid, currency);
+            a.deposit = dep;
+            a.loan = RebornCore.get().kv().getLong(NS, uuid, prefix + "loan", 0);
+            a.credit = RebornCore.get().kv().getInt(NS, uuid, prefix + "credit", 70);
+            a.maturityAt = RebornCore.get().kv().getLong(NS, uuid, prefix + "maturityAt", 0);
+            a.lastPaidAt = RebornCore.get().kv().getLong(NS, uuid, prefix + "lastPaidAt",
+                    System.currentTimeMillis());
+            return a;
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    /** 모든 계좌 KV 저장 — onDisable / periodic. */
+    public void flush() {
+        for (Map<String, BankAccount> map : accounts.values()) {
+            for (BankAccount a : map.values()) persist(a);
+        }
     }
 
     public BankAccount open(Player p, String currency) {
         Map<String, BankAccount> map = accounts.computeIfAbsent(p.getUniqueId(), k -> new HashMap<>());
         BankAccount existing = map.get(currency);
         if (existing != null) return existing;
+        // DB에서 기존 계좌 복원 시도
+        BankAccount loaded = loadFromKV(p.getUniqueId(), currency);
+        if (loaded != null) {
+            map.put(currency, loaded);
+            return loaded;
+        }
         BankAccount a = new BankAccount(p.getUniqueId(), currency);
         map.put(currency, a);
+        persist(a);
         Msg.send(p, "&a은행 계좌 개설: " + currency + " §7신용 70");
         return a;
     }
 
     public BankAccount get(UUID p, String currency) {
         Map<String, BankAccount> map = accounts.get(p);
-        return map == null ? null : map.get(currency);
+        if (map != null) {
+            BankAccount cached = map.get(currency);
+            if (cached != null) return cached;
+        }
+        // DB 로드 시도
+        BankAccount loaded = loadFromKV(p, currency);
+        if (loaded != null) {
+            accounts.computeIfAbsent(p, k -> new HashMap<>()).put(currency, loaded);
+        }
+        return loaded;
     }
 
     public boolean deposit(Player p, String currency, long amount) {

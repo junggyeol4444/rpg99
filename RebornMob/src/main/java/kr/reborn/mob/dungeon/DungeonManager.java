@@ -298,8 +298,9 @@ public final class DungeonManager {
         Dungeon.Floor floor = d.floor(sess.currentFloor);
         if (floor == null || !bossId.equals(floor.bossId)) return;
         // 진척 갱신
-        progress.computeIfAbsent(p.getUniqueId(), k -> new HashMap<>())
+        int newMax = progress.computeIfAbsent(p.getUniqueId(), k -> new HashMap<>())
                 .merge(d.id, sess.currentFloor, Math::max);
+        persistProgress(p.getUniqueId(), d.id, newMax);
         // 보상
         applyFloorReward(p, floor);
         if (sess.currentFloor >= d.totalFloors) {
@@ -386,8 +387,23 @@ public final class DungeonManager {
         }
     }
 
+    private static final String NS = "RebornMob.dungeon";
+
     public int maxFloorOf(UUID p, String dungeonId) {
-        return progress.getOrDefault(p, java.util.Collections.emptyMap()).getOrDefault(dungeonId, 0);
+        Map<String, Integer> map = progress.get(p);
+        if (map != null && map.containsKey(dungeonId)) return map.get(dungeonId);
+        int stored = kr.reborn.core.RebornCore.get().kv().getInt(NS, p, dungeonId, 0);
+        if (stored > 0) {
+            progress.computeIfAbsent(p, k -> new java.util.HashMap<>())
+                    .put(dungeonId, stored);
+        }
+        return stored;
+    }
+
+    /** 보스 처치 시 호출되는 onBossKill에서 진척 업데이트 후 KV에 저장. */
+    private void persistProgress(UUID p, String dungeonId, int floor) {
+        try { kr.reborn.core.RebornCore.get().kv().putInt(NS, p, dungeonId, floor); }
+        catch (Throwable ignored) {}
     }
 
     public ActiveSession activeOf(UUID p) { return activeSessions.get(p); }

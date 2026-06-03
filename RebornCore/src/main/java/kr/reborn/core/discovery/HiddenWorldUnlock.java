@@ -46,8 +46,30 @@ public final class HiddenWorldUnlock {
         return set != null && set.contains(w);
     }
 
+    private static final String NS = "RebornCore.hiddenWorld";
+
     public Set<WorldKey> unlockedOf(UUID p) {
-        return unlocked.getOrDefault(p, java.util.Collections.emptySet());
+        Set<WorldKey> cached = unlocked.get(p);
+        if (cached != null) return cached;
+        String stored = plugin.kv().get(NS, p, "worlds");
+        if (stored == null || stored.isEmpty()) return java.util.Collections.emptySet();
+        Set<WorldKey> loaded = new HashSet<>();
+        for (String name : stored.split(",")) {
+            try { loaded.add(WorldKey.valueOf(name)); } catch (Exception ignored) {}
+        }
+        unlocked.put(p, loaded);
+        return loaded;
+    }
+
+    private void persist(UUID p, Set<WorldKey> set) {
+        try {
+            StringBuilder sb = new StringBuilder();
+            for (WorldKey w : set) {
+                if (sb.length() > 0) sb.append(",");
+                sb.append(w.name());
+            }
+            plugin.kv().put(NS, p, "worlds", sb.toString());
+        } catch (Throwable ignored) {}
     }
 
     private void tickCheck() {
@@ -86,6 +108,7 @@ public final class HiddenWorldUnlock {
     private void unlock(Player p, WorldKey w) {
         Set<WorldKey> set = unlocked.computeIfAbsent(p.getUniqueId(), k -> new HashSet<>());
         set.add(w);
+        persist(p.getUniqueId(), set);
         String label = labelOf(w);
         Msg.send(p, "&5&l[히든 월드 발견!] §f" + label);
         Bukkit.broadcastMessage("§5§l[히든 월드 발견] §f" + p.getName()

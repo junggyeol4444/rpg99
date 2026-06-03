@@ -26,6 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class BountyManager {
 
+    private static final String NS = "RebornDeath.bounty";
+
     private final RebornDeath plugin;
     /** targetId → 누적 현상금 */
     private final Map<UUID, Long> bounties = new ConcurrentHashMap<>();
@@ -34,9 +36,34 @@ public final class BountyManager {
 
     public BountyManager(RebornDeath plugin) {
         this.plugin = plugin;
+        // 시작 시 KV에서 모든 현상금 로드
+        loadAllFromKV();
         // 1시간마다 미처치 현상금 +50%, 자동 현상금 체크
         RebornCore.get().scheduler().runTimerAsync(this::tickAutoBounty,
                 72_000L, 72_000L);
+        // 5분마다 영속화
+        RebornCore.get().scheduler().runTimerAsync(this::flush, 6000L, 6000L);
+    }
+
+    private void loadAllFromKV() {
+        try {
+            var data = RebornCore.get().kv().loadNamespace(NS);
+            for (var e : data.entrySet()) {
+                try {
+                    UUID owner = UUID.fromString(e.getKey());
+                    String amtStr = e.getValue().get("amount");
+                    if (amtStr != null) bounties.put(owner, Long.parseLong(amtStr));
+                } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    public void flush() {
+        for (var e : bounties.entrySet()) {
+            try {
+                RebornCore.get().kv().putLong(NS, e.getKey(), "amount", e.getValue());
+            } catch (Throwable ignored) {}
+        }
     }
 
     /** 외부 호출 — 현상금 걸기. */

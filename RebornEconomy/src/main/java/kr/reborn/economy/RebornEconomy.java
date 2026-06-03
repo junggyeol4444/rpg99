@@ -85,6 +85,7 @@ public final class RebornEconomy extends JavaPlugin {
         if (auctions != null) auctions.flush();
         if (mailbox != null) mailbox.flush();
         if (currencies != null) currencies.flush();
+        if (bank != null) bank.flush();
         if (gui != null) gui.shutdown();
     }
 

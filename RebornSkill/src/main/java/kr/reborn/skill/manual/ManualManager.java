@@ -187,6 +187,7 @@ public final class ManualManager {
             return false;
         }
         set.add(manualId);
+        persistOwned(p.getUniqueId());
         Msg.send(p, "&5&l[비급 발견!] §f" + m.name + " §7(" + m.rarity.koreanName + ")");
         Msg.send(p, "&7/manual research " + manualId + " 로 연구 시작 (" + m.researchMinutes + "분)");
         if (m.rarity == SecretManual.Rarity.LEGENDARY || m.rarity == SecretManual.Rarity.MYTHIC) {
@@ -285,6 +286,8 @@ public final class ManualManager {
         sSet.remove(manualId);
         owned.computeIfAbsent(buyer.getUniqueId(), k -> new java.util.HashSet<>())
                 .add(manualId);
+        persistOwned(seller.getUniqueId());
+        persistOwned(buyer.getUniqueId());
         Msg.send(seller, "&7비급 양도 완료: " + manualId);
         Msg.send(buyer, "&a비급 수령: " + manuals.get(manualId).name);
         return true;
@@ -300,8 +303,25 @@ public final class ManualManager {
         return true;
     }
 
+    private static final String NS = "RebornSkill.manual";
+
     public java.util.Set<String> ownedOf(UUID p) {
-        return owned.getOrDefault(p, java.util.Collections.emptySet());
+        java.util.Set<String> cached = owned.get(p);
+        if (cached != null) return cached;
+        // DB 로드 — 쉼표 분리
+        String stored = kr.reborn.core.RebornCore.get().kv().get(NS, p, "owned");
+        if (stored == null || stored.isEmpty()) return java.util.Collections.emptySet();
+        java.util.Set<String> loaded = new java.util.HashSet<>(java.util.Arrays.asList(stored.split(",")));
+        owned.put(p, loaded);
+        return loaded;
+    }
+
+    private void persistOwned(UUID p) {
+        try {
+            java.util.Set<String> set = owned.get(p);
+            if (set == null) return;
+            kr.reborn.core.RebornCore.get().kv().put(NS, p, "owned", String.join(",", set));
+        } catch (Throwable ignored) {}
     }
 
     public List<SecretManual> available() {

@@ -18,14 +18,20 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class CurrencyManager {
 
+    private static final String NS = "RebornEconomy.currency";
+
     private final RebornEconomy plugin;
     private final Map<String, Currency> currencies = new HashMap<>();
     /** uuid -> currencyId -> amount */
     private final Map<UUID, Map<String, Long>> balances = new ConcurrentHashMap<>();
+    /** 변경된 (uuid, currency) 추적 — flush 시 일괄 저장 */
+    private final java.util.Set<String> dirty = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     public CurrencyManager(RebornEconomy plugin) {
         this.plugin = plugin;
         load();
+        // 1분마다 dirty 항목 자동 저장
+        kr.reborn.core.RebornCore.get().scheduler().runTimerAsync(this::flush, 1200L, 1200L);
     }
 
     private void load() {
@@ -50,7 +56,18 @@ public final class CurrencyManager {
     public Collection<Currency> all() { return currencies.values(); }
 
     public long balance(UUID player, String currency) {
-        return balances.getOrDefault(player, Map.of()).getOrDefault(currency, 0L);
+        // 캐시에 없으면 DB에서 로드
+        Map<String, Long> map = balances.get(player);
+        if (map == null || !map.containsKey(currency)) {
+            long stored = kr.reborn.core.RebornCore.get().kv().getLong(NS, player, currency, 0);
+            if (stored > 0) {
+                balances.computeIfAbsent(player, k -> new ConcurrentHashMap<>())
+                        .put(currency, stored);
+                return stored;
+            }
+            return 0;
+        }
+        return map.getOrDefault(currency, 0L);
     }
 
     public Map<String, Long> all(UUID player) {
@@ -63,21 +80,38 @@ public final class CurrencyManager {
 
     public void deposit(UUID player, String currency, long amount) {
         if (amount <= 0) return;
+        // balance() 통해 DB 로드 후 +
+        long cur = balance(player, currency);
         balances.computeIfAbsent(player, k -> new ConcurrentHashMap<>())
-                .merge(currency, amount, Long::sum);
+                .put(currency, cur + amount);
+        dirty.add(player.toString() + "|" + currency);
     }
 
     /** @return true 차감 성공. */
     public boolean withdraw(UUID player, String currency, long amount) {
         if (amount <= 0) return true;
-        Map<String, Long> map = balances.computeIfAbsent(player, k -> new ConcurrentHashMap<>());
-        Long bal = map.getOrDefault(currency, 0L);
-        if (bal < amount) return false;
-        map.put(currency, bal - amount);
+        long cur = balance(player, currency);  // DB 로드 보장
+        if (cur < amount) return false;
+        balances.computeIfAbsent(player, k -> new ConcurrentHashMap<>())
+                .put(currency, cur - amount);
+        dirty.add(player.toString() + "|" + currency);
         return true;
     }
 
+    /** 변경된 (uuid, currency) 항목만 KV에 저장. */
     public void flush() {
-        // TODO: persist to DB via RebornCore.database()
+        if (dirty.isEmpty()) return;
+        var snapshot = new java.util.HashSet<>(dirty);
+        dirty.clear();
+        for (String key : snapshot) {
+            String[] parts = key.split("\\|", 2);
+            if (parts.length != 2) continue;
+            try {
+                UUID uuid = UUID.fromString(parts[0]);
+                long bal = balances.getOrDefault(uuid, Map.of())
+                        .getOrDefault(parts[1], 0L);
+                kr.reborn.core.RebornCore.get().kv().putLong(NS, uuid, parts[1], bal);
+            } catch (Throwable ignored) {}
+        }
     }
 }

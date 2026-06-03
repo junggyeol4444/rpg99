@@ -69,10 +69,12 @@ public final class UnderworldManager {
         loaded.add(p.getUniqueId());
 
         PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
-        WorldKey prev = d.worldKey();
-        d.worldKey(WorldKey.UNDERWORLD);
-        Bukkit.getPluginManager().callEvent(
-                new kr.reborn.core.event.RebornWorldChangeEvent(p, prev, WorldKey.UNDERWORLD));
+        if (d != null) {
+            WorldKey prev = d.worldKey();
+            d.worldKey(WorldKey.UNDERWORLD);
+            Bukkit.getPluginManager().callEvent(
+                    new kr.reborn.core.event.RebornWorldChangeEvent(p, prev, WorldKey.UNDERWORLD));
+        }
         Msg.send(p, "&8너의 영혼은 명계에 도달했다.");
         Msg.send(p, "&7/underworld revive | reincarnate | stay");
     }
@@ -83,6 +85,7 @@ public final class UnderworldManager {
         if (arrived == null) return false;
         long min = plugin.getConfig().getLong("underworld.revive-min-seconds", 300) * 1000;
         PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+        if (d == null) return false;
         boolean canByTime = System.currentTimeMillis() - arrived >= min;
         boolean canByKi = d.getStat(StatType.UNDERWORLD_KI) >= plugin.getConfig().getInt("underworld.revive-min-underworld-ki", 50);
         if (!canByTime && !canByKi) {
@@ -117,6 +120,7 @@ public final class UnderworldManager {
         }
         // 명왕 심판 — 명기 100 이상 또는 명계 체류 60분 이상이면 통과
         PlayerData chk = RebornCore.get().api().getPlayerData(p.getUniqueId());
+        if (chk == null) return;
         boolean passedJudgment = chk.getStat(kr.reborn.core.data.StatType.UNDERWORLD_KI) >= 100
                 || System.currentTimeMillis() - arrived >= 3_600_000L;
         if (!passedJudgment) {
@@ -126,6 +130,7 @@ public final class UnderworldManager {
         org.bukkit.Bukkit.broadcastMessage("§8§l[명왕 심판] §f" + p.getName()
                 + "의 영혼이 윤회를 인정받았다.");
         PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+        if (d == null) return;
         // 이전 경지 보너스
         var bonusMap = plugin.getConfig().getConfigurationSection("reincarnation.bonus-by-tier");
         if (bonusMap != null) {

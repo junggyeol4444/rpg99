@@ -113,7 +113,7 @@ public final class ClanManager {
         Clan c = new Clan(id, name, leader.getUniqueId());
         clans.put(id, c);
         PlayerData d = RebornCore.get().api().getPlayerData(leader.getUniqueId());
-        d.clanId(id);
+        if (d != null) d.clanId(id);
         Msg.send(leader, "&6가문 창설: " + name);
         return true;
     }

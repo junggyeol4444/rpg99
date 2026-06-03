@@ -29,7 +29,7 @@ public final class DeathListener implements Listener {
         Bukkit.getPluginManager().callEvent(
                 new RebornDeathEvent(p, p.getLocation(), killer, killer == null ? "PVE" : "PVP"));
 
-        d.deaths(d.deaths() + 1);
+        if (d != null) d.deaths(d.deaths() + 1);
         // 아이템은 사망 지점에 자연스럽게 드랍됨 (바닐라 동작 유지)
 
         // 명계 이동

@@ -22,6 +22,7 @@ public final class PlayerDataListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         PlayerData d = dm.getOrLoad(e.getPlayer().getUniqueId());
+        if (d == null) return;
         d.name(e.getPlayer().getName());
         d.lastJoin(System.currentTimeMillis());
     }

@@ -6,7 +6,7 @@ folia-supported: true
 authors: [ReincarnationWorld]
 description: 사망·명계·윤회·범죄 시스템
 depend: [RebornCore]
-softdepend: [RebornStat, RebornSpawn]
+softdepend: [RebornStat, RebornSpawn, RebornEconomy, RebornClan, RebornCurse, RebornNPC]
 load: POSTWORLD
 commands:
   death:

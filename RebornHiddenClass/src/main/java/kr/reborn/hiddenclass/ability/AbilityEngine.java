@@ -30,13 +30,30 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class AbilityEngine {
 
+    private static final String NS = "RebornHiddenClass.ability";
+
     private final RebornHiddenClass plugin;
-    /** uuid → abilityName → 다음 사용 가능 시각(ms). */
+    /** uuid → abilityName → 다음 사용 가능 시각(ms). (휘발성 — 재시작 시 리셋) */
     private final Map<UUID, Map<String, Long>> cooldowns = new ConcurrentHashMap<>();
-    /** 1회 한정 능력 사용 기록. */
+    /** 1회 한정 능력 사용 기록. (영속화) */
     private final Map<UUID, java.util.Set<String>> oneShotUsed = new ConcurrentHashMap<>();
-    /** IMMORTAL_REVIVE 발동 여부 (1회 한정 → 부활 후 영구 강화 적용 표시). */
+    /** IMMORTAL_REVIVE 발동 여부 (1회 한정 → 부활 후 영구 강화 적용 표시). (영속화) */
     private final Map<UUID, Boolean> immortalConsumed = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = ConcurrentHashMap.newKeySet();
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            String csv = RebornCore.get().kv().get(NS, p, "oneShot");
+            if (csv != null && !csv.isEmpty()) {
+                java.util.Set<String> set = new java.util.HashSet<>();
+                for (String c : csv.split(",")) if (!c.isEmpty()) set.add(c);
+                oneShotUsed.put(p, set);
+            }
+            if (RebornCore.get().kv().getInt(NS, p, "immortalConsumed", 0) == 1) {
+                immortalConsumed.put(p, true);
+            }
+        }
+    }
 
     public AbilityEngine(RebornHiddenClass plugin) {
         this.plugin = plugin;
@@ -67,11 +84,13 @@ public final class AbilityEngine {
         if (ab.passive) { Msg.warn(p, "패시브 능력 — 자동 적용."); return false; }
         if (!owns(p, ab)) { Msg.error(p, "보유하지 않은 능력: " + ab.classId); return false; }
         UUID id = p.getUniqueId();
+        ensureLoaded(id);
 
         if (ab.cooldownMs == 0) {
             var used = oneShotUsed.computeIfAbsent(id, k -> new java.util.HashSet<>());
             if (used.contains(ab.name())) { Msg.error(p, "1회 한정 능력 — 이미 사용함."); return false; }
             used.add(ab.name());
+            RebornCore.get().kv().put(NS, id, "oneShot", String.join(",", used));
         } else if (ab.cooldownMs > 0) {
             long now = System.currentTimeMillis();
             long ready = cooldowns.computeIfAbsent(id, k -> new HashMap<>()).getOrDefault(ab.name(), 0L);
@@ -428,6 +447,7 @@ public final class AbilityEngine {
             }
             case IMMORTAL_REVIVE -> {
                 // 부활 후 영구 강화 표시만 — 실제 부활 트리거는 EntityDamageEvent listener에서.
+                ensureLoaded(p.getUniqueId());
                 if (Boolean.TRUE.equals(immortalConsumed.get(p.getUniqueId()))) {
                     try { p.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 300, 0, true, false)); }
                     catch (Throwable ignored) {}
@@ -538,8 +558,10 @@ public final class AbilityEngine {
             if (hc != null && plain(hc.name).equals(HiddenAbility.IMMORTAL_REVIVE.classId)) { has = true; break; }
         }
         if (!has) return false;
+        ensureLoaded(id);
         if (Boolean.TRUE.equals(immortalConsumed.get(id))) return false;
         immortalConsumed.put(id, true);
+        RebornCore.get().kv().putInt(NS, id, "immortalConsumed", 1);
         try {
             p.setHealth(p.getMaxHealth());
             p.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, Integer.MAX_VALUE, 1, true, false));

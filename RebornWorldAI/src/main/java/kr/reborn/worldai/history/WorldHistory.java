@@ -85,10 +85,23 @@ public final class WorldHistory {
                     w.name() + ":" + s, kind.name() + "|" + when + "|" + safe);
         } catch (Throwable ignored) {}
         if (dq.size() > CAP) {
-            Entry removed = dq.pollLast();
-            // CAP 초과 시 가장 오래된 항목 KV에서도 삭제 시도 (정확한 seq 모를 수 있으므로 best-effort)
-            // 단순화: 주기적 prune은 별도로 처리 가능. 지금은 CAP을 약간 초과해도 무방.
+            dq.pollLast();
         }
+        // 매 50번째 기록마다 KV 가지치기 — 메모리 CAP 너머의 오래된 KV 항목 제거
+        if (s % 50 == 0) prune(w, s);
+    }
+
+    /** 현재 seq 기준 CAP+50 이전의 KV 키 일괄 삭제 (안전 마진). */
+    private void prune(WorldKey w, long currentSeq) {
+        long cutoff = currentSeq - CAP - 50;
+        if (cutoff <= 0) return;
+        try {
+            var kv = kr.reborn.core.RebornCore.get().kv();
+            // best-effort: 직전 100개 정도만 시도 (전부 스캔하면 느림)
+            for (long s = cutoff; s > Math.max(0, cutoff - 100); s--) {
+                kv.remove(NS, null, w.name() + ":" + s);
+            }
+        } catch (Throwable ignored) {}
     }
 
     public List<Entry> recent(WorldKey w, int count) {

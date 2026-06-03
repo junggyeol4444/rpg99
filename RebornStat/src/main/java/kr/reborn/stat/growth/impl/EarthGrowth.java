@@ -29,12 +29,28 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class EarthGrowth implements GrowthStrategy {
 
+    private static final String NS = "RebornStat.earth";
+
     /** uuid → 수집한 각인 카드 종 ID 집합 */
     private final Map<UUID, Set<String>> cards = new ConcurrentHashMap<>();
     /** uuid → 헌터 협회 명성 */
     private final Map<UUID, Double> reputation = new ConcurrentHashMap<>();
     /** uuid → S랭크 클리어 횟수 */
     private final Map<UUID, Integer> sRankClears = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            reputation.put(p, RebornCore.get().kv().getDouble(NS, p, "rep", 0.0));
+            sRankClears.put(p, RebornCore.get().kv().getInt(NS, p, "sRank", 0));
+            String cardsCsv = RebornCore.get().kv().get(NS, p, "cards");
+            Set<String> set = new HashSet<>();
+            if (cardsCsv != null && !cardsCsv.isEmpty()) {
+                for (String c : cardsCsv.split(",")) if (!c.isEmpty()) set.add(c);
+            }
+            cards.put(p, set);
+        }
+    }
 
     @Override public WorldKey world() { return WorldKey.EARTH; }
 
@@ -68,7 +84,9 @@ public final class EarthGrowth implements GrowthStrategy {
 
     /** 외부 호출 — S랭크 게이트 클리어. */
     public void onSRankGate(Player p) {
+        ensureLoaded(p.getUniqueId());
         int n = sRankClears.merge(p.getUniqueId(), 1, Integer::sum);
+        RebornCore.get().kv().putInt(NS, p.getUniqueId(), "sRank", n);
         RebornCore.get().api().addStat(p.getUniqueId(),
                 StatType.LEVEL, 50, "s-rank-clear");
         for (StatType t : StatType.COMMON_8) {
@@ -81,7 +99,9 @@ public final class EarthGrowth implements GrowthStrategy {
 
     /** 외부 호출 — 헌터 협회 명성. */
     public void onAssocReputation(Player p, double delta) {
+        ensureLoaded(p.getUniqueId());
         double cur = reputation.merge(p.getUniqueId(), delta, Double::sum);
+        RebornCore.get().kv().putDouble(NS, p.getUniqueId(), "rep", cur);
         // 1000, 5000, 10000 마일스톤
         if (cur >= 10000 && cur - delta < 10000) {
             Bukkit.broadcastMessage("§e§l[헌터 협회] §f" + p.getName()
@@ -111,8 +131,10 @@ public final class EarthGrowth implements GrowthStrategy {
     }
 
     private void collectCard(Player p, String species) {
+        ensureLoaded(p.getUniqueId());
         Set<String> set = cards.computeIfAbsent(p.getUniqueId(), k -> new HashSet<>());
         if (set.add(species)) {
+            RebornCore.get().kv().put(NS, p.getUniqueId(), "cards", String.join(",", set));
             Msg.send(p, "&6각인 카드 획득: " + species + " §7(총 " + set.size() + "종)");
             // 10장당 +5 모든 스탯
             if (set.size() % 10 == 0) {
@@ -124,7 +146,7 @@ public final class EarthGrowth implements GrowthStrategy {
         }
     }
 
-    public Set<String> cardsOf(UUID p) { return cards.getOrDefault(p, java.util.Collections.emptySet()); }
-    public double reputationOf(UUID p) { return reputation.getOrDefault(p, 0.0); }
-    public int sRankClearsOf(UUID p) { return sRankClears.getOrDefault(p, 0); }
+    public Set<String> cardsOf(UUID p) { ensureLoaded(p); return cards.getOrDefault(p, java.util.Collections.emptySet()); }
+    public double reputationOf(UUID p) { ensureLoaded(p); return reputation.getOrDefault(p, 0.0); }
+    public int sRankClearsOf(UUID p) { ensureLoaded(p); return sRankClears.getOrDefault(p, 0); }
 }

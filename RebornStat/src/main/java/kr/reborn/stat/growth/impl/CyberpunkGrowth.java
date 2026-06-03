@@ -40,7 +40,7 @@ public final class CyberpunkGrowth implements GrowthStrategy {
         public final Slot slot;
         public final String id;
         public final String name;
-        public final long installedAt;
+        public long installedAt;
         public final long lifespanMs;
         public final Map<StatType, Double> bonus;
 
@@ -56,7 +56,57 @@ public final class CyberpunkGrowth implements GrowthStrategy {
         }
     }
 
+    private static final String NS = "RebornStat.cyber";
+
     private final Map<UUID, Map<Slot, Implant>> implants = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private static String encodeBonus(Map<StatType, Double> b) {
+        StringBuilder sb = new StringBuilder();
+        for (var e : b.entrySet()) {
+            if (sb.length() > 0) sb.append(',');
+            sb.append(e.getKey().name()).append('=').append(e.getValue());
+        }
+        return sb.toString();
+    }
+
+    private static Map<StatType, Double> decodeBonus(String csv) {
+        Map<StatType, Double> b = new java.util.EnumMap<>(StatType.class);
+        if (csv == null || csv.isEmpty()) return b;
+        for (String part : csv.split(",")) {
+            String[] kv = part.split("=");
+            if (kv.length == 2) {
+                try { b.put(StatType.valueOf(kv[0]), Double.parseDouble(kv[1])); }
+                catch (Throwable ignored) {}
+            }
+        }
+        return b;
+    }
+
+    private void persistImplant(UUID p, Implant imp) {
+        String encoded = imp.id + "|" + imp.name + "|" + imp.installedAt + "|"
+                + imp.lifespanMs + "|" + encodeBonus(imp.bonus);
+        RebornCore.get().kv().put(NS, p, imp.slot.name(), encoded);
+    }
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            Map<Slot, Implant> map = new java.util.EnumMap<>(Slot.class);
+            var all = RebornCore.get().kv().loadAll(NS, p);
+            for (var e : all.entrySet()) {
+                try {
+                    Slot slot = Slot.valueOf(e.getKey());
+                    String[] parts = e.getValue().split("\\|", -1);
+                    if (parts.length < 5) continue;
+                    Implant imp = new Implant(slot, parts[0], parts[1],
+                            Long.parseLong(parts[3]), decodeBonus(parts[4]));
+                    imp.installedAt = Long.parseLong(parts[2]);
+                    map.put(slot, imp);
+                } catch (Throwable ignored) {}
+            }
+            if (!map.isEmpty()) implants.put(p, map);
+        }
+    }
 
     @Override public WorldKey world() { return WorldKey.CYBERPUNK; }
 
@@ -91,6 +141,7 @@ public final class CyberpunkGrowth implements GrowthStrategy {
     /** 임플란트 장착. */
     public boolean install(Player p, Slot slot, String id, String name,
                            long lifespanMs, Map<StatType, Double> bonus) {
+        ensureLoaded(p.getUniqueId());
         Map<Slot, Implant> map = implants.computeIfAbsent(p.getUniqueId(), k -> new java.util.EnumMap<>(Slot.class));
         if (map.containsKey(slot)) {
             Msg.error(p, "이미 " + slot + " 슬롯에 임플란트 장착됨.");
@@ -98,6 +149,7 @@ public final class CyberpunkGrowth implements GrowthStrategy {
         }
         Implant imp = new Implant(slot, id, name, lifespanMs, bonus);
         map.put(slot, imp);
+        persistImplant(p.getUniqueId(), imp);
         // 보너스 즉시 적용
         for (var e : bonus.entrySet()) {
             RebornCore.get().api().addStat(p.getUniqueId(), e.getKey(),
@@ -110,10 +162,12 @@ public final class CyberpunkGrowth implements GrowthStrategy {
 
     /** 임플란트 분리. */
     public boolean remove(Player p, Slot slot) {
+        ensureLoaded(p.getUniqueId());
         Map<Slot, Implant> map = implants.get(p.getUniqueId());
         if (map == null) return false;
         Implant imp = map.remove(slot);
         if (imp == null) return false;
+        RebornCore.get().kv().remove(NS, p.getUniqueId(), slot.name());
         // 보너스 회수
         for (var e : imp.bonus.entrySet()) {
             RebornCore.get().api().addStat(p.getUniqueId(), e.getKey(),
@@ -136,6 +190,7 @@ public final class CyberpunkGrowth implements GrowthStrategy {
     }
 
     private void checkExpired(Player p) {
+        ensureLoaded(p.getUniqueId());
         Map<Slot, Implant> map = implants.get(p.getUniqueId());
         if (map == null) return;
         List<Slot> toRemove = new ArrayList<>();
@@ -168,11 +223,13 @@ public final class CyberpunkGrowth implements GrowthStrategy {
     }
 
     public int implantCount(UUID p) {
+        ensureLoaded(p);
         Map<Slot, Implant> map = implants.get(p);
         return map == null ? 0 : map.size();
     }
 
     public Map<Slot, Implant> implantsOf(UUID p) {
+        ensureLoaded(p);
         return implants.getOrDefault(p, java.util.Collections.emptyMap());
     }
 }

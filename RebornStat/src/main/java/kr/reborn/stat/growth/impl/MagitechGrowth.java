@@ -30,8 +30,23 @@ public final class MagitechGrowth implements GrowthStrategy {
         CoreTier(int w) { this.weight = w; }
     }
 
+    private static final String NS = "RebornStat.magitech";
+
     /** uuid → tier → count */
     private final Map<UUID, Map<CoreTier, Integer>> cores = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            Map<CoreTier, Integer> map = new java.util.EnumMap<>(CoreTier.class);
+            var all = RebornCore.get().kv().loadAll(NS, p);
+            for (CoreTier t : CoreTier.values()) {
+                String v = all.get(t.name());
+                if (v != null) try { map.put(t, Integer.parseInt(v)); } catch (Throwable ignored) {}
+            }
+            if (!map.isEmpty()) cores.put(p, map);
+        }
+    }
 
     @Override public WorldKey world() { return WorldKey.MAGITECH; }
 
@@ -60,9 +75,11 @@ public final class MagitechGrowth implements GrowthStrategy {
 
     /** 외부 호출 — 코어 채집. */
     public void harvest(Player p, CoreTier tier, int amount) {
+        ensureLoaded(p.getUniqueId());
         Map<CoreTier, Integer> map = cores.computeIfAbsent(p.getUniqueId(),
                 k -> new java.util.EnumMap<>(CoreTier.class));
         int cur = map.merge(tier, amount, Integer::sum);
+        RebornCore.get().kv().putInt(NS, p.getUniqueId(), tier.name(), cur);
         RebornCore.get().api().addStat(p.getUniqueId(),
                 StatType.MAGITECH_ENERGY, tier.weight * amount, "core:" + tier);
         Msg.send(p, "&b" + tier + " 코어 +" + amount + " §7(총 " + cur + ")");
@@ -79,6 +96,7 @@ public final class MagitechGrowth implements GrowthStrategy {
             Msg.error(p, "CHAOS 코어는 더 이상 합성 불가.");
             return false;
         }
+        ensureLoaded(p.getUniqueId());
         Map<CoreTier, Integer> map = cores.get(p.getUniqueId());
         if (map == null) return false;
         int cur = map.getOrDefault(tier, 0);
@@ -87,6 +105,7 @@ public final class MagitechGrowth implements GrowthStrategy {
             return false;
         }
         map.put(tier, cur - 3);
+        RebornCore.get().kv().putInt(NS, p.getUniqueId(), tier.name(), cur - 3);
         CoreTier next = CoreTier.values()[tier.ordinal() + 1];
         harvest(p, next, 1);
         return true;
@@ -106,10 +125,12 @@ public final class MagitechGrowth implements GrowthStrategy {
     }
 
     public Map<CoreTier, Integer> coresOf(UUID p) {
+        ensureLoaded(p);
         return cores.getOrDefault(p, java.util.Collections.emptyMap());
     }
 
     public int totalCoreWeight(UUID p) {
+        ensureLoaded(p);
         Map<CoreTier, Integer> map = cores.get(p);
         if (map == null) return 0;
         int total = 0;

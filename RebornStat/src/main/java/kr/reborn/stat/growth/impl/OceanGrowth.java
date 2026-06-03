@@ -31,6 +31,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class OceanGrowth implements GrowthStrategy {
 
+    private static final String NS = "RebornStat.ocean";
+
     /** uuid → 다이빙 누적 미터 */
     private final Map<UUID, Double> diveMeters = new ConcurrentHashMap<>();
     /** uuid → 진주 수 */
@@ -39,6 +41,16 @@ public final class OceanGrowth implements GrowthStrategy {
     private final Map<UUID, Integer> captures = new ConcurrentHashMap<>();
     /** uuid → 적용된 단계 */
     private final Map<UUID, Integer> stage = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            diveMeters.put(p, RebornCore.get().kv().getDouble(NS, p, "dive", 0.0));
+            pearls.put(p, RebornCore.get().kv().getInt(NS, p, "pearls", 0));
+            captures.put(p, RebornCore.get().kv().getInt(NS, p, "captures", 0));
+            stage.put(p, RebornCore.get().kv().getInt(NS, p, "stage", -1));
+        }
+    }
 
     @Override public WorldKey world() { return WorldKey.OCEAN; }
 
@@ -82,7 +94,9 @@ public final class OceanGrowth implements GrowthStrategy {
     }
 
     public void onDive(Player p, double meters) {
+        ensureLoaded(p.getUniqueId());
         double cur = diveMeters.merge(p.getUniqueId(), meters, Double::sum);
+        RebornCore.get().kv().putDouble(NS, p.getUniqueId(), "dive", cur);
         RebornCore.get().api().addStat(p.getUniqueId(),
                 StatType.OCEAN_POWER, meters * 0.3, "dive");
         if (cur >= 1000 && cur - meters < 1000) {
@@ -93,7 +107,9 @@ public final class OceanGrowth implements GrowthStrategy {
     }
 
     public void onPearl(Player p, int quality) {
+        ensureLoaded(p.getUniqueId());
         int n = pearls.merge(p.getUniqueId(), 1, Integer::sum);
+        RebornCore.get().kv().putInt(NS, p.getUniqueId(), "pearls", n);
         double bonus = 10 * quality;
         RebornCore.get().api().addStat(p.getUniqueId(),
                 StatType.OCEAN_POWER, bonus, "pearl");
@@ -115,7 +131,9 @@ public final class OceanGrowth implements GrowthStrategy {
     }
 
     public void onShipCapture(Player p) {
+        ensureLoaded(p.getUniqueId());
         int n = captures.merge(p.getUniqueId(), 1, Integer::sum);
+        RebornCore.get().kv().putInt(NS, p.getUniqueId(), "captures", n);
         RebornCore.get().api().addStat(p.getUniqueId(),
                 StatType.OCEAN_POWER, 100, "ship-capture");
         RebornCore.get().api().addStat(p.getUniqueId(),
@@ -125,11 +143,13 @@ public final class OceanGrowth implements GrowthStrategy {
     }
 
     private void checkStage(Player p) {
+        ensureLoaded(p.getUniqueId());
         double ki = RebornCore.get().api().getStat(p.getUniqueId(), StatType.OCEAN_POWER);
         int newStage = ki >= 20000 ? 3 : ki >= 5000 ? 2 : ki >= 1000 ? 1 : 0;
         int prev = stage.getOrDefault(p.getUniqueId(), -1);
         if (newStage > prev) {
             stage.put(p.getUniqueId(), newStage);
+            RebornCore.get().kv().putInt(NS, p.getUniqueId(), "stage", newStage);
             String label = switch (newStage) {
                 case 1 -> "항해사";
                 case 2 -> "선장";
@@ -151,6 +171,6 @@ public final class OceanGrowth implements GrowthStrategy {
         }
     }
 
-    public int stageOf(UUID p) { return stage.getOrDefault(p, 0); }
-    public int pearlsOf(UUID p) { return pearls.getOrDefault(p, 0); }
+    public int stageOf(UUID p) { ensureLoaded(p); return Math.max(0, stage.getOrDefault(p, 0)); }
+    public int pearlsOf(UUID p) { ensureLoaded(p); return pearls.getOrDefault(p, 0); }
 }

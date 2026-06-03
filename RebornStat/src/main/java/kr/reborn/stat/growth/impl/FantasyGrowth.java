@@ -36,10 +36,39 @@ public final class FantasyGrowth implements GrowthStrategy {
     public enum School { ELEMENTAL, ARCANE, HOLY, NECROMANCY, ILLUSION, RUNE }
     public enum Race { HUMAN, ELF, DWARF, HALFLING }
 
+    private static final String NS = "RebornStat.fantasy";
+
     private final Map<UUID, Map<School, Double>> mastery = new ConcurrentHashMap<>();
     private final Map<UUID, Set<String>> runes = new ConcurrentHashMap<>();
     private final Map<UUID, Race> race = new ConcurrentHashMap<>();
     private final Map<UUID, Set<School>> masterTitles = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            var all = RebornCore.get().kv().loadAll(NS, p);
+            // 종족
+            String raceStr = all.get("race");
+            if (raceStr != null) try { race.put(p, Race.valueOf(raceStr)); } catch (Throwable ignored) {}
+            // 학파 마스터리
+            Map<School, Double> m = new java.util.EnumMap<>(School.class);
+            Set<School> titles = new HashSet<>();
+            for (School s : School.values()) {
+                String v = all.get("mast." + s.name());
+                if (v != null) try { m.put(s, Double.parseDouble(v)); } catch (Throwable ignored) {}
+                if ("1".equals(all.get("title." + s.name()))) titles.add(s);
+            }
+            if (!m.isEmpty()) mastery.put(p, m);
+            if (!titles.isEmpty()) masterTitles.put(p, titles);
+            // 룬
+            String runesCsv = all.get("runes");
+            Set<String> rs = new HashSet<>();
+            if (runesCsv != null && !runesCsv.isEmpty()) {
+                for (String r : runesCsv.split(",")) if (!r.isEmpty()) rs.add(r);
+            }
+            if (!rs.isEmpty()) runes.put(p, rs);
+        }
+    }
 
     @Override public WorldKey world() { return WorldKey.FANTASY; }
 
@@ -75,8 +104,10 @@ public final class FantasyGrowth implements GrowthStrategy {
 
     /** 외부 호출 — 룬 수집. */
     public void onRuneCollect(Player p, String runeId) {
+        ensureLoaded(p.getUniqueId());
         Set<String> set = runes.computeIfAbsent(p.getUniqueId(), k -> new HashSet<>());
         if (set.add(runeId)) {
+            RebornCore.get().kv().put(NS, p.getUniqueId(), "runes", String.join(",", set));
             addMastery(p, School.RUNE, 5);
             RebornCore.get().api().addStat(p.getUniqueId(), StatType.MANA, 50, "rune-collect");
             Msg.send(p, "&5룬 수집: " + runeId + " §7(총 " + set.size() + ")");
@@ -90,21 +121,26 @@ public final class FantasyGrowth implements GrowthStrategy {
 
     /** 외부 호출 — 종족 설정 (영구). */
     public void setRace(Player p, Race r) {
+        ensureLoaded(p.getUniqueId());
         Race prev = race.put(p.getUniqueId(), r);
         if (prev == r) return;
+        RebornCore.get().kv().put(NS, p.getUniqueId(), "race", r.name());
         if (prev != null) revertRaceBonus(p, prev);
         applyInitialRaceBonus(p, r);
         Msg.send(p, "&6종족: " + r);
     }
 
     private void addMastery(Player p, School school, double v) {
+        ensureLoaded(p.getUniqueId());
         Map<School, Double> map = mastery.computeIfAbsent(p.getUniqueId(),
                 k -> new java.util.EnumMap<>(School.class));
         double next = Math.min(1000, map.getOrDefault(school, 0.0) + v);
         map.put(school, next);
+        RebornCore.get().kv().putDouble(NS, p.getUniqueId(), "mast." + school.name(), next);
         Set<School> titles = masterTitles.computeIfAbsent(p.getUniqueId(), k -> new HashSet<>());
         if (next >= 1000 && !titles.contains(school)) {
             titles.add(school);
+            RebornCore.get().kv().putInt(NS, p.getUniqueId(), "title." + school.name(), 1);
             Bukkit.broadcastMessage("§5§l[대마법사] §f" + p.getName()
                     + " §7가 " + school + " 학파의 대마법사가 되었다!");
             RebornCore.get().api().addStat(p.getUniqueId(),
@@ -138,6 +174,7 @@ public final class FantasyGrowth implements GrowthStrategy {
     }
 
     private void applyRaceBonus(Player p, double v) {
+        ensureLoaded(p.getUniqueId());
         Race r = race.get(p.getUniqueId());
         if (r == null) return;
         switch (r) {
@@ -154,13 +191,15 @@ public final class FantasyGrowth implements GrowthStrategy {
     }
 
     public double masteryOf(UUID p, School s) {
+        ensureLoaded(p);
         Map<School, Double> map = mastery.get(p);
         if (map == null) return 0;
         return map.getOrDefault(s, 0.0);
     }
 
-    public Race raceOf(UUID p) { return race.get(p); }
+    public Race raceOf(UUID p) { ensureLoaded(p); return race.get(p); }
     public int runesCollected(UUID p) {
+        ensureLoaded(p);
         Set<String> set = runes.get(p);
         return set == null ? 0 : set.size();
     }

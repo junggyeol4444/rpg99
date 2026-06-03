@@ -33,10 +33,29 @@ public final class SpiritGrowth implements GrowthStrategy {
 
     public enum Element { FIRE, WATER, EARTH, WIND, LIGHT, DARK }
 
+    private static final String NS = "RebornStat.spirit";
+
     /** uuid → element → 친화도 */
     private final Map<UUID, Map<Element, Double>> affinity = new ConcurrentHashMap<>();
     /** uuid → 원소왕(원소별)의 호의도 */
     private final Map<UUID, Map<Element, Double>> kingFavor = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            Map<Element, Double> af = new EnumMap<>(Element.class);
+            Map<Element, Double> kf = new EnumMap<>(Element.class);
+            var all = RebornCore.get().kv().loadAll(NS, p);
+            for (Element e : Element.values()) {
+                String va = all.get("aff." + e.name());
+                String vk = all.get("king." + e.name());
+                if (va != null) try { af.put(e, Double.parseDouble(va)); } catch (Throwable ignored) {}
+                if (vk != null) try { kf.put(e, Double.parseDouble(vk)); } catch (Throwable ignored) {}
+            }
+            affinity.put(p, af);
+            kingFavor.put(p, kf);
+        }
+    }
 
     @Override public WorldKey world() { return WorldKey.SPIRIT; }
 
@@ -103,32 +122,39 @@ public final class SpiritGrowth implements GrowthStrategy {
 
     /** 외부 호출 — 원소 친화도 (스킬 위력 계산용). */
     public double affinityOf(UUID p, Element e) {
+        ensureLoaded(p);
         Map<Element, Double> map = affinity.get(p);
         if (map == null) return 0;
         return map.getOrDefault(e, 0.0);
     }
 
     public double kingFavorOf(UUID p, Element e) {
+        ensureLoaded(p);
         Map<Element, Double> map = kingFavor.get(p);
         if (map == null) return 0;
         return map.getOrDefault(e, 0.0);
     }
 
     public Map<Element, Double> affinitiesOf(UUID p) {
+        ensureLoaded(p);
         return affinity.getOrDefault(p, java.util.Collections.emptyMap());
     }
 
     private void addAffinity(Player p, Element e, double v) {
+        ensureLoaded(p.getUniqueId());
         Map<Element, Double> map = affinity.computeIfAbsent(p.getUniqueId(),
                 k -> new EnumMap<>(Element.class));
         double next = Math.max(0, Math.min(1000, map.getOrDefault(e, 0.0) + v));
         map.put(e, next);
+        RebornCore.get().kv().putDouble(NS, p.getUniqueId(), "aff." + e.name(), next);
     }
 
     private void addKingFavor(Player p, Element e, double v) {
+        ensureLoaded(p.getUniqueId());
         Map<Element, Double> map = kingFavor.computeIfAbsent(p.getUniqueId(),
                 k -> new EnumMap<>(Element.class));
         double next = Math.max(-200, Math.min(500, map.getOrDefault(e, 0.0) + v));
         map.put(e, next);
+        RebornCore.get().kv().putDouble(NS, p.getUniqueId(), "king." + e.name(), next);
     }
 }

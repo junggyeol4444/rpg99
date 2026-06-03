@@ -14,6 +14,8 @@ import java.util.Map;
 
 public final class WorldAI {
 
+    private static final String NS = "RebornWorldAI.worldai";
+
     private final RebornWorldAI plugin;
     private final WorldKey world;
 
@@ -22,6 +24,46 @@ public final class WorldAI {
 
     public WorldAI(RebornWorldAI plugin, WorldKey w) {
         this.plugin = plugin; this.world = w;
+        loadState();
+    }
+
+    private void loadState() {
+        try {
+            String prefix = world.name() + ".";
+            var all = kr.reborn.core.RebornCore.get().kv().loadAll(NS, null);
+            for (var e : all.entrySet()) {
+                if (!e.getKey().startsWith(prefix)) continue;
+                String field = e.getKey().substring(prefix.length());
+                try {
+                    if (field.startsWith("cd.")) {
+                        questCooldowns.put(field.substring(3), Long.parseLong(e.getValue()));
+                    } else {
+                        double v = Double.parseDouble(e.getValue());
+                        switch (field) {
+                            case "inflation" -> state.inflation = v;
+                            case "tradeActivity" -> state.tradeActivity = v;
+                            case "tension" -> state.tension = v;
+                            case "stability" -> state.stability = v;
+                            case "mobBalance" -> state.mobBalance = v;
+                            default -> {}
+                        }
+                    }
+                } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    public void saveState() {
+        String prefix = world.name() + ".";
+        var kv = kr.reborn.core.RebornCore.get().kv();
+        kv.putDouble(NS, null, prefix + "inflation", state.inflation);
+        kv.putDouble(NS, null, prefix + "tradeActivity", state.tradeActivity);
+        kv.putDouble(NS, null, prefix + "tension", state.tension);
+        kv.putDouble(NS, null, prefix + "stability", state.stability);
+        kv.putDouble(NS, null, prefix + "mobBalance", state.mobBalance);
+        for (var e : questCooldowns.entrySet()) {
+            kv.putLong(NS, null, prefix + "cd." + e.getKey(), e.getValue());
+        }
     }
 
     public WorldKey world() { return world; }
@@ -147,6 +189,7 @@ public final class WorldAI {
         long last = questCooldowns.getOrDefault(key, 0L);
         if (now - last < cd * 1000) return;
         questCooldowns.put(key, now);
+        kr.reborn.core.RebornCore.get().kv().putLong(NS, null, world.name() + ".cd." + key, now);
         Bukkit.getPluginManager().callEvent(new RebornWorldAIDecisionEvent(world, key, label));
         Bukkit.broadcastMessage("§6[" + world + " AI] §f" + label + " 발동");
         // 역사 기록

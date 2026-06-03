@@ -84,6 +84,10 @@ public final class RebornWorldAI extends JavaPlugin {
     public void onDisable() {
         try { if (factions != null) factions.saveAll(); }
         catch (Throwable t) { getLogger().warning("FactionDynamics 저장 실패: " + t.getMessage()); }
+        for (WorldAI ai : ais.values()) {
+            try { ai.saveState(); }
+            catch (Throwable t) { getLogger().warning("[" + ai.world() + "] 상태 저장 실패: " + t.getMessage()); }
+        }
     }
 
     private void tickAll() {

@@ -22,12 +22,55 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /** 경매장. */
 public final class AuctionManager {
 
+    private static final String NS = "RebornEconomy.auction";
+
     private final RebornEconomy plugin;
     private final List<AuctionListing> active = new CopyOnWriteArrayList<>();
     private final java.util.Map<UUID, Integer> playerListingCount = new ConcurrentHashMap<>();
 
     public AuctionManager(RebornEconomy plugin) {
         this.plugin = plugin;
+        loadAll();
+    }
+
+    private void loadAll() {
+        // 전체 active 경매 로드 — owner=null (global)
+        try {
+            var all = kr.reborn.core.RebornCore.get().kv().loadAll(NS, null);
+            for (var e : all.entrySet()) {
+                AuctionListing l = decode(e.getKey(), e.getValue());
+                if (l != null) {
+                    active.add(l);
+                    playerListingCount.merge(l.seller, 1, Integer::sum);
+                }
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    private void persist(AuctionListing l) {
+        try {
+            String itemB64 = kr.reborn.core.util.ItemSerializer.toBase64(l.item);
+            String enc = l.seller + "|" + l.currency + "|" + l.startPrice + "|"
+                    + l.buyoutPrice + "|" + l.expiresAt + "|"
+                    + l.currentBid + "|" + (l.currentBidder == null ? "" : l.currentBidder) + "|"
+                    + (itemB64 == null ? "" : itemB64);
+            kr.reborn.core.RebornCore.get().kv().put(NS, null, l.id.toString(), enc);
+        } catch (Throwable ignored) {}
+    }
+
+    private AuctionListing decode(String idStr, String value) {
+        try {
+            UUID id = UUID.fromString(idStr);
+            String[] parts = value.split("\\|", 8);
+            if (parts.length < 8) return null;
+            UUID seller = UUID.fromString(parts[0]);
+            ItemStack item = kr.reborn.core.util.ItemSerializer.fromBase64(parts[7]);
+            AuctionListing l = new AuctionListing(id, seller, item, parts[1],
+                    Long.parseLong(parts[2]), Long.parseLong(parts[3]), Long.parseLong(parts[4]));
+            l.currentBid = Long.parseLong(parts[5]);
+            l.currentBidder = parts[6].isEmpty() ? null : UUID.fromString(parts[6]);
+            return l;
+        } catch (Throwable t) { return null; }
     }
 
     public boolean register(Player seller, ItemStack item, String currency,
@@ -50,6 +93,7 @@ public final class AuctionManager {
                 item.clone(), currency, startPrice, buyout, expires);
         active.add(listing);
         playerListingCount.merge(seller.getUniqueId(), 1, Integer::sum);
+        persist(listing);
         Bukkit.getPluginManager().callEvent(new RebornAuctionCreateEvent(seller, listing));
         Msg.send(seller, "&a경매 등록 완료. 시작가 &f" + startPrice + " " + currency);
         return true;
@@ -99,12 +143,14 @@ public final class AuctionManager {
         }
         l.currentBid = amount;
         l.currentBidder = p.getUniqueId();
+        persist(l);
         Msg.send(p, "&a입찰 성공: &f" + amount);
     }
 
     public void buyout(Player p, AuctionListing l) {
         if (l.buyoutPrice <= 0) return;
         if (!active.remove(l)) return;
+        kr.reborn.core.RebornCore.get().kv().remove(NS, null, l.id.toString());
         if (!plugin.currencies().withdraw(p.getUniqueId(), l.currency, l.buyoutPrice)) {
             Msg.error(p, "잔액 부족.");
             active.add(l);
@@ -128,6 +174,7 @@ public final class AuctionManager {
             AuctionListing l = it.next();
             if (!l.isExpired()) continue;
             active.remove(l);
+            kr.reborn.core.RebornCore.get().kv().remove(NS, null, l.id.toString());
             if (l.currentBidder != null) {
                 // 낙찰
                 long fee = (long) Math.floor(l.currentBid
@@ -145,6 +192,8 @@ public final class AuctionManager {
     }
 
     public void flush() {
-        // TODO: 경매 매물 DB 저장
+        // 영속화는 register/bid/buyout/tickExpire에서 즉시 발생.
+        // 안전망: 활성 경매 전부 재저장.
+        for (AuctionListing l : active) persist(l);
     }
 }

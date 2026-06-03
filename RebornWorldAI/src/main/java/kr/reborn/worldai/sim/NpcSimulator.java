@@ -78,10 +78,10 @@ public final class NpcSimulator {
                 if (job.equals("KING") || job.equals("EMPEROR") || job.equals("DEMON_LORD")
                         || job.equals("ALLIANCE_MASTER") || job.equals("CULT_MASTER")
                         || job.equals("DRAGON_LORD") || job.equals("PALACE_MASTER")) {
-                    // emotion.add(ANGER, +30)
+                    // emotion.add(ANGER, +30) — Emotion.Kind를 안정적 FQN으로 lookup
                     Object emotion = n.getClass().getField("emotion").get(n);
-                    Method add = emotion.getClass().getMethod("add", emotion.getClass().getDeclaredClasses()[0], double.class);
-                    Object kindClass = emotion.getClass().getDeclaredClasses()[0];
+                    Class<?> kindClass = Class.forName("kr.reborn.npc.emotion.Emotion$Kind");
+                    Method add = emotion.getClass().getMethod("add", kindClass, double.class);
                     Object angerKind = kindClass.getMethod("valueOf", String.class).invoke(null, "ANGER");
                     add.invoke(emotion, angerKind, 30.0);
                     // state = COMBAT

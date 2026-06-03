@@ -30,6 +30,8 @@ import java.util.UUID;
  */
 public final class FactionDynamics {
 
+    private static final String NS = "RebornWorldAI.factionDyn";
+
     private final RebornWorldAI plugin;
     /** worldKey → factionId → Faction */
     private final Map<WorldKey, Map<String, Faction>> factions = new HashMap<>();
@@ -37,6 +39,59 @@ public final class FactionDynamics {
     public FactionDynamics(RebornWorldAI plugin) {
         this.plugin = plugin;
         seedDefaultFactions();
+        loadAll();  // 시드 위에 저장된 진화한 수치 덮어쓰기
+    }
+
+    private void loadAll() {
+        try {
+            var data = kr.reborn.core.RebornCore.get().kv().loadAll(NS, null);
+            // 키: "<worldKey>:<fid>.field" → 값
+            // 단순화: 각 키를 파싱
+            for (var e : data.entrySet()) {
+                String key = e.getKey();
+                int colon = key.indexOf(':');
+                int dot = key.indexOf('.', colon);
+                if (colon < 0 || dot < 0) continue;
+                try {
+                    WorldKey w = WorldKey.valueOf(key.substring(0, colon));
+                    String fid = key.substring(colon + 1, dot);
+                    String field = key.substring(dot + 1);
+                    Map<String, Faction> per = factions.get(w);
+                    if (per == null) continue;
+                    Faction f = per.get(fid);
+                    if (f == null) continue;
+                    switch (field) {
+                        case "influence" -> f.influence = Double.parseDouble(e.getValue());
+                        case "military"  -> f.military  = Double.parseDouble(e.getValue());
+                        case "ambition"  -> f.ambition  = Double.parseDouble(e.getValue());
+                        case "allies"    -> {
+                            f.allies.clear();
+                            for (String a : e.getValue().split(",")) if (!a.isEmpty()) f.allies.add(a);
+                        }
+                        case "enemies"   -> {
+                            f.enemies.clear();
+                            for (String a : e.getValue().split(",")) if (!a.isEmpty()) f.enemies.add(a);
+                        }
+                        default -> {}
+                    }
+                } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    /** 외부 호출 — onDisable 또는 주기적 백업. */
+    public void saveAll() {
+        for (var wMap : factions.entrySet()) {
+            String wname = wMap.getKey().name();
+            for (Faction f : wMap.getValue().values()) {
+                String prefix = wname + ":" + f.id + ".";
+                kr.reborn.core.RebornCore.get().kv().putDouble(NS, null, prefix + "influence", f.influence);
+                kr.reborn.core.RebornCore.get().kv().putDouble(NS, null, prefix + "military", f.military);
+                kr.reborn.core.RebornCore.get().kv().putDouble(NS, null, prefix + "ambition", f.ambition);
+                kr.reborn.core.RebornCore.get().kv().put(NS, null, prefix + "allies", String.join(",", f.allies));
+                kr.reborn.core.RebornCore.get().kv().put(NS, null, prefix + "enemies", String.join(",", f.enemies));
+            }
+        }
     }
 
     private void seedDefaultFactions() {

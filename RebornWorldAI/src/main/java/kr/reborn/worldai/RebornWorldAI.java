@@ -80,6 +80,12 @@ public final class RebornWorldAI extends JavaPlugin {
                 + " 세력 추적, 시장·이주·재해·날씨 엔진 가동");
     }
 
+    @Override
+    public void onDisable() {
+        try { if (factions != null) factions.saveAll(); }
+        catch (Throwable t) { getLogger().warning("FactionDynamics 저장 실패: " + t.getMessage()); }
+    }
+
     private void tickAll() {
         for (WorldAI ai : ais.values()) {
             try { ai.cycle(); }

@@ -232,12 +232,15 @@ public final class ManualManager {
     /** 연구 시작. */
     public boolean startResearch(Player p, String manualId) {
         if (!ownsCheck(p, manualId)) return false;
+        ensureResearchLoaded(p.getUniqueId());
         Map<String, Long> map = research.computeIfAbsent(p.getUniqueId(), k -> new HashMap<>());
         if (map.containsKey(manualId)) {
             Msg.warn(p, "이미 연구 중.");
             return false;
         }
-        map.put(manualId, System.currentTimeMillis());
+        long now = System.currentTimeMillis();
+        map.put(manualId, now);
+        kr.reborn.core.RebornCore.get().kv().putLong(NS, p.getUniqueId(), "research." + manualId, now);
         SecretManual m = manuals.get(manualId);
         Msg.send(p, "&5연구 시작: " + m.name + " §7(" + m.researchMinutes + "분)");
         return true;
@@ -245,6 +248,7 @@ public final class ManualManager {
 
     /** 연구 진척도 확인. */
     public double researchProgress(UUID p, String manualId) {
+        ensureResearchLoaded(p);
         Long startedAt = research.getOrDefault(p, java.util.Collections.emptyMap()).get(manualId);
         if (startedAt == null) return 0;
         SecretManual m = manuals.get(manualId);
@@ -269,10 +273,27 @@ public final class ManualManager {
                 if (elapsed >= m.researchMinutes * 60_000L) {
                     // 완료
                     iter.remove();
+                    kr.reborn.core.RebornCore.get().kv().remove(NS, uuid, "research." + e.getKey());
                     plugin.store().learn(uuid, m.skillId);
                     Msg.send(p, "&5&l[연구 완료] §f" + m.name + " §a→ 스킬 §e" + m.skillId + " §a습득!");
                 }
             }
+        }
+    }
+
+    private final java.util.Set<UUID> researchLoaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private void ensureResearchLoaded(UUID p) {
+        if (researchLoaded.add(p)) {
+            var all = kr.reborn.core.RebornCore.get().kv().loadAll(NS, p);
+            Map<String, Long> map = new HashMap<>();
+            for (var e : all.entrySet()) {
+                if (e.getKey().startsWith("research.")) {
+                    try { map.put(e.getKey().substring(9), Long.parseLong(e.getValue())); }
+                    catch (Throwable ignored) {}
+                }
+            }
+            if (!map.isEmpty()) research.put(p, map);
         }
     }
 
@@ -329,6 +350,7 @@ public final class ManualManager {
     }
 
     public Map<String, Long> researchOf(UUID p) {
+        ensureResearchLoaded(p);
         return research.getOrDefault(p, java.util.Collections.emptyMap());
     }
 }

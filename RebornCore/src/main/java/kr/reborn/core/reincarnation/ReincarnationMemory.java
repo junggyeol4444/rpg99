@@ -31,13 +31,61 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class ReincarnationMemory {
 
+    private static final String NS = "RebornCore.reincarnation";
+
     private final RebornCore plugin;
     private final Map<UUID, List<PastLife>> lives = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     public ReincarnationMemory(RebornCore plugin) {
         this.plugin = plugin;
         // 매 시간 회상 체크
         plugin.scheduler().runTimer(this::tickFlashback, 72_000L, 72_000L);
+    }
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            var all = plugin.kv().loadAll(NS, p);
+            List<PastLife> list = new ArrayList<>();
+            // life.0, life.1, ... 순서 유지
+            int i = 0;
+            while (true) {
+                String enc = all.get("life." + i);
+                if (enc == null) break;
+                PastLife life = decodeLife(enc);
+                if (life != null) list.add(life);
+                i++;
+            }
+            if (!list.isEmpty()) lives.put(p, list);
+        }
+    }
+
+    private String encodeLife(PastLife l) {
+        return l.reincarnationNumber + "|" + l.world.name() + "|" + l.tier + "|"
+                + l.durationMs + "|" + l.totalStatPeak + "|"
+                + (l.causeOfDeath == null ? "" : l.causeOfDeath) + "|"
+                + l.timestamp + "|"
+                + String.join(",", l.achievements) + "|"
+                + String.join(",", l.knownSkills);
+    }
+
+    private PastLife decodeLife(String s) {
+        try {
+            String[] parts = s.split("\\|", -1);
+            if (parts.length < 9) return null;
+            WorldKey w; try { w = WorldKey.valueOf(parts[1]); }
+            catch (Throwable ignored) { w = WorldKey.LOBBY; }
+            PastLife life = new PastLife(
+                    Integer.parseInt(parts[0]), w, parts[2],
+                    Long.parseLong(parts[3]), Long.parseLong(parts[4]), parts[5]);
+            // timestamp는 final이지만 동일 PastLife면 일관됨 — 새로 만든 PastLife의 timestamp를 그대로 둠
+            // achievements
+            if (!parts[7].isEmpty())
+                for (String a : parts[7].split(",")) life.achievements.add(a);
+            if (!parts[8].isEmpty())
+                for (String sk : parts[8].split(",")) life.knownSkills.add(sk);
+            return life;
+        } catch (Throwable ignored) { return null; }
     }
 
     /** 환생 직전 호출 — 현재 생 저장. */
@@ -68,11 +116,16 @@ public final class ReincarnationMemory {
                 }
             }
         } catch (Throwable ignored) {}
-        lives.computeIfAbsent(p.getUniqueId(), k -> new ArrayList<>()).add(life);
+        ensureLoaded(p.getUniqueId());
+        List<PastLife> list = lives.computeIfAbsent(p.getUniqueId(), k -> new ArrayList<>());
+        list.add(life);
+        // 새 life만 추가 저장 (전체 다시 쓸 필요 없음)
+        plugin.kv().put(NS, p.getUniqueId(), "life." + (list.size() - 1), encodeLife(life));
     }
 
     /** 새 환생 시 잔존 효과 적용. */
     public void applyResidualEffects(Player p) {
+        ensureLoaded(p.getUniqueId());
         var pastLives = lives.get(p.getUniqueId());
         if (pastLives == null || pastLives.isEmpty()) return;
         PastLife last = pastLives.get(pastLives.size() - 1);
@@ -133,6 +186,7 @@ public final class ReincarnationMemory {
     /** 매 시간 5% 확률 회상. */
     private void tickFlashback() {
         for (Player p : Bukkit.getOnlinePlayers()) {
+            ensureLoaded(p.getUniqueId());
             var pastLives = lives.get(p.getUniqueId());
             if (pastLives == null || pastLives.isEmpty()) continue;
             if (!Rand.chance(0.05)) continue;
@@ -147,6 +201,7 @@ public final class ReincarnationMemory {
     }
 
     public List<PastLife> livesOf(UUID p) {
+        ensureLoaded(p);
         return lives.getOrDefault(p, java.util.Collections.emptyList());
     }
 

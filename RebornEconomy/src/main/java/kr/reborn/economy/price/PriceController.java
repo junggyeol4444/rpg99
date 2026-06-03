@@ -32,6 +32,8 @@ public final class PriceController {
         BASE_PRICE.put("MEDICINE", 50.0);
     }
 
+    private static final String NS = "RebornEconomy.price";
+
     private final RebornEconomy plugin;
     /** world → category → multiplier (1.0 = 평시) */
     private final Map<WorldKey, Map<String, Double>> mult = new EnumMap<>(WorldKey.class);
@@ -41,6 +43,18 @@ public final class PriceController {
         for (WorldKey w : WorldKey.values()) {
             mult.put(w, new HashMap<>());
         }
+        // KV에서 모든 multiplier 로드 — global (owner="" 빈문자열). key = "WORLD:CATEGORY"
+        try {
+            var all = kr.reborn.core.RebornCore.get().kv().loadAll(NS, null);
+            for (var e : all.entrySet()) {
+                String[] parts = e.getKey().split(":", 2);
+                if (parts.length != 2) continue;
+                try {
+                    WorldKey w = WorldKey.valueOf(parts[0]);
+                    mult.get(w).put(parts[1], Double.parseDouble(e.getValue()));
+                } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
     }
 
     /** MarketSimulator → PriceController 직접 호출(리플렉션 타깃). */
@@ -51,6 +65,8 @@ public final class PriceController {
         // 극단값 클램프: 0.3 ~ 3.0
         m = Math.max(0.3, Math.min(3.0, m));
         mult.computeIfAbsent(world, k -> new HashMap<>()).put(category, m);
+        // 영속화 — namespace=NS, owner=null(""), key="WORLD:CATEGORY"
+        kr.reborn.core.RebornCore.get().kv().putDouble(NS, null, world.name() + ":" + category, m);
     }
 
     /** ShopManager가 buy/sell 가격 결정 시 사용. */

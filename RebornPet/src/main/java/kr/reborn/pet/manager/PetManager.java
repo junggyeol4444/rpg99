@@ -15,10 +15,40 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class PetManager {
 
+    private static final String NS = "RebornPet.pets";
+
     private final RebornPet plugin;
     private final Map<UUID, List<Pet>> byOwner = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     public PetManager(RebornPet p) { this.plugin = p; }
+
+    private void ensureLoaded(UUID owner) {
+        if (loaded.add(owner)) {
+            var all = RebornCore.get().kv().loadAll(NS, owner);
+            List<Pet> list = new ArrayList<>();
+            for (var e : all.entrySet()) {
+                try {
+                    String[] parts = e.getValue().split("\\|", -1);
+                    if (parts.length < 6) continue;
+                    Pet pp = new Pet(owner, parts[0], parts[1]);
+                    pp.level = Integer.parseInt(parts[2]);
+                    pp.xp = Long.parseLong(parts[3]);
+                    pp.bond = Integer.parseInt(parts[4]);
+                    try { pp.mode = Pet.Mode.valueOf(parts[5]); }
+                    catch (Throwable ignored) { pp.mode = Pet.Mode.FOLLOW; }
+                    list.add(pp);
+                } catch (Throwable ignored) {}
+            }
+            if (!list.isEmpty()) byOwner.put(owner, list);
+        }
+    }
+
+    private void persist(Pet pp) {
+        String encoded = pp.name + "|" + pp.mobId + "|" + pp.level + "|"
+                + pp.xp + "|" + pp.bond + "|" + pp.mode.name();
+        RebornCore.get().kv().put(NS, pp.owner, pp.id.toString(), encoded);
+    }
 
     public boolean tryTame(Player p, LivingEntity target) {
         double percent = plugin.getConfig().getDouble("tame.hp-threshold-percent", 10) / 100.0;
@@ -30,8 +60,10 @@ public final class PetManager {
         double charisma = RebornCore.get().api().getStat(p.getUniqueId(), StatType.CHARISMA);
         double chance = base + charisma * plugin.getConfig().getDouble("tame.charisma-bonus", 0.005);
         if (Rand.chance(chance)) {
+            ensureLoaded(p.getUniqueId());
             Pet pet = new Pet(p.getUniqueId(), target.getType().name() + "_pet", target.getType().name());
             byOwner.computeIfAbsent(p.getUniqueId(), x -> new ArrayList<>()).add(pet);
+            persist(pet);
             // 몬스터 종류별 고유 길들이기 메시지
             String successMsg = tameMessage(target.getType().name());
             target.remove();
@@ -91,6 +123,7 @@ public final class PetManager {
     }
 
     public List<Pet> petsOf(UUID owner) {
+        ensureLoaded(owner);
         return byOwner.getOrDefault(owner, List.of());
     }
 
@@ -133,6 +166,7 @@ public final class PetManager {
             need = pet.level * 100L;
             tryEvolve(pet);
         }
+        persist(pet);
     }
 
     /** 펫 진화 — 특정 레벨 도달 시 mobId 변경. */
@@ -186,7 +220,7 @@ public final class PetManager {
             Msg.send(owner, "&a선호 먹이! 효과 ×3");
         }
         pp.bond = Math.min(100, pp.bond + bondGain);
-        addXp(pp, xpGain);
+        addXp(pp, xpGain);  // addXp 안에서 persist
         Msg.send(owner, "&6먹이 주기 — bond +" + bondGain + " (총 " + pp.bond + ")");
         return true;
     }
@@ -197,6 +231,7 @@ public final class PetManager {
         pp.name = newName;
         var ent = pp.activeEntityId != null ? Bukkit.getEntity(pp.activeEntityId) : null;
         if (ent != null) ent.setCustomName(newName);
+        persist(pp);
         Msg.send(owner, "&a이름 변경: " + newName);
         return true;
     }
@@ -205,6 +240,7 @@ public final class PetManager {
         Pet pp = byName(owner.getUniqueId(), petName);
         if (pp == null) { Msg.error(owner, "해당 펫 없음"); return false; }
         pp.mode = mode;
+        persist(pp);
         Msg.send(owner, "&a모드: " + mode);
         return true;
     }

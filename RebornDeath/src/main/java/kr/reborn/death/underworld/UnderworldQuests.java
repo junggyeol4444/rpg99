@@ -29,23 +29,45 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class UnderworldQuests {
 
+    private static final String NS = "RebornDeath.uwquest";
+
     private final RebornDeath plugin;
     /** uuid → 진행중 의뢰 → 진척 */
     private final Map<UUID, Map<String, Integer>> progress = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = ConcurrentHashMap.newKeySet();
 
     public UnderworldQuests(RebornDeath plugin) {
         this.plugin = plugin;
         RebornCore.get().scheduler().runTimer(this::checkReincarnation, 1200L, 1200L);
     }
 
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            var all = RebornCore.get().kv().loadAll(NS, p);
+            Map<String, Integer> map = new HashMap<>();
+            for (var e : all.entrySet()) {
+                if (e.getKey().startsWith("q.")) {
+                    try { map.put(e.getKey().substring(2), Integer.parseInt(e.getValue())); }
+                    catch (Throwable ignored) {}
+                }
+            }
+            if (!map.isEmpty()) progress.put(p, map);
+            if ("1".equals(all.get("granted"))) reincarnationGranted.add(p);
+        }
+    }
+
     /** 의뢰 진행 증가. */
     public void progress(Player p, String questId, int delta) {
+        ensureLoaded(p.getUniqueId());
         Map<String, Integer> map = progress.computeIfAbsent(p.getUniqueId(), k -> new HashMap<>());
         int cur = map.merge(questId, delta, Integer::sum);
         int target = targetOf(questId);
         if (cur >= target) {
             completeQuest(p, questId);
             map.remove(questId);
+            RebornCore.get().kv().remove(NS, p.getUniqueId(), "q." + questId);
+        } else {
+            RebornCore.get().kv().putInt(NS, p.getUniqueId(), "q." + questId, cur);
         }
     }
 
@@ -72,13 +94,15 @@ public final class UnderworldQuests {
         }
     }
 
-    private final java.util.Set<UUID> reincarnationGranted = new java.util.HashSet<>();
+    private final java.util.Set<UUID> reincarnationGranted = ConcurrentHashMap.newKeySet();
     private boolean alreadyEligible(Player p) {
+        ensureLoaded(p.getUniqueId());
         return reincarnationGranted.contains(p.getUniqueId());
     }
 
     private void grantReincarnationEligibility(Player p) {
         reincarnationGranted.add(p.getUniqueId());
+        RebornCore.get().kv().putInt(NS, p.getUniqueId(), "granted", 1);
         Bukkit.broadcastMessage("§5§l[명계 해탈] §f" + p.getName()
                 + " §7가 명기 10000을 모았다! 환생 자격 회복.");
         Msg.send(p, "&6/reroll 명령으로 환생을 시도할 수 있다.");
@@ -121,6 +145,7 @@ public final class UnderworldQuests {
 
     /** /underworld quest <id> 현재 진척 + 목표 텍스트. */
     public String progressOf(java.util.UUID p, String questId) {
+        ensureLoaded(p);
         int cur = progress.getOrDefault(p, java.util.Collections.emptyMap())
                 .getOrDefault(questId, 0);
         return cur + "/" + targetOf(questId) + " — " + labelOf(questId)
@@ -128,6 +153,7 @@ public final class UnderworldQuests {
     }
 
     public boolean alreadyReincarnationEligible(java.util.UUID p) {
+        ensureLoaded(p);
         return reincarnationGranted.contains(p);
     }
 }

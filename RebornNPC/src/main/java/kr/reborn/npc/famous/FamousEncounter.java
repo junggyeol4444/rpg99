@@ -24,19 +24,35 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class FamousEncounter {
 
+    private static final String NS = "RebornNPC.famousMet";
+
     private final RebornNPC plugin;
     /** uuid → 만난 famous NPC id set */
     private final Map<UUID, java.util.Set<String>> firstMet = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = ConcurrentHashMap.newKeySet();
 
     public FamousEncounter(RebornNPC plugin) { this.plugin = plugin; }
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            String csv = kr.reborn.core.RebornCore.get().kv().get(NS, p, "met");
+            if (csv != null && !csv.isEmpty()) {
+                java.util.Set<String> set = new java.util.HashSet<>();
+                for (String c : csv.split(",")) if (!c.isEmpty()) set.add(c);
+                firstMet.put(p, set);
+            }
+        }
+    }
 
     /** NpcInteractListener에서 호출 — 첫 만남이면 특별 연출. */
     public boolean tryFirstEncounter(Player p, String npcId) {
         FamousNpc fn = plugin.famous().get(npcId);
         if (fn == null) return false;
+        ensureLoaded(p.getUniqueId());
         var set = firstMet.computeIfAbsent(p.getUniqueId(), k -> new java.util.HashSet<>());
         if (set.contains(npcId)) return false;
         set.add(npcId);
+        kr.reborn.core.RebornCore.get().kv().put(NS, p.getUniqueId(), "met", String.join(",", set));
         renderEncounter(p, fn);
         return true;
     }
@@ -102,10 +118,12 @@ public final class FamousEncounter {
     }
 
     public java.util.Set<String> metOf(UUID p) {
+        ensureLoaded(p);
         return firstMet.getOrDefault(p, java.util.Collections.emptySet());
     }
 
     public int metCount(UUID p) {
+        ensureLoaded(p);
         return firstMet.getOrDefault(p, java.util.Collections.emptySet()).size();
     }
 }

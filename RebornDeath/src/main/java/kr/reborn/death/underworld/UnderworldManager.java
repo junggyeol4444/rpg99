@@ -16,14 +16,43 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class UnderworldManager {
 
+    private static final String NS = "RebornDeath.underworld";
+
     private final RebornDeath plugin;
     private final ConcurrentHashMap<UUID, Long> arrivalTime = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Location> deathPoint = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = ConcurrentHashMap.newKeySet();
 
     public UnderworldManager(RebornDeath p) { this.plugin = p; }
 
+    private void ensureLoaded(UUID id) {
+        if (loaded.add(id)) {
+            long arr = RebornCore.get().kv().getLong(NS, id, "arrived", -1);
+            if (arr > 0) arrivalTime.put(id, arr);
+            String dp = RebornCore.get().kv().get(NS, id, "deathPoint");
+            if (dp != null) {
+                // "worldName|x|y|z"
+                String[] parts = dp.split("\\|", -1);
+                if (parts.length == 4) {
+                    try {
+                        World w = Bukkit.getWorld(parts[0]);
+                        if (w != null) {
+                            deathPoint.put(id, new Location(w,
+                                    Double.parseDouble(parts[1]),
+                                    Double.parseDouble(parts[2]),
+                                    Double.parseDouble(parts[3])));
+                        }
+                    } catch (Throwable ignored) {}
+                }
+            }
+        }
+    }
+
     public void sendToUnderworld(Player p) {
-        deathPoint.put(p.getUniqueId(), p.getLocation());
+        Location dp = p.getLocation();
+        deathPoint.put(p.getUniqueId(), dp);
+        RebornCore.get().kv().put(NS, p.getUniqueId(), "deathPoint",
+                dp.getWorld().getName() + "|" + dp.getX() + "|" + dp.getY() + "|" + dp.getZ());
         var c = plugin.getConfig().getConfigurationSection("underworld");
         World w = Bukkit.getWorld(c.getString("world", "underworld"));
         if (w == null) {
@@ -33,7 +62,10 @@ public final class UnderworldManager {
         Location arrive = new Location(w, c.getDouble("arrive.x"), c.getDouble("arrive.y"), c.getDouble("arrive.z"));
         p.spigot().respawn();
         Bukkit.getScheduler().runTask(plugin, () -> p.teleport(arrive));
-        arrivalTime.put(p.getUniqueId(), System.currentTimeMillis());
+        long now = System.currentTimeMillis();
+        arrivalTime.put(p.getUniqueId(), now);
+        RebornCore.get().kv().putLong(NS, p.getUniqueId(), "arrived", now);
+        loaded.add(p.getUniqueId());
 
         PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
         WorldKey prev = d.worldKey();
@@ -45,6 +77,7 @@ public final class UnderworldManager {
     }
 
     public boolean revive(Player p) {
+        ensureLoaded(p.getUniqueId());
         Long arrived = arrivalTime.get(p.getUniqueId());
         if (arrived == null) return false;
         long min = plugin.getConfig().getLong("underworld.revive-min-seconds", 300) * 1000;
@@ -65,6 +98,8 @@ public final class UnderworldManager {
             p.teleport(dp);
         }
         arrivalTime.remove(p.getUniqueId());
+        RebornCore.get().kv().remove(NS, p.getUniqueId(), "arrived");
+        RebornCore.get().kv().remove(NS, p.getUniqueId(), "deathPoint");
         Msg.send(p, "&6환혼 — 너의 영혼은 다시 육신을 얻었다.");
         Bukkit.getPluginManager().callEvent(
                 new kr.reborn.core.event.RebornWorldChangeEvent(p, prev, d.worldKey()));
@@ -72,6 +107,7 @@ public final class UnderworldManager {
     }
 
     public void reincarnate(Player p) {
+        ensureLoaded(p.getUniqueId());
         Long arrived = arrivalTime.get(p.getUniqueId());
         if (arrived == null) return;
         long min = plugin.getConfig().getLong("underworld.reincarnate-min-seconds", 1800) * 1000;
@@ -120,12 +156,14 @@ public final class UnderworldManager {
         Msg.send(p, "&6윤회 — 모든 것이 초기화되었다.");
         arrivalTime.remove(p.getUniqueId());
         deathPoint.remove(p.getUniqueId());
+        RebornCore.get().kv().remove(NS, p.getUniqueId(), "arrived");
+        RebornCore.get().kv().remove(NS, p.getUniqueId(), "deathPoint");
     }
 
     public void stay(Player p) {
         Msg.send(p, "&7명계에 잔류한다. 명기를 키워라.");
     }
 
-    public Location deathPointOf(UUID id) { return deathPoint.get(id); }
-    public Long arrivedAt(UUID id) { return arrivalTime.get(id); }
+    public Location deathPointOf(UUID id) { ensureLoaded(id); return deathPoint.get(id); }
+    public Long arrivedAt(UUID id) { ensureLoaded(id); return arrivalTime.get(id); }
 }

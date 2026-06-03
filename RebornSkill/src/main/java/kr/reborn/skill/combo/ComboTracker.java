@@ -26,14 +26,28 @@ public final class ComboTracker {
 
     private static final long COMBO_WINDOW_MS = 5_000;
     private static final int MAX_CHAIN = 10;
+    private static final String NS = "RebornSkill.combo";
 
-    /** uuid → 최근 시전 기록 (timestamp, skillId, category, element) */
+    /** uuid → 최근 시전 기록 (timestamp, skillId, category, element) — 휘발성 */
     private final Map<UUID, Deque<CastRecord>> history = new ConcurrentHashMap<>();
     /** uuid → 누적 다른 카테고리 set (만능 칭호) */
     private final Map<UUID, java.util.Set<String>> categoriesUsed = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = ConcurrentHashMap.newKeySet();
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            String csv = kr.reborn.core.RebornCore.get().kv().get(NS, p, "categories");
+            if (csv != null && !csv.isEmpty()) {
+                java.util.Set<String> set = new java.util.HashSet<>();
+                for (String c : csv.split(",")) if (!c.isEmpty()) set.add(c);
+                categoriesUsed.put(p, set);
+            }
+        }
+    }
 
     /** 시전 직후 호출 — 보너스 multiplier 반환. */
     public double onCast(Player p, SkillDef def) {
+        ensureLoaded(p.getUniqueId());
         long now = System.currentTimeMillis();
         Deque<CastRecord> dq = history.computeIfAbsent(p.getUniqueId(), k -> new java.util.ArrayDeque<>());
         // 5초 지난 기록 제거
@@ -57,12 +71,17 @@ public final class ComboTracker {
         }
         // 다른 카테고리 5종 누적
         var set = categoriesUsed.computeIfAbsent(p.getUniqueId(), k -> new java.util.HashSet<>());
-        set.add(def.category == null ? "?" : def.category);
+        boolean added = set.add(def.category == null ? "?" : def.category);
         if (set.size() == 5) {
             Bukkit.broadcastMessage("§6§l[만능] §f" + p.getName()
                     + " §7가 5종 카테고리 스킬을 자유자재로 다룬다!");
             // 칭호 1회 — 영구 보너스 + 알림. 후속 호출 방지 위해 set에 sentinel 추가.
             set.add("__BROADCASTED__");
+            added = true;
+        }
+        if (added) {
+            kr.reborn.core.RebornCore.get().kv().put(NS, p.getUniqueId(), "categories",
+                    String.join(",", set));
         }
         return mult;
     }

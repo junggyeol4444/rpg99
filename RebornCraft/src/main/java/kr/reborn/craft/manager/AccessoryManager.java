@@ -20,12 +20,31 @@ public final class AccessoryManager {
 
     public enum Slot { RING_1, RING_2, NECKLACE, EARRING }
 
+    private static final String NS = "RebornCraft.accessory";
+
     private final RebornCraft plugin;
     private final Map<UUID, EnumMap<Slot, ItemStack>> equipped = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = ConcurrentHashMap.newKeySet();
 
     public AccessoryManager(RebornCraft plugin) { this.plugin = plugin; }
 
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            var all = RebornCore.get().kv().loadAll(NS, p);
+            EnumMap<Slot, ItemStack> map = new EnumMap<>(Slot.class);
+            for (Slot s : Slot.values()) {
+                String enc = all.get(s.name());
+                if (enc != null && !enc.isEmpty()) {
+                    ItemStack it = kr.reborn.core.util.ItemSerializer.fromBase64(enc);
+                    if (it != null) map.put(s, it);
+                }
+            }
+            if (!map.isEmpty()) equipped.put(p, map);
+        }
+    }
+
     public EnumMap<Slot, ItemStack> of(UUID p) {
+        ensureLoaded(p);
         return equipped.computeIfAbsent(p, k -> new EnumMap<>(Slot.class));
     }
 
@@ -52,7 +71,8 @@ public final class AccessoryManager {
         CustomItem ci = plugin.items().ofItem(hand);
         if (ci != null && ci.type == CustomItem.Type.ACCESSORY) {
             // 장착
-            ItemStack prev = map.put(s, hand.clone());
+            ItemStack equip = hand.clone();
+            ItemStack prev = map.put(s, equip);
             applyStats(p, ci, +1);
             if (prev != null) {
                 p.getInventory().addItem(prev);
@@ -60,6 +80,9 @@ public final class AccessoryManager {
                 if (old != null) applyStats(p, old, -1);
             }
             p.getInventory().setItemInMainHand(null);
+            // 영속화
+            String enc = kr.reborn.core.util.ItemSerializer.toBase64(equip);
+            if (enc != null) RebornCore.get().kv().put(NS, p.getUniqueId(), s.name(), enc);
             Msg.send(p, "&a장신구 장착: " + ci.name);
         } else {
             ItemStack removed = map.remove(s);
@@ -67,6 +90,7 @@ public final class AccessoryManager {
                 p.getInventory().addItem(removed);
                 CustomItem old = plugin.items().ofItem(removed);
                 if (old != null) applyStats(p, old, -1);
+                RebornCore.get().kv().remove(NS, p.getUniqueId(), s.name());
                 Msg.send(p, "&7장신구 해제");
             }
         }

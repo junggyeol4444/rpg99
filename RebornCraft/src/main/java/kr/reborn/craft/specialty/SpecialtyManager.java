@@ -29,14 +29,29 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class SpecialtyManager {
 
+    private static final String NS = "RebornCraft.specialty";
+
     private final RebornCraft plugin;
     private final Map<SpecialtyType, List<SpecialtyRecipe>> recipes = new EnumMap<>(SpecialtyType.class);
     /** uuid → SpecialtyType → 숙련도 (0~100) */
     private final Map<UUID, Map<SpecialtyType, Double>> proficiency = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = ConcurrentHashMap.newKeySet();
 
     public SpecialtyManager(RebornCraft plugin) {
         this.plugin = plugin;
         seedRecipes();
+    }
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            var all = RebornCore.get().kv().loadAll(NS, p);
+            Map<SpecialtyType, Double> map = new EnumMap<>(SpecialtyType.class);
+            for (SpecialtyType t : SpecialtyType.values()) {
+                String v = all.get(t.name());
+                if (v != null) try { map.put(t, Double.parseDouble(v)); } catch (Throwable ignored) {}
+            }
+            if (!map.isEmpty()) proficiency.put(p, map);
+        }
     }
 
     private void seedRecipes() {
@@ -148,6 +163,7 @@ public final class SpecialtyManager {
     public boolean tryCraft(Player p, String recipeId) {
         SpecialtyRecipe r = byId(recipeId);
         if (r == null) { Msg.error(p, "레시피 없음: " + recipeId); return false; }
+        ensureLoaded(p.getUniqueId());
         // 재료 검사
         for (var e : r.ingredients.entrySet()) {
             int have = countItem(p, e.getKey());
@@ -200,16 +216,19 @@ public final class SpecialtyManager {
     }
 
     public void addProf(Player p, SpecialtyType t, double v) {
+        ensureLoaded(p.getUniqueId());
         Map<SpecialtyType, Double> map = proficiency.computeIfAbsent(p.getUniqueId(),
                 k -> new EnumMap<>(SpecialtyType.class));
         double cur = Math.min(100, map.getOrDefault(t, 0.0) + v);
         Double prev = map.put(t, cur);
+        RebornCore.get().kv().putDouble(NS, p.getUniqueId(), t.name(), cur);
         if (prev == null || (int) cur > (int) (double) prev) {
             Msg.send(p, "&e숙련 +1 (" + t.koreanName + ") §7Lv." + (int) cur);
         }
     }
 
     public double profOf(UUID p, SpecialtyType t) {
+        ensureLoaded(p);
         return proficiency.getOrDefault(p, java.util.Collections.emptyMap()).getOrDefault(t, 0.0);
     }
 

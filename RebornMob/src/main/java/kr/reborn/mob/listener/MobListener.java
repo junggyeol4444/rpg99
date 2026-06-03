@@ -51,13 +51,34 @@ public final class MobListener implements Listener {
         }
         if (def.boss) {
             plugin.bosses().onDeath(le);
-            // 던전 진행 갱신
             Player killer = e.getEntity().getKiller();
             if (killer != null) {
+                // 던전 진행 갱신
                 try { plugin.dungeons().onBossKill(killer, def.id); }
                 catch (Throwable ignored) {}
+                // 마계 영혼 흡수 — 보스급은 큰 영혼 (RebornStat 리플렉션)
+                notifyBossKillToGrowth(killer, le.getMaxHealth());
             }
         }
         plugin.controller().unregister(le.getUniqueId());
+    }
+
+    /** 보스 처치자가 마계 거주자면 DemonGrowth.onSoulAbsorb로 큰 영혼 흡수. */
+    private void notifyBossKillToGrowth(Player killer, double maxHp) {
+        try {
+            var d = kr.reborn.core.RebornCore.get().api().getPlayerData(killer.getUniqueId());
+            if (d == null || d.worldKey() != kr.reborn.core.data.WorldKey.DEMON) return;
+            var sp = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornStat");
+            if (sp == null) return;
+            Object growth = sp.getClass().getMethod("growth").invoke(sp);
+            Object strategy = growth.getClass().getMethod("of",
+                    kr.reborn.core.data.WorldKey.class)
+                    .invoke(growth, kr.reborn.core.data.WorldKey.DEMON);
+            if (strategy == null) return;
+            // soulPower = 보스 maxHP × 0.5
+            strategy.getClass().getMethod("onSoulAbsorb",
+                    org.bukkit.entity.Player.class, double.class)
+                    .invoke(strategy, killer, maxHp * 0.5);
+        } catch (Throwable ignored) {}
     }
 }

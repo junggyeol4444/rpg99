@@ -80,22 +80,28 @@ public final class CurrencyManager {
 
     public void deposit(UUID player, String currency, long amount) {
         if (amount <= 0) return;
-        // balance() 통해 DB 로드 후 +
-        long cur = balance(player, currency);
+        // DB에서 캐시 보장 (있어도 무해)
+        balance(player, currency);
+        // 원자적 가산 — 동시 deposit/withdraw 안전
         balances.computeIfAbsent(player, k -> new ConcurrentHashMap<>())
-                .put(currency, cur + amount);
+                .merge(currency, amount, Long::sum);
         dirty.add(player.toString() + "|" + currency);
     }
 
-    /** @return true 차감 성공. */
+    /** @return true 차감 성공. 동시 호출 안전 (compute로 원자성 보장). */
     public boolean withdraw(UUID player, String currency, long amount) {
         if (amount <= 0) return true;
-        long cur = balance(player, currency);  // DB 로드 보장
-        if (cur < amount) return false;
-        balances.computeIfAbsent(player, k -> new ConcurrentHashMap<>())
-                .put(currency, cur - amount);
-        dirty.add(player.toString() + "|" + currency);
-        return true;
+        balance(player, currency);  // DB 로드 보장
+        Map<String, Long> map = balances.computeIfAbsent(player, k -> new ConcurrentHashMap<>());
+        boolean[] ok = { false };
+        map.compute(currency, (k, cur) -> {
+            long c = cur == null ? 0 : cur;
+            if (c < amount) { ok[0] = false; return c; }
+            ok[0] = true;
+            return c - amount;
+        });
+        if (ok[0]) dirty.add(player.toString() + "|" + currency);
+        return ok[0];
     }
 
     /** 변경된 (uuid, currency) 항목만 KV에 저장. */

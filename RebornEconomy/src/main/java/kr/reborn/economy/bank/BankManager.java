@@ -120,6 +120,7 @@ public final class BankManager {
             return false;
         }
         a.deposit += amount;
+        persist(a);
         Msg.send(p, "&a예금 +" + amount + " §7(총 " + a.deposit + ")");
         return true;
     }
@@ -135,6 +136,7 @@ public final class BankManager {
             Msg.warn(p, "&7만기 전 인출 — 5% 패널티 -" + penalty);
         }
         a.deposit -= amount;
+        persist(a);
         plugin.currencies().deposit(p.getUniqueId(), currency, amount);
         Msg.send(p, "&a인출 " + amount + " §7(남은 " + a.deposit + ")");
         return true;
@@ -160,6 +162,7 @@ public final class BankManager {
             return false;
         }
         a.loan += amount;
+        persist(a);
         plugin.currencies().deposit(p.getUniqueId(), currency, amount);
         Msg.send(p, "&6대출 +" + amount + " §7(총 대출 " + a.loan + ")");
         return true;
@@ -174,6 +177,7 @@ public final class BankManager {
             return false;
         }
         a.loan -= amount;
+        persist(a);
         if (a.loan == 0) {
             a.credit = Math.min(100, a.credit + 5);
             Msg.send(p, "&a대출 완납 — 신용 +5 (" + a.credit + ")");

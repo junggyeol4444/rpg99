@@ -29,6 +29,19 @@ public final class DeathListener implements Listener {
         Bukkit.getPluginManager().callEvent(
                 new RebornDeathEvent(p, p.getLocation(), killer, killer == null ? "PVE" : "PVP"));
 
+        // 선계 환령단 부활 시도 — 성공 시 명계 이동 건너뜀
+        // PlayerDeathEvent는 cancellable이 아니므로 keepInv + 즉시 respawn 패턴
+        if (tryImmortalRevival(p)) {
+            e.setKeepInventory(true);
+            e.setKeepLevel(true);
+            e.getDrops().clear();
+            e.setDroppedExp(0);
+            RebornCore.get().scheduler().runEntityTask(p, () -> {
+                try { p.spigot().respawn(); } catch (Throwable ignored) {}
+            });
+            return;
+        }
+
         if (d != null) d.deaths(d.deaths() + 1);
         // 아이템은 사망 지점에 자연스럽게 드랍됨 (바닐라 동작 유지)
 
@@ -51,6 +64,21 @@ public final class DeathListener implements Listener {
                 }
             }
         } catch (Throwable ignored) {}
+    }
+
+    /** 선계 환령단 — ImmortalGrowth 보유자만 1회 한정 부활. */
+    private boolean tryImmortalRevival(Player p) {
+        try {
+            var sp = Bukkit.getPluginManager().getPlugin("RebornStat");
+            if (sp == null) return false;
+            Object growth = sp.getClass().getMethod("growth").invoke(sp);
+            Object strategy = growth.getClass().getMethod("of", WorldKey.class)
+                    .invoke(growth, WorldKey.IMMORTAL);
+            if (strategy == null) return false;
+            // ImmortalGrowth만 tryRevival 메서드 있음
+            Object res = strategy.getClass().getMethod("tryRevival", Player.class).invoke(strategy, p);
+            return Boolean.TRUE.equals(res);
+        } catch (Throwable t) { return false; }
     }
 
     /** 결투 중 HP <=1 도달 시 죽지 않게 가로채고 결투 종료. */

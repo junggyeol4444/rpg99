@@ -273,6 +273,26 @@ public final class NpcRegistry {
             var children = y.getStringList(id + ".children");
             if (!children.isEmpty()) target.children.addAll(children);
             target.dead = y.getBoolean(id + ".dead", false);
+            // 영혼 복원
+            if (target.soul != null) {
+                var fam = y.getStringList(id + ".soul.family");
+                if (!fam.isEmpty()) { target.soul.family.clear(); target.soul.family.addAll(fam); }
+                var fri = y.getStringList(id + ".soul.friends");
+                if (!fri.isEmpty()) { target.soul.friends.clear(); target.soul.friends.addAll(fri); }
+                var riv = y.getStringList(id + ".soul.rivals");
+                if (!riv.isEmpty()) { target.soul.rivals.clear(); target.soul.rivals.addAll(riv); }
+                var nem = y.getStringList(id + ".soul.nemeses");
+                if (!nem.isEmpty()) { target.soul.nemeses.clear(); target.soul.nemeses.addAll(nem); }
+                if (y.contains(id + ".soul.age")) target.soul.ageYears = y.getDouble(id + ".soul.age", 20);
+                var traitSec = y.getConfigurationSection(id + ".soul.trait");
+                if (traitSec != null) {
+                    for (var t : kr.reborn.npc.soul.Personality.Trait.values()) {
+                        if (traitSec.contains(t.name())) {
+                            target.soul.personality.set(t, traitSec.getInt(t.name()));
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -306,6 +326,18 @@ public final class NpcRegistry {
             if (!n.children.isEmpty()) y.set(b + "children", n.children);
             y.set(b + "dead", n.dead);
             for (var e : n.stats.entrySet()) y.set(b + "stats." + e.getKey(), e.getValue());
+            // 영혼 — 가족/친구/원수 명단만 저장 (Memory는 휘발성, Reputation은 크기 큼 → 별도 KV)
+            if (n.soul != null) {
+                if (!n.soul.family.isEmpty()) y.set(b + "soul.family", n.soul.family);
+                if (!n.soul.friends.isEmpty()) y.set(b + "soul.friends", n.soul.friends);
+                if (!n.soul.rivals.isEmpty()) y.set(b + "soul.rivals", n.soul.rivals);
+                if (!n.soul.nemeses.isEmpty()) y.set(b + "soul.nemeses", n.soul.nemeses);
+                y.set(b + "soul.age", n.soul.ageYears);
+                // 성격은 직업 기반 재생성 가능하지만 진화한 성격 보존 필요
+                for (var t : kr.reborn.npc.soul.Personality.Trait.values()) {
+                    y.set(b + "soul.trait." + t.name(), n.soul.personality.get(t));
+                }
+            }
         }
         try { y.save(f); } catch (Exception ignored) {}
     }

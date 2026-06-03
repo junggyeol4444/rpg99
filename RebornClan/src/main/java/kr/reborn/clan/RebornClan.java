@@ -51,6 +51,7 @@ public final class RebornClan extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (clans != null) clans.saveAll();
         if (marriages != null) marriages.save();
         if (territories != null) territories.save();
     }

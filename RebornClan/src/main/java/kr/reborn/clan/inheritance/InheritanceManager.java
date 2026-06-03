@@ -37,9 +37,15 @@ public final class InheritanceManager implements Listener {
 
     public InheritanceManager(RebornClan plugin) { this.plugin = plugin; }
 
+    private static final String NS = "RebornClan.inheritance";
+
     public void writeWill(Player p, String heirId) {
-        wills.put(p.getUniqueId(), new Will(p.getUniqueId(), heirId,
-                System.currentTimeMillis()));
+        Will w = new Will(p.getUniqueId(), heirId, System.currentTimeMillis());
+        wills.put(p.getUniqueId(), w);
+        try {
+            kr.reborn.core.RebornCore.get().kv().put(NS, p.getUniqueId(), "heir", heirId);
+            kr.reborn.core.RebornCore.get().kv().putLong(NS, p.getUniqueId(), "writtenAt", w.writtenAt);
+        } catch (Throwable ignored) {}
         Msg.send(p, "&6유언장 작성: 상속인 §f" + heirId);
     }
 
@@ -131,7 +137,16 @@ public final class InheritanceManager implements Listener {
                 + (long) retained + "g 상징적 잔존)");
     }
 
-    public Will willOf(UUID p) { return wills.get(p); }
+    public Will willOf(UUID p) {
+        Will cached = wills.get(p);
+        if (cached != null) return cached;
+        String heir = kr.reborn.core.RebornCore.get().kv().get(NS, p, "heir");
+        if (heir == null) return null;
+        long at = kr.reborn.core.RebornCore.get().kv().getLong(NS, p, "writtenAt", System.currentTimeMillis());
+        Will w = new Will(p, heir, at);
+        wills.put(p, w);
+        return w;
+    }
 
     public static final class Will {
         public final UUID author;

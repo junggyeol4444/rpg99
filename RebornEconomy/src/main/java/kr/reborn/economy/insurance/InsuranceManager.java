@@ -52,8 +52,34 @@ public final class InsuranceManager {
         }
     }
 
+    private static final String NS = "RebornEconomy.insurance";
+
     private final RebornEconomy plugin;
     private final Map<UUID, Policy> policies = new ConcurrentHashMap<>();
+
+    private void persist(Policy pol) {
+        try {
+            UUID uuid = pol.owner;
+            kr.reborn.core.RebornCore.get().kv().put(NS, uuid, "grade", pol.grade.name());
+            kr.reborn.core.RebornCore.get().kv().putLong(NS, uuid, "subscribedAt", pol.subscribedAt);
+            kr.reborn.core.RebornCore.get().kv().putLong(NS, uuid, "lastPaidAt", pol.lastPaidAt);
+            kr.reborn.core.RebornCore.get().kv().putInt(NS, uuid, "monthsPaid", pol.monthsPaid);
+            kr.reborn.core.RebornCore.get().kv().putInt(NS, uuid, "payouts", pol.payouts);
+        } catch (Throwable ignored) {}
+    }
+
+    private Policy loadFromKV(UUID uuid) {
+        try {
+            String gradeStr = kr.reborn.core.RebornCore.get().kv().get(NS, uuid, "grade");
+            if (gradeStr == null) return null;
+            Policy pol = new Policy(uuid, Grade.valueOf(gradeStr));
+            pol.subscribedAt = kr.reborn.core.RebornCore.get().kv().getLong(NS, uuid, "subscribedAt", System.currentTimeMillis());
+            pol.lastPaidAt = kr.reborn.core.RebornCore.get().kv().getLong(NS, uuid, "lastPaidAt", System.currentTimeMillis());
+            pol.monthsPaid = kr.reborn.core.RebornCore.get().kv().getInt(NS, uuid, "monthsPaid", 0);
+            pol.payouts = kr.reborn.core.RebornCore.get().kv().getInt(NS, uuid, "payouts", 0);
+            return pol;
+        } catch (Throwable t) { return null; }
+    }
 
     public InsuranceManager(RebornEconomy plugin) {
         this.plugin = plugin;
@@ -74,6 +100,7 @@ public final class InsuranceManager {
         Policy pol = new Policy(p.getUniqueId(), grade);
         pol.monthsPaid = 1;
         policies.put(p.getUniqueId(), pol);
+        persist(pol);
         Msg.send(p, "&a보험 가입: " + grade.name() + " §7월 " + grade.monthlyPremium
                 + " GOLD, 보장 " + grade.coverage + " GOLD");
         return true;
@@ -82,11 +109,19 @@ public final class InsuranceManager {
     public boolean cancel(Player p) {
         Policy pol = policies.remove(p.getUniqueId());
         if (pol == null) { Msg.warn(p, "가입 안 됨."); return false; }
+        try { kr.reborn.core.RebornCore.get().kv().remove(NS, p.getUniqueId(), "grade"); }
+        catch (Throwable ignored) {}
         Msg.send(p, "&7보험 해지: 누적 납부 " + pol.monthsPaid + "개월.");
         return true;
     }
 
-    public Policy of(UUID p) { return policies.get(p); }
+    public Policy of(UUID p) {
+        Policy cached = policies.get(p);
+        if (cached != null) return cached;
+        Policy loaded = loadFromKV(p);
+        if (loaded != null) policies.put(p, loaded);
+        return loaded;
+    }
 
     /** 매 30분 호출 — 모든 활성 보험의 보험료 자동 인출. */
     public void collectPremiums() {
@@ -100,11 +135,15 @@ public final class InsuranceManager {
             if (!ok) {
                 // 자동 해지
                 policies.remove(entry.getKey());
+                try {
+                    kr.reborn.core.RebornCore.get().kv().remove(NS, pol.owner, "grade");
+                } catch (Throwable ignored) {}
                 if (p != null) Msg.warn(p, "&c보험 자동 해지 — 보험료 부족 (" + pol.grade.monthlyPremium + "g)");
                 continue;
             }
             pol.lastPaidAt = now;
             pol.monthsPaid++;
+            persist(pol);
             if (p != null) Msg.send(p, "&7보험료 자동 납부: " + pol.grade.monthlyPremium + "g");
         }
     }
@@ -118,6 +157,7 @@ public final class InsuranceManager {
             return false;
         }
         pol.payouts++;
+        persist(pol);
         plugin.currencies().deposit(p.getUniqueId(), "GOLD_COIN", pol.grade.coverage);
         Msg.send(p, "&6&l[보험 지급] §f사망 보장 §6" + pol.grade.coverage + " GOLD §7지급.");
         return true;

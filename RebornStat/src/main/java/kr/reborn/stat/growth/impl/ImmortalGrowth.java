@@ -28,6 +28,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class ImmortalGrowth implements GrowthStrategy {
 
+    private static final String NS = "RebornStat.immortal";
+
     /** uuid → 누적 천기 (다음 천겁까지) */
     private final Map<UUID, Double> celestialQi = new ConcurrentHashMap<>();
     /** uuid → 천겁 통과 횟수 (선인 단계) */
@@ -36,6 +38,24 @@ public final class ImmortalGrowth implements GrowthStrategy {
     private final Map<UUID, Map<String, Integer>> pillUsage = new ConcurrentHashMap<>();
     /** uuid → 환령단 사용 여부 (1회 한정) */
     private final Map<UUID, Boolean> revivalUsed = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            celestialQi.put(p, RebornCore.get().kv().getDouble(NS, p, "qi", 0.0));
+            tribulationCount.put(p, RebornCore.get().kv().getInt(NS, p, "tribLevel", 0));
+            revivalUsed.put(p, RebornCore.get().kv().getInt(NS, p, "revivalUsed", 0) == 1);
+            var all = RebornCore.get().kv().loadAll(NS, p);
+            Map<String, Integer> usage = new HashMap<>();
+            for (var e : all.entrySet()) {
+                if (e.getKey().startsWith("pill.")) {
+                    try { usage.put(e.getKey().substring(5), Integer.parseInt(e.getValue())); }
+                    catch (Throwable ignored) {}
+                }
+            }
+            pillUsage.put(p, usage);
+        }
+    }
 
     private static final double TRIBULATION_THRESHOLD = 1000.0;
 
@@ -79,8 +99,10 @@ public final class ImmortalGrowth implements GrowthStrategy {
     }
 
     public void consumePill(Player p, String pillId) {
+        ensureLoaded(p.getUniqueId());
         Map<String, Integer> usage = pillUsage.computeIfAbsent(p.getUniqueId(), k -> new HashMap<>());
         int count = usage.merge(pillId, 1, Integer::sum);
+        RebornCore.get().kv().putInt(NS, p.getUniqueId(), "pill." + pillId, count);
         double penalty = Math.max(0.3, 1.0 - (count - 1) * 0.1);
 
         switch (pillId) {
@@ -100,6 +122,7 @@ public final class ImmortalGrowth implements GrowthStrategy {
                     return;
                 }
                 revivalUsed.put(p.getUniqueId(), true);
+                RebornCore.get().kv().putInt(NS, p.getUniqueId(), "revivalUsed", 1);
                 Msg.send(p, "&e환령단 — 다음 사망 시 자동 부활.");
             }
             case "celestial_essence_pill" -> { // 천령단 — 천기 누적
@@ -120,8 +143,10 @@ public final class ImmortalGrowth implements GrowthStrategy {
 
     /** 사망 시 부활 시도. */
     public boolean tryRevival(Player p) {
+        ensureLoaded(p.getUniqueId());
         if (!Boolean.TRUE.equals(revivalUsed.get(p.getUniqueId()))) return false;
         revivalUsed.put(p.getUniqueId(), false); // 소비
+        RebornCore.get().kv().putInt(NS, p.getUniqueId(), "revivalUsed", 0);
         try {
             p.setHealth(p.getMaxHealth());
             p.getWorld().spawnParticle(Particle.PORTAL, p.getLocation(), 200, 1, 2, 1);
@@ -133,7 +158,9 @@ public final class ImmortalGrowth implements GrowthStrategy {
     }
 
     private void accumulateCelestialQi(Player p, double v) {
-        celestialQi.merge(p.getUniqueId(), v, Double::sum);
+        ensureLoaded(p.getUniqueId());
+        double cur = celestialQi.merge(p.getUniqueId(), v, Double::sum);
+        RebornCore.get().kv().putDouble(NS, p.getUniqueId(), "qi", cur);
     }
 
     private void discoverSpiritStone(Player p) {
@@ -147,6 +174,7 @@ public final class ImmortalGrowth implements GrowthStrategy {
 
     private void enterTribulation(Player p) {
         celestialQi.put(p.getUniqueId(), 0.0);
+        RebornCore.get().kv().putDouble(NS, p.getUniqueId(), "qi", 0.0);
         int curLvl = tribulationCount.getOrDefault(p.getUniqueId(), 0);
         // 천겁 성공률 = max(20%, 90% - 5%×curLvl)
         double successRate = Math.max(0.2, 0.9 - curLvl * 0.05);
@@ -159,6 +187,7 @@ public final class ImmortalGrowth implements GrowthStrategy {
         } catch (Throwable ignored) {}
         if (Rand.chance(successRate)) {
             int newLvl = tribulationCount.merge(p.getUniqueId(), 1, Integer::sum);
+            RebornCore.get().kv().putInt(NS, p.getUniqueId(), "tribLevel", newLvl);
             RebornCore.get().api().addStat(p.getUniqueId(),
                     StatType.IMMORTAL_KI, 500, "tribulation-success");
             RebornCore.get().api().addStat(p.getUniqueId(),
@@ -182,6 +211,6 @@ public final class ImmortalGrowth implements GrowthStrategy {
         }
     }
 
-    public int tribulationLevelOf(UUID p) { return tribulationCount.getOrDefault(p, 0); }
-    public double tribulationProgress(UUID p) { return celestialQi.getOrDefault(p, 0.0); }
+    public int tribulationLevelOf(UUID p) { ensureLoaded(p); return tribulationCount.getOrDefault(p, 0); }
+    public double tribulationProgress(UUID p) { ensureLoaded(p); return celestialQi.getOrDefault(p, 0.0); }
 }

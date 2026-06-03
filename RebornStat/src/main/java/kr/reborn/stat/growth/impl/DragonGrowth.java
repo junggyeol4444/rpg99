@@ -23,10 +23,20 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class DragonGrowth implements GrowthStrategy {
 
+    private static final String NS = "RebornStat.dragon";
+
     /** uuid → 보물 누적량 (gold equivalent) */
     private final java.util.Map<UUID, Long> hoard = new ConcurrentHashMap<>();
     /** uuid → 마지막 단계 (보너스 적용 시점 기준) */
     private final java.util.Map<UUID, Integer> tierApplied = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            hoard.put(p, RebornCore.get().kv().getLong(NS, p, "hoard", 0));
+            tierApplied.put(p, RebornCore.get().kv().getInt(NS, p, "tier", -1));
+        }
+    }
 
     @Override public WorldKey world() { return WorldKey.DRAGON; }
 
@@ -54,7 +64,9 @@ public final class DragonGrowth implements GrowthStrategy {
 
     /** 외부 호출 — 보물 획득. */
     public void onHoardItem(Player p, long goldValue) {
+        ensureLoaded(p.getUniqueId());
         long cur = hoard.merge(p.getUniqueId(), goldValue, Long::sum);
+        RebornCore.get().kv().putLong(NS, p.getUniqueId(), "hoard", cur);
         // 100마다 +50 용력
         if (cur / 100 > (cur - goldValue) / 100) {
             RebornCore.get().api().addStat(p.getUniqueId(),
@@ -88,10 +100,12 @@ public final class DragonGrowth implements GrowthStrategy {
     }
 
     private void checkTierMilestone(Player p, int age) {
+        ensureLoaded(p.getUniqueId());
         int newTier = tierOf(age);
         int prev = tierApplied.getOrDefault(p.getUniqueId(), -1);
         if (newTier > prev) {
             tierApplied.put(p.getUniqueId(), newTier);
+            RebornCore.get().kv().putInt(NS, p.getUniqueId(), "tier", newTier);
             applyTierBonus(p, newTier);
         }
     }
@@ -128,6 +142,6 @@ public final class DragonGrowth implements GrowthStrategy {
                 + " END +" + (int)end + " 용력 +" + (int)dragonPower);
     }
 
-    public long hoardOf(UUID p) { return hoard.getOrDefault(p, 0L); }
-    public int tierOf(UUID p) { return tierApplied.getOrDefault(p, 0); }
+    public long hoardOf(UUID p) { ensureLoaded(p); return hoard.getOrDefault(p, 0L); }
+    public int tierOf(UUID p) { ensureLoaded(p); return Math.max(0, tierApplied.getOrDefault(p, 0)); }
 }

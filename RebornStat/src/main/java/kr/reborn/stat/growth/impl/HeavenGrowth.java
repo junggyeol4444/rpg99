@@ -33,10 +33,20 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class HeavenGrowth implements GrowthStrategy {
 
+    private static final String NS = "RebornStat.heaven";
+
     /** uuid → 살생 죄목 점수 */
     private final Map<UUID, Double> sinScore = new ConcurrentHashMap<>();
     /** uuid → 마지막 신성 단계 적용 */
     private final Map<UUID, Integer> appliedStage = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            sinScore.put(p, RebornCore.get().kv().getDouble(NS, p, "sin", 0.0));
+            appliedStage.put(p, RebornCore.get().kv().getInt(NS, p, "stage", -1));
+        }
+    }
 
     @Override public WorldKey world() { return WorldKey.HEAVEN; }
 
@@ -85,12 +95,14 @@ public final class HeavenGrowth implements GrowthStrategy {
 
     /** 외부 호출 — 죄목 누적. */
     public void onSinAccrued(Player p, double weight) {
+        ensureLoaded(p.getUniqueId());
         double cur = sinScore.merge(p.getUniqueId(), weight, Double::sum);
         if (cur >= 100) {
             // 천벌 자동 발동
             sinScore.put(p.getUniqueId(), 0.0);
             applyDivinePunishment(p);
         }
+        RebornCore.get().kv().putDouble(NS, p.getUniqueId(), "sin", sinScore.get(p.getUniqueId()));
     }
 
     private void applyOathBreak(Player p) {
@@ -117,11 +129,13 @@ public final class HeavenGrowth implements GrowthStrategy {
     }
 
     private void checkStage(Player p) {
+        ensureLoaded(p.getUniqueId());
         double ki = RebornCore.get().api().getStat(p.getUniqueId(), StatType.HEAVEN_KI);
         int stage = ki >= 2000 ? 3 : ki >= 500 ? 2 : ki >= 100 ? 1 : 0;
         int prev = appliedStage.getOrDefault(p.getUniqueId(), -1);
         if (stage > prev) {
             appliedStage.put(p.getUniqueId(), stage);
+            RebornCore.get().kv().putInt(NS, p.getUniqueId(), "stage", stage);
             String label = switch (stage) {
                 case 1 -> "천인견습";
                 case 2 -> "천인";
@@ -136,6 +150,6 @@ public final class HeavenGrowth implements GrowthStrategy {
         }
     }
 
-    public double sinOf(UUID p) { return sinScore.getOrDefault(p, 0.0); }
-    public int stageOf(UUID p) { return appliedStage.getOrDefault(p, 0); }
+    public double sinOf(UUID p) { ensureLoaded(p); return sinScore.getOrDefault(p, 0.0); }
+    public int stageOf(UUID p) { ensureLoaded(p); return Math.max(0, appliedStage.getOrDefault(p, 0)); }
 }

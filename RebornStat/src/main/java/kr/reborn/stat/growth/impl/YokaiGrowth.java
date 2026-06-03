@@ -27,10 +27,20 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class YokaiGrowth implements GrowthStrategy {
 
+    private static final String NS = "RebornStat.yokai";
+
     /** uuid → 꼬리 단계 */
     private final Map<UUID, Integer> tails = new ConcurrentHashMap<>();
     /** uuid → 변신 중 (1회 사용 후 쿨다운) */
     private final Map<UUID, Long> transformCooldown = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            tails.put(p, RebornCore.get().kv().getInt(NS, p, "tails", 0));
+            // cooldown은 휘발성 (재시작 시 리셋해도 무해)
+        }
+    }
 
     @Override public WorldKey world() { return WorldKey.YOKAI; }
 
@@ -103,11 +113,13 @@ public final class YokaiGrowth implements GrowthStrategy {
     }
 
     private void checkTails(Player p) {
+        ensureLoaded(p.getUniqueId());
         double ki = RebornCore.get().api().getStat(p.getUniqueId(), StatType.YOKAI_KI);
         int targetTails = Math.min(9, (int)(ki / 1000));
         int curTails = tails.getOrDefault(p.getUniqueId(), 0);
         if (targetTails > curTails) {
             tails.put(p.getUniqueId(), targetTails);
+            RebornCore.get().kv().putInt(NS, p.getUniqueId(), "tails", targetTails);
             // 꼬리 보너스
             RebornCore.get().api().addStat(p.getUniqueId(),
                     StatType.AGILITY, 10 * (targetTails - curTails), "tail-bonus");
@@ -126,5 +138,5 @@ public final class YokaiGrowth implements GrowthStrategy {
         }
     }
 
-    public int tailsOf(UUID p) { return tails.getOrDefault(p, 0); }
+    public int tailsOf(UUID p) { ensureLoaded(p); return tails.getOrDefault(p, 0); }
 }

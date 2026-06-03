@@ -29,19 +29,31 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class DemonGrowth implements GrowthStrategy {
 
+    private static final String NS = "RebornStat.demon";
+
     /** uuid → 영혼 흡수 카운트 (살생) */
     private final Map<UUID, Integer> soulAbsorbCount = new ConcurrentHashMap<>();
     /** uuid → 마지막 외형 단계 적용 */
     private final Map<UUID, Integer> appliedStage = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            soulAbsorbCount.put(p, RebornCore.get().kv().getInt(NS, p, "souls", 0));
+            appliedStage.put(p, RebornCore.get().kv().getInt(NS, p, "stage", -1));
+        }
+    }
 
     @Override public WorldKey world() { return WorldKey.DEMON; }
 
     @Override
     public void onMonsterKill(Player p, PlayerData d, double mobLevel) {
+        ensureLoaded(p.getUniqueId());
         RebornCore.get().api().addStat(p.getUniqueId(),
                 StatType.DEMON_KI, 1.0 + Math.min(2.0, mobLevel / 30.0), "soul-absorb");
         RebornCore.get().api().addStat(p.getUniqueId(), StatType.STRENGTH, 0.3, "kill");
         soulAbsorbCount.merge(p.getUniqueId(), 1, Integer::sum);
+        RebornCore.get().kv().putInt(NS, p.getUniqueId(), "souls", soulAbsorbCount.get(p.getUniqueId()));
         checkErosion(p, d);
     }
 
@@ -65,10 +77,12 @@ public final class DemonGrowth implements GrowthStrategy {
 
     /** 외부 호출 — 큰 영혼 흡수 (보스 처치 등). */
     public void onSoulAbsorb(Player p, double soulPower) {
+        ensureLoaded(p.getUniqueId());
         RebornCore.get().api().addStat(p.getUniqueId(),
                 StatType.DEMON_KI, soulPower, "soul-absorb-boss");
         Msg.send(p, "&5영혼 흡수 — 마기 +" + (int)soulPower);
         soulAbsorbCount.merge(p.getUniqueId(), 5, Integer::sum);
+        RebornCore.get().kv().putInt(NS, p.getUniqueId(), "souls", soulAbsorbCount.get(p.getUniqueId()));
     }
 
     /** 외부 호출 — 마기 안정화 의식 (마기 -30%, 정신 +5). */
@@ -81,11 +95,13 @@ public final class DemonGrowth implements GrowthStrategy {
     }
 
     private void checkErosion(Player p, PlayerData d) {
+        ensureLoaded(p.getUniqueId());
         double ki = RebornCore.get().api().getStat(p.getUniqueId(), StatType.DEMON_KI);
         int stage = stageOf(ki);
         int prev = appliedStage.getOrDefault(p.getUniqueId(), -1);
         if (stage > prev) {
             appliedStage.put(p.getUniqueId(), stage);
+            RebornCore.get().kv().putInt(NS, p.getUniqueId(), "stage", stage);
             applyStageEffects(p, stage);
         }
         // 침식 확률 적용
@@ -138,6 +154,7 @@ public final class DemonGrowth implements GrowthStrategy {
     }
 
     public int stageOf(UUID p) {
-        return appliedStage.getOrDefault(p, 0);
+        ensureLoaded(p);
+        return Math.max(0, appliedStage.getOrDefault(p, 0));
     }
 }

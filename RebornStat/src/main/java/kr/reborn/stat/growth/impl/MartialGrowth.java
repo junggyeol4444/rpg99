@@ -33,12 +33,32 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class MartialGrowth implements GrowthStrategy {
 
+    private static final String NS = "RebornStat.martial";
+
     /** 각 플레이어가 누적한 깨달음 점수 — 100마다 한 단계 무공 진척. */
     private final Map<UUID, Double> enlightenment = new ConcurrentHashMap<>();
     /** 깨달음 단계 (각 100점 누적마다 +1) */
     private final Map<UUID, Integer> enlightenLevel = new ConcurrentHashMap<>();
     /** 단약 사용 카운트 — 같은 단약 남용 시 부작용 */
     private final Map<UUID, Map<String, Integer>> pillUsage = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            enlightenment.put(p, RebornCore.get().kv().getDouble(NS, p, "enlightProgress", 0.0));
+            enlightenLevel.put(p, RebornCore.get().kv().getInt(NS, p, "enlightLevel", 0));
+            // pillUsage: pill.<id> 키들을 모두 로드
+            var all = RebornCore.get().kv().loadAll(NS, p);
+            Map<String, Integer> usage = new HashMap<>();
+            for (var e : all.entrySet()) {
+                if (e.getKey().startsWith("pill.")) {
+                    try { usage.put(e.getKey().substring(5), Integer.parseInt(e.getValue())); }
+                    catch (Throwable ignored) {}
+                }
+            }
+            pillUsage.put(p, usage);
+        }
+    }
 
     @Override public WorldKey world() { return WorldKey.MARTIAL; }
 
@@ -98,8 +118,10 @@ public final class MartialGrowth implements GrowthStrategy {
 
     /** 외부 호출 — 단약 복용. */
     public void consumePill(Player p, String pillId) {
+        ensureLoaded(p.getUniqueId());
         Map<String, Integer> usage = pillUsage.computeIfAbsent(p.getUniqueId(), k -> new HashMap<>());
         int count = usage.merge(pillId, 1, Integer::sum);
+        RebornCore.get().kv().putInt(NS, p.getUniqueId(), "pill." + pillId, count);
         double penalty = Math.max(0.3, 1.0 - (count - 1) * 0.1); // 같은 단약 남용 시 효과 감소
 
         switch (pillId) {
@@ -162,12 +184,14 @@ public final class MartialGrowth implements GrowthStrategy {
 
     private void gainEnlightenment(Player p, double v) {
         UUID id = p.getUniqueId();
+        ensureLoaded(id);
         double cur = enlightenment.getOrDefault(id, 0.0) + v;
         enlightenment.put(id, cur);
         // 100마다 단계 상승
         while (cur >= 100) {
             cur -= 100;
             int lvl = enlightenLevel.merge(id, 1, Integer::sum);
+            RebornCore.get().kv().putInt(NS, id, "enlightLevel", lvl);
             RebornCore.get().api().addStat(id, StatType.MENTAL, 2, "enlighten-lvl");
             RebornCore.get().api().addStat(id, StatType.INNER_KI, 30, "enlighten-lvl");
             Msg.send(p, "&5&l깨달음 단계 상승 — Lv." + lvl + " §7| 정신 +2, 내공 +30");
@@ -179,6 +203,7 @@ public final class MartialGrowth implements GrowthStrategy {
             }
         }
         enlightenment.put(id, cur);
+        RebornCore.get().kv().putDouble(NS, id, "enlightProgress", cur);
     }
 
     private void triggerEnlightenment(Player p) {
@@ -219,6 +244,6 @@ public final class MartialGrowth implements GrowthStrategy {
         }
     }
 
-    public int enlightenLevelOf(UUID p) { return enlightenLevel.getOrDefault(p, 0); }
-    public double enlightenmentProgress(UUID p) { return enlightenment.getOrDefault(p, 0.0); }
+    public int enlightenLevelOf(UUID p) { ensureLoaded(p); return enlightenLevel.getOrDefault(p, 0); }
+    public double enlightenmentProgress(UUID p) { ensureLoaded(p); return enlightenment.getOrDefault(p, 0.0); }
 }

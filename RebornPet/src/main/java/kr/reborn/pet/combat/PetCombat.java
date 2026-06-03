@@ -108,14 +108,18 @@ public final class PetCombat implements Listener {
                 if (pp.activeEntityId == null) continue;
                 Entity e = Bukkit.getEntity(pp.activeEntityId);
                 if (!(e instanceof LivingEntity le) || le.isDead()) continue;
-                int amp = Math.min(3, pp.level / 25);
-                try {
-                    le.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 120, amp, true, false));
-                    le.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 120, amp, true, false));
-                    if (pp.bond >= 80) {
-                        le.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 120, 0, true, false));
-                    }
-                } catch (Throwable ignored) {}
+                final int amp = Math.min(3, pp.level / 25);
+                final boolean strongBond = pp.bond >= 80;
+                // Folia-safe: 엔티티 자체 스케줄러에서 PotionEffect 적용
+                kr.reborn.core.RebornCore.get().scheduler().runEntityTask(le, () -> {
+                    try {
+                        le.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 120, amp, true, false));
+                        le.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 120, amp, true, false));
+                        if (strongBond) {
+                            le.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 120, 0, true, false));
+                        }
+                    } catch (Throwable ignored) {}
+                });
             }
         }
     }

@@ -116,21 +116,27 @@ public final class BountyManager {
     }
 
     private void tickAutoBounty() {
-        // 1) 7일 미처치 현상금 +50%
+        // 1) 7일 미처치 현상금 +50% — async-safe (Map만 조작)
         Map<UUID, Long> snap = new java.util.HashMap<>(bounties);
         for (var e : snap.entrySet()) {
-            // 단순화: 매 사이클 +10% (실제로는 issuer.placedAt 추적 필요)
             bounties.put(e.getKey(), (long)(e.getValue() * 1.10));
         }
-        // 2) 범죄 레벨 3+ 자동 현상금
+        // 2) 범죄 레벨 3+ 자동 현상금 — broadcastMessage는 sync 필요
+        java.util.List<String> newBounties = new java.util.ArrayList<>();
         for (Player p : Bukkit.getOnlinePlayers()) {
             int lvl = plugin.crime().level(p.getUniqueId());
             if (lvl < 3) continue;
             if (bounties.containsKey(p.getUniqueId())) continue;
             long bounty = lvl * 1000L;
             bounties.put(p.getUniqueId(), bounty);
-            Bukkit.broadcastMessage("§4§l[시스템 현상금] §f" + p.getName()
+            newBounties.add("§4§l[시스템 현상금] §f" + p.getName()
                     + " §c (범죄 Lv " + lvl + ") — 현상금 " + bounty);
+        }
+        // Broadcast는 메인 스레드에서
+        if (!newBounties.isEmpty()) {
+            RebornCore.get().scheduler().runTask(() -> {
+                for (String msg : newBounties) Bukkit.broadcastMessage(msg);
+            });
         }
     }
 

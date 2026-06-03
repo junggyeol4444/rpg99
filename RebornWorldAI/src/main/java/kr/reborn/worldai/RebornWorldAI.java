@@ -69,11 +69,11 @@ public final class RebornWorldAI extends JavaPlugin {
         }
 
         long tick = getConfig().getLong("analysis-tick-interval", 6000L);
-        RebornCore.get().scheduler().runTimerAsync(this::tickAll, tick, tick);
+        // sync timer 사용 — cycle() 내부에서 callEvent + broadcastMessage 호출 (Folia 안전)
+        RebornCore.get().scheduler().runTimer(this::tickAll, tick, tick);
 
-        // 이주는 별도 간격 (config: migration-tick-interval, 기본 = AI tick * 2)
         long migTick = getConfig().getLong("migration-tick-interval", tick * 2);
-        RebornCore.get().scheduler().runTimerAsync(this::tickMigration, migTick, migTick);
+        RebornCore.get().scheduler().runTimer(this::tickMigration, migTick, migTick);
 
         getLogger().info("RebornWorldAI 활성화 — " + ais.size() + " 세계 AI, "
                 + factions.all().values().stream().mapToInt(java.util.Map::size).sum()

@@ -362,7 +362,22 @@ public final class FactionManager {
 
     private void removeFaction(Faction f) {
         factions.remove(f.id);
-        for (Faction other : factions.values()) other.relations.remove(f.id);
+        for (Faction other : factions.values()) {
+            other.relations.remove(f.id);
+            // 외교 관계 KV 정리도 동기화
+            try { kr.reborn.core.RebornCore.get().kv().remove(NS, null, other.id + ".rel." + f.id); }
+            catch (Throwable ignored) {}
+        }
+        // 자기 KV 정리 — name·leader·treasury·rel.* 전부 제거
+        try {
+            var kv = kr.reborn.core.RebornCore.get().kv();
+            kv.remove(NS, null, f.id + ".name");
+            kv.remove(NS, null, f.id + ".leader");
+            kv.remove(NS, null, f.id + ".treasury");
+            for (String otherFid : new java.util.HashSet<>(f.relations.keySet())) {
+                kv.remove(NS, null, f.id + ".rel." + otherFid);
+            }
+        } catch (Throwable ignored) {}
     }
 
     /** NPC 사망 시 호출 (NpcRegistry·NpcInteractListener). */

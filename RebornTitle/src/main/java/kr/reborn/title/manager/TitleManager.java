@@ -24,6 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class TitleManager {
 
+    private static final String NS = "RebornTitle.player";
+
     private final RebornTitle plugin;
     private final Map<String, Title> titles = new HashMap<>();
     /** uuid → 보유 칭호 id 집합 */
@@ -32,10 +34,27 @@ public final class TitleManager {
     private final Map<UUID, String> active = new ConcurrentHashMap<>();
     /** uuid → 누적 킬 카운트 */
     private final Map<UUID, Integer> kills = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = ConcurrentHashMap.newKeySet();
 
     public TitleManager(RebornTitle plugin) {
         this.plugin = plugin;
         load();
+    }
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            var all = RebornCore.get().kv().loadAll(NS, p);
+            String og = all.get("owned");
+            if (og != null && !og.isEmpty()) {
+                Set<String> s = new HashSet<>();
+                for (String c : og.split(",")) if (!c.isEmpty()) s.add(c);
+                owned.put(p, s);
+            }
+            String ac = all.get("active");
+            if (ac != null && !ac.isEmpty()) active.put(p, ac);
+            String k = all.get("kills");
+            if (k != null) try { kills.put(p, Integer.parseInt(k)); } catch (Throwable ignored) {}
+        }
     }
 
     private void load() {
@@ -54,10 +73,11 @@ public final class TitleManager {
     public Title get(String id) { return titles.get(id); }
 
     public Set<String> owned(UUID p) {
+        ensureLoaded(p);
         return owned.computeIfAbsent(p, k -> new HashSet<>());
     }
 
-    public String active(UUID p) { return active.get(p); }
+    public String active(UUID p) { ensureLoaded(p); return active.get(p); }
 
     public boolean grant(Player p, String id) {
         Title t = titles.get(id);
@@ -65,6 +85,7 @@ public final class TitleManager {
         Set<String> s = owned(p.getUniqueId());
         if (s.contains(id)) return false;
         s.add(id);
+        RebornCore.get().kv().put(NS, p.getUniqueId(), "owned", String.join(",", s));
         Bukkit.getPluginManager().callEvent(new RebornTitleGrantEvent(p, t));
         // Title 종류별 고유 연출
         renderGrant(p, t);
@@ -128,7 +149,11 @@ public final class TitleManager {
     public void revoke(Player p, String id) {
         Set<String> s = owned(p.getUniqueId());
         if (!s.remove(id)) return;
-        if (id.equals(active.get(p.getUniqueId()))) active.remove(p.getUniqueId());
+        RebornCore.get().kv().put(NS, p.getUniqueId(), "owned", String.join(",", s));
+        if (id.equals(active.get(p.getUniqueId()))) {
+            active.remove(p.getUniqueId());
+            RebornCore.get().kv().remove(NS, p.getUniqueId(), "active");
+        }
         Msg.warn(p, "&7칭호 회수: " + id);
     }
 
@@ -140,6 +165,7 @@ public final class TitleManager {
         Title t = titles.get(id);
         if (t == null) return;
         String prev = active.put(p.getUniqueId(), id);
+        RebornCore.get().kv().put(NS, p.getUniqueId(), "active", id);
         applyEffects(p, t);
         Bukkit.getPluginManager().callEvent(new RebornTitleChangeEvent(p, prev, id));
         PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
@@ -159,7 +185,9 @@ public final class TitleManager {
 
     /** 킬 카운트 증가 — 칭호 진행 트리거. */
     public void incrementKill(Player p) {
+        ensureLoaded(p.getUniqueId());
         int n = kills.merge(p.getUniqueId(), 1, Integer::sum);
+        RebornCore.get().kv().putInt(NS, p.getUniqueId(), "kills", n);
         for (Title t : titles.values()) {
             if (t.reqType == Title.ReqType.KILL_COUNT && t.reqValue instanceof Number num) {
                 if (n >= num.intValue()) grant(p, t.id);

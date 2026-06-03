@@ -19,10 +19,13 @@ public final class ProficiencyManager {
         public Tier(String name, int min) { this.name = name; this.min = min; }
     }
 
+    private static final String NS = "RebornCraft.proficiency";
+
     private final RebornCraft plugin;
     private final java.util.List<Tier> tiers = new java.util.ArrayList<>();
     /** uuid → profession → exp */
     private final Map<UUID, Map<String, Integer>> data = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = ConcurrentHashMap.newKeySet();
     private final int maxJobs;
 
     public ProficiencyManager(RebornCraft plugin) {
@@ -34,7 +37,19 @@ public final class ProficiencyManager {
         }
     }
 
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            var all = kr.reborn.core.RebornCore.get().kv().loadAll(NS, p);
+            Map<String, Integer> map = new HashMap<>();
+            for (var e : all.entrySet()) {
+                try { map.put(e.getKey(), Integer.parseInt(e.getValue())); } catch (Throwable ignored) {}
+            }
+            if (!map.isEmpty()) data.put(p, map);
+        }
+    }
+
     public int exp(UUID p, String profession) {
+        ensureLoaded(p);
         return data.getOrDefault(p, Map.of()).getOrDefault(profession, 0);
     }
 
@@ -48,6 +63,7 @@ public final class ProficiencyManager {
     }
 
     public boolean canLearn(UUID p, String profession) {
+        ensureLoaded(p);
         Map<String, Integer> map = data.computeIfAbsent(p, k -> new HashMap<>());
         if (map.containsKey(profession)) return true;
         return map.size() < maxJobs;
@@ -56,14 +72,17 @@ public final class ProficiencyManager {
     public boolean learn(UUID p, String profession) {
         if (!canLearn(p, profession)) return false;
         data.computeIfAbsent(p, k -> new HashMap<>()).putIfAbsent(profession, 0);
+        kr.reborn.core.RebornCore.get().kv().putInt(NS, p, profession, 0);
         return true;
     }
 
     public void grantExp(Player p, String profession, int gained) {
+        ensureLoaded(p.getUniqueId());
         Map<String, Integer> map = data.computeIfAbsent(p.getUniqueId(), k -> new HashMap<>());
         if (!map.containsKey(profession)) return;
         Tier before = tier(p.getUniqueId(), profession);
         int next = map.merge(profession, gained, Integer::sum);
+        kr.reborn.core.RebornCore.get().kv().putInt(NS, p.getUniqueId(), profession, next);
         Tier after = tier(p.getUniqueId(), profession);
         if (before != after && after != null) {
             Bukkit.getPluginManager().callEvent(new RebornProficiencyUpEvent(p, profession, after.name, next));

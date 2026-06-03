@@ -10,11 +10,30 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class CrimeManager {
 
+    private static final String NS = "RebornDeath.crime";
+
     private final RebornDeath plugin;
     private final ConcurrentHashMap<UUID, Double> crime = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Double> fame = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = ConcurrentHashMap.newKeySet();
 
-    public CrimeManager(RebornDeath p) { this.plugin = p; }
+    public CrimeManager(RebornDeath p) {
+        this.plugin = p;
+        // 전체 로드 — 작은 데이터셋이므로 부팅 시 일괄 로드
+        try {
+            var data = kr.reborn.core.RebornCore.get().kv().loadNamespace(NS);
+            for (var e : data.entrySet()) {
+                try {
+                    UUID id = UUID.fromString(e.getKey());
+                    String cv = e.getValue().get("crime");
+                    String fv = e.getValue().get("fame");
+                    if (cv != null) crime.put(id, Double.parseDouble(cv));
+                    if (fv != null) fame.put(id, Double.parseDouble(fv));
+                    loaded.add(id);
+                } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
+    }
 
     public double crime(UUID id) { return crime.getOrDefault(id, 0.0); }
     public double fame(UUID id) { return fame.getOrDefault(id, 0.0); }
@@ -28,6 +47,10 @@ public final class CrimeManager {
         dec *= (1.0 - reduction);
         crime.merge(killer.getUniqueId(), inc, Double::sum);
         fame.merge(killer.getUniqueId(), dec, Double::sum);
+        kr.reborn.core.RebornCore.get().kv().putDouble(NS, killer.getUniqueId(), "crime",
+                crime.get(killer.getUniqueId()));
+        kr.reborn.core.RebornCore.get().kv().putDouble(NS, killer.getUniqueId(), "fame",
+                fame.get(killer.getUniqueId()));
         if (reduction > 0) {
             Bukkit.getPlayer(killer.getUniqueId()).sendMessage(
                 "§7전시/광폭 면책 — 범죄 -" + (int)(reduction * 100) + "%");
@@ -73,6 +96,7 @@ public final class CrimeManager {
         double decay = plugin.getConfig().getDouble("crime.hourly-decay", 10);
         for (UUID id : crime.keySet()) {
             crime.merge(id, -decay, (a, b) -> Math.max(0, a + b));
+            kr.reborn.core.RebornCore.get().kv().putDouble(NS, id, "crime", crime.get(id));
         }
     }
 

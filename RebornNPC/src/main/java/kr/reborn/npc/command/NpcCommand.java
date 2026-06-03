@@ -123,6 +123,17 @@ public final class NpcCommand implements CommandExecutor {
                             + " §6라이벌 " + ins.soul.rivals.size()
                             + " §4원수 " + ins.soul.nemeses.size());
                     s.sendMessage("§7기억 수: §f" + ins.soul.memory.all().size() + "개");
+                    // 사회 — 평판·소문·명시적 관계 한 줄 요약
+                    int reps = ins.soul.reputation.all().size();
+                    long goodReps = ins.soul.reputation.all().values().stream()
+                            .filter(v -> v >= 30).count();
+                    long badReps = ins.soul.reputation.all().values().stream()
+                            .filter(v -> v <= -30).count();
+                    s.sendMessage("§7사회: §f소문 " + ins.soul.rumorsHeard.size()
+                            + " §7평판 " + reps + " §7(§a명성 " + goodReps
+                            + "§7/§c악명 " + badReps + "§7)"
+                            + " §7명시관계 " + ins.soul.relationships.size()
+                            + " §7망연결 " + plugin.registry().socialNetwork().connectionCount(ins.id));
                 }
                 // 활성 목표
                 if (!ins.goals.isEmpty()) {

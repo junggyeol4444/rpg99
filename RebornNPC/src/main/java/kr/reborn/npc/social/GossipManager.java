@@ -114,9 +114,28 @@ public final class GossipManager {
         if (npc.soul.rumorsHeard.size() > 50) {
             npc.soul.rumorsHeard.remove(0);
         }
-        // 평판이 충격적이면 분류 재평가
+        // 평판이 충격적이면 분류 재평가 + Memory에도 흔적 (직접 경험 아니더라도 큰 사건은 기억)
         if (rumor.content.isMajor()) {
             npc.soul.reclassify(rumor.subject);
+            // 신뢰도가 0.5 이상이고 한 다리 건너로 들었을 때만 Memory 기록 (떠도는 소문은 제외)
+            if (rumor.believability >= 0.5 && rumor.hopCount <= 2) {
+                kr.reborn.npc.soul.Memory.Kind memKind;
+                switch (rumor.content) {
+                    case MURDERED:    memKind = kr.reborn.npc.soul.Memory.Kind.KILLED_MY_FRIEND; break;
+                    case BETRAYED:    memKind = kr.reborn.npc.soul.Memory.Kind.BETRAYED_ME; break;
+                    case SAVED_A_LIFE:
+                    case IS_HERO:     memKind = kr.reborn.npc.soul.Memory.Kind.HELPED_ME; break;
+                    case ASCENDED:    memKind = kr.reborn.npc.soul.Memory.Kind.ALLIED_WITH_ME; break;
+                    case IS_VILLAIN:
+                    case BROKE_OATH:  memKind = kr.reborn.npc.soul.Memory.Kind.INSULTED_ME; break;
+                    default:          memKind = null;
+                }
+                if (memKind != null) {
+                    int intensity = (int) Math.min(40,
+                            Math.abs(rumor.content.defaultDelta) * rumor.believability);
+                    npc.soul.memory.record(rumor.subject, memKind, intensity, "소문");
+                }
+            }
         }
     }
 }

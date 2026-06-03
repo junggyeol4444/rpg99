@@ -28,8 +28,21 @@ public final class RepairCommand implements CommandExecutor {
             Msg.warn(p, "이 아이템은 무한 내구도입니다.");
             return true;
         }
-        // 단순 수리: durability 100% 회복 (TODO: 실제 NBT durability 트래킹)
-        Msg.send(p, "&a" + ci.name + " &7수리 완료");
+        // 바닐라 durability damage 회복 (Damageable meta 사용)
+        var meta = hand.getItemMeta();
+        if (meta instanceof org.bukkit.inventory.meta.Damageable dm) {
+            int prev = dm.getDamage();
+            if (prev <= 0) {
+                Msg.warn(p, "이미 만료 내구도입니다.");
+                return true;
+            }
+            dm.setDamage(0);
+            hand.setItemMeta(meta);
+            p.playSound(p.getLocation(), org.bukkit.Sound.BLOCK_ANVIL_USE, 0.8f, 1.2f);
+            Msg.send(p, "&a" + ci.name + " &7수리 완료 (이전 손상 " + prev + ")");
+        } else {
+            Msg.warn(p, "&7" + ci.name + "은(는) 손상되지 않는 아이템입니다.");
+        }
         return true;
     }
 }

@@ -83,10 +83,10 @@ public final class CraftingManager {
             plugin.proficiency().grantExp(p, r.profession, r.expGain);
             Bukkit.getPluginManager().callEvent(new RebornCraftSuccessEvent(p, r));
             Msg.send(p, "&a제작 성공!");
-            // 상위 등급 확률
+            // 상위 등급 확률 — 보너스 1개 추가 (상위 변형 id 명명 컨벤션 없으므로 동일 아이템 +1)
             if (Rand.chance(r.higherGradeChance) && out != null) {
-                Msg.send(p, "&6&l[행운] 상위 등급 결과!");
-                // TODO: 결과를 한 단계 위로 변환
+                Msg.send(p, "&6&l[행운] 상위 등급 결과 — 추가 1개!");
+                p.getInventory().addItem(plugin.items().render(out));
             }
         } else {
             plugin.proficiency().grantExp(p, r.profession, r.expGain / 4);

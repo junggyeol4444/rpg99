@@ -54,7 +54,37 @@ public final class RankingManager {
             next.computeIfAbsent(d.worldKey(), k -> new ArrayList<>()).add(e);
             if (total >= crossThreshold) cross.add(e);
         }
-        // TODO: NPC + 오프라인 플레이어 캐시 결합 (RebornNPC hook)
+        // NPC 결합 — RebornNPC 리플렉션. NPC들도 랭킹 후보로 포함 (totalStats() 기준).
+        try {
+            var np = Bukkit.getPluginManager().getPlugin("RebornNPC");
+            if (np != null) {
+                Object reg = np.getClass().getMethod("registry").invoke(np);
+                Object coll = reg.getClass().getMethod("all").invoke(reg);
+                if (coll instanceof java.util.Collection<?> npcs) {
+                    for (Object npcObj : npcs) {
+                        try {
+                            // dead 체크
+                            var deadField = npcObj.getClass().getField("dead");
+                            if (deadField.getBoolean(npcObj)) continue;
+                            // totalStats() 호출
+                            Object totalObj = npcObj.getClass().getMethod("totalStats").invoke(npcObj);
+                            double t = totalObj instanceof Number n ? n.doubleValue() : 0;
+                            if (t < 100) continue;  // 의미 있는 NPC만
+                            String name = (String) npcObj.getClass().getField("displayName").get(npcObj);
+                            String idStr = (String) npcObj.getClass().getField("id").get(npcObj);
+                            // worldKey
+                            Object worldObj = npcObj.getClass().getField("world").get(npcObj);
+                            WorldKey w = worldObj instanceof WorldKey wk ? wk : WorldKey.LOBBY;
+                            // 일관된 UUID 생성 (NPC id 기반)
+                            UUID fakeId = UUID.nameUUIDFromBytes(("npc:" + idStr).getBytes());
+                            RankEntry rn = new RankEntry(fakeId, "§7" + name + " §8(NPC)", t);
+                            next.computeIfAbsent(w, k -> new ArrayList<>()).add(rn);
+                            if (t >= crossThreshold) cross.add(rn);
+                        } catch (Throwable ignored) {}
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
 
         for (var entry : next.entrySet()) {
             entry.getValue().sort(Comparator.comparingDouble((RankEntry r) -> r.score).reversed());

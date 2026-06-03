@@ -24,14 +24,61 @@ import java.util.concurrent.ConcurrentHashMap;
 /** 플레이어별 활성 효과 + tick 적용. */
 public final class PlayerEffectManager {
 
+    private static final String NS = "RebornCurse.active";
+
     private final RebornCurse plugin;
     private final Map<UUID, Map<String, ActiveEffect>> active = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = ConcurrentHashMap.newKeySet();
 
     public PlayerEffectManager(RebornCurse plugin) {
         this.plugin = plugin;
     }
 
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            var all = RebornCore.get().kv().loadAll(NS, p);
+            Map<String, ActiveEffect> map = new HashMap<>();
+            for (var e : all.entrySet()) {
+                try {
+                    // "kind|stacks|remainingTicks|lastTickAt|berserkActive|berserkUntil"
+                    String[] parts = e.getValue().split("\\|", -1);
+                    if (parts.length < 4) continue;
+                    EffectDef.Kind kind = EffectDef.Kind.valueOf(parts[0]);
+                    int stacks = Integer.parseInt(parts[1]);
+                    long remaining = Long.parseLong(parts[2]);
+                    long lastTick = Long.parseLong(parts[3]);
+                    ActiveEffect a = new ActiveEffect(e.getKey(), kind, remaining, stacks);
+                    a.lastTickAt = lastTick;
+                    if (parts.length >= 6) {
+                        a.berserkActive = "1".equals(parts[4]);
+                        a.berserkUntil = Long.parseLong(parts[5]);
+                    }
+                    map.put(e.getKey(), a);
+                    // 특수 효과 캐시 재등록 (재시작 후 lockedSchools 등 복원)
+                    EffectDef def = plugin.registry().get(e.getKey());
+                    if (def != null) {
+                        try {
+                            // onApply는 RebornCurse 플러그인이 완전 로드된 후 호출 가능 — null check
+                            if (plugin.special() != null) {
+                                Player onlinePlayer = Bukkit.getPlayer(p);
+                                if (onlinePlayer != null) plugin.special().onApply(onlinePlayer, def);
+                            }
+                        } catch (Throwable ignored) {}
+                    }
+                } catch (Throwable ignored) {}
+            }
+            if (!map.isEmpty()) active.put(p, map);
+        }
+    }
+
+    private void persist(UUID p, String id, ActiveEffect a) {
+        String enc = a.kind.name() + "|" + a.stacks + "|" + a.remainingTicks + "|"
+                + a.lastTickAt + "|" + (a.berserkActive ? "1" : "0") + "|" + a.berserkUntil;
+        RebornCore.get().kv().put(NS, p, id, enc);
+    }
+
     public Map<String, ActiveEffect> of(UUID uuid) {
+        ensureLoaded(uuid);
         return active.computeIfAbsent(uuid, k -> new HashMap<>());
     }
 
@@ -49,11 +96,13 @@ public final class PlayerEffectManager {
                 return false;
             }
             existing.stacks++;
+            persist(p.getUniqueId(), id, existing);
             return true;
         }
         long ticks = def.permanent() ? -1 : def.durationSeconds;
         ActiveEffect a = new ActiveEffect(id, def.kind, ticks, 1);
         map.put(id, a);
+        persist(p.getUniqueId(), id, a);
 
         // 영구 스탯 보정 즉시 적용
         for (var e : def.staticStats.entrySet()) {
@@ -100,6 +149,7 @@ public final class PlayerEffectManager {
         Map<String, ActiveEffect> map = of(p.getUniqueId());
         ActiveEffect a = map.remove(id);
         if (a == null) return false;
+        RebornCore.get().kv().remove(NS, p.getUniqueId(), id);
         EffectDef def = plugin.registry().get(id);
         if (def != null) plugin.special().onRemove(p, def);
         // 효과 종류(축복/저주)별 다른 해제 메시지
@@ -155,8 +205,12 @@ public final class PlayerEffectManager {
                     a.remainingTicks--;
                     if (a.remainingTicks <= 0) {
                         it.remove();
+                        RebornCore.get().kv().remove(NS, p.getUniqueId(), a.id);
                         plugin.special().onRemove(p, def);
                         Msg.send(p, "&7" + def.name + " 효과가 만료되었다.");
+                    } else if (a.remainingTicks % 60 == 0) {
+                        // 1분마다 잔여시간 저장 (재시작 시 1분 단위 정확도)
+                        persist(p.getUniqueId(), a.id, a);
                     }
                 }
             }

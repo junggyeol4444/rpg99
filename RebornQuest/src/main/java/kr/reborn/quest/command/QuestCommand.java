@@ -44,11 +44,7 @@ public final class QuestCommand implements CommandExecutor {
                 }
                 break;
             case "create":
-                if (a.length < 2) return true;
-                StringBuilder desc = new StringBuilder();
-                for (int i = 1; i < a.length; i++) desc.append(a[i]).append(' ');
-                Msg.send(p, "&7AI가 자기 생성 퀘스트로 등록 검토: " + desc.toString().trim());
-                // TODO: AI 매칭 — 현재는 알림만
+                Msg.warn(p, "&7자기 생성 퀘스트는 아직 구현되지 않았다. /quest list에서 기존 퀘스트를 선택하라.");
                 break;
         }
         return true;

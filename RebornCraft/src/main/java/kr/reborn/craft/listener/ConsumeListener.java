@@ -58,8 +58,19 @@ public final class ConsumeListener implements Listener {
             Msg.send(p, "&b전 스탯 +" + v);
         } else if (ci.consumeType == CustomItem.ConsumeType.LEARN_SKILL) {
             String skill = String.valueOf(ci.consumeValue);
-            Msg.send(p, "&d비급 습득: " + skill + " (RebornSkill 호출 예정)");
-            // TODO: RebornSkill API hook
+            // RebornSkill 리플렉션 — learnByApi(UUID, String)
+            boolean learned = false;
+            try {
+                var sp = Bukkit.getPluginManager().getPlugin("RebornSkill");
+                if (sp != null) {
+                    sp.getClass().getMethod("learnByApi", java.util.UUID.class, String.class)
+                            .invoke(sp, p.getUniqueId(), skill);
+                    learned = true;
+                }
+            } catch (Throwable t) {
+                Msg.error(p, "스킬 습득 실패: " + t.getMessage());
+            }
+            if (learned) Msg.send(p, "&d비급 습득: §f" + skill);
         }
 
         // 1개 소모

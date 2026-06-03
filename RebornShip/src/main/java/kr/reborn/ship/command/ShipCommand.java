@@ -41,9 +41,34 @@ public final class ShipCommand implements CommandExecutor {
                 Ship si = pickByName(p, a, 1);
                 if (si != null) plugin.movement().sink(si);
                 break;
-            case "dismantle":
-                Msg.warn(p, "해체 (TODO: 블록 환수)");
+            case "dismantle": {
+                Ship sd = pickByName(p, a, 1);
+                if (sd == null) break;
+                org.bukkit.World w = sd.helm.getWorld();
+                if (w == null) { Msg.error(p, "월드 없음"); break; }
+                // 블록 환수 — 각 블록을 AIR로 제거하고 환수 아이템 인벤에 추가
+                int returned = 0;
+                for (var entry : sd.blocks.entrySet()) {
+                    String[] coords = entry.getKey().split(",");
+                    if (coords.length != 3) continue;
+                    try {
+                        int x = Integer.parseInt(coords[0]);
+                        int y = Integer.parseInt(coords[1]);
+                        int z = Integer.parseInt(coords[2]);
+                        var block = w.getBlockAt(x, y, z);
+                        org.bukkit.Material mat = entry.getValue().getMaterial();
+                        block.setType(org.bukkit.Material.AIR, false);
+                        if (mat != null && mat.isItem()) {
+                            p.getInventory().addItem(new org.bukkit.inventory.ItemStack(mat));
+                            returned++;
+                        }
+                    } catch (Throwable ignored) {}
+                }
+                sd.blocks.clear();
+                plugin.ships().unregister(sd);
+                Msg.send(p, "&7" + sd.name + " 해체 — 환수 §f" + returned + " §7블록.");
                 break;
+            }
             case "join":
                 Msg.send(p, "&7선원으로 승선");
                 break;

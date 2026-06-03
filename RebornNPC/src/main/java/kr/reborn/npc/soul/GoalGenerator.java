@@ -232,7 +232,21 @@ public final class GoalGenerator {
     }
 
     private boolean hasClanRank(RebornNpc npc, String rank) {
-        // TODO: RebornClan 연동 — 현재는 job 기반 추정
+        // 1) NPC 자체 가문 데이터가 있으면 그것을 우선 — RebornClan ClanManager 리플렉션
+        try {
+            var cp = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornClan");
+            if (cp != null && !npc.faction.isEmpty()) {
+                Object clans = cp.getClass().getMethod("clans").invoke(cp);
+                // hasRankAtLeast(clanId, uuid_or_npcId_string, rank) 시그니처 시도
+                try {
+                    var m = clans.getClass().getMethod("hasRankAtLeast",
+                            String.class, String.class, String.class);
+                    Object res = m.invoke(clans, npc.faction, npc.id, rank);
+                    if (Boolean.TRUE.equals(res)) return true;
+                } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
+        // 2) job 폴백 — 절대권력 직책은 항상 LEADER로 간주
         return "KING".equals(npc.job) || "EMPEROR".equals(npc.job)
                 || "DEMON_LORD".equals(npc.job) || "CULT_MASTER".equals(npc.job);
     }

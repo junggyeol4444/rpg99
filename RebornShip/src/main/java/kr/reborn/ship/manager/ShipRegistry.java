@@ -50,6 +50,13 @@ public final class ShipRegistry {
     public List<Ship> ofOwner(UUID owner) { return byOwner.getOrDefault(owner, List.of()); }
     public List<Ship> all() { return all; }
 
+    /** 배 등록 해제 (해체·침몰 후). */
+    public void unregister(Ship s) {
+        all.remove(s);
+        List<Ship> own = byOwner.get(s.owner);
+        if (own != null) own.remove(s);
+    }
+
     public Ship byHelm(Block helm) {
         for (Ship s : all) {
             if (s.helm.getBlockX() == helm.getX()

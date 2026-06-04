@@ -26,7 +26,8 @@ public final class AbilityListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onDamage(EntityDamageEvent e) {
         if (!(e.getEntity() instanceof Player p)) return;
-        if (e.getFinalDamage() < p.getHealth()) return; // 죽지 않는 데미지는 무시
+        // 치명타만 — finalDamage가 현재 HP 이상이면 사망
+        if (e.getFinalDamage() < p.getHealth()) return;
         if (plugin.abilities().tryImmortalRevive(p)) {
             e.setCancelled(true);
         }

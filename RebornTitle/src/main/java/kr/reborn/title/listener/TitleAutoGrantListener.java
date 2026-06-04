@@ -41,13 +41,19 @@ public final class TitleAutoGrantListener implements Listener {
     @EventHandler
     public void onDeath(RebornDeathEvent e) {
         Player p = e.getPlayer();
-        int n = deathCount.merge(p.getUniqueId(), 1, Integer::sum);
-        if (n == 10 && hasTitle("undying")) {
+        // 세션 내 카운터는 그대로 유지하되, PlayerData.deaths()로도 검증 (영구 누적)
+        deathCount.merge(p.getUniqueId(), 1, Integer::sum);
+        var d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+        if (d == null) return;
+        int totalDeaths = d.deaths();  // 영구 누적 사망 카운트
+        if (totalDeaths >= 10 && hasTitle("undying")
+                && !plugin.titles().owned(p.getUniqueId()).contains("undying")) {
             plugin.titles().grant(p, "undying");
             Bukkit.broadcastMessage("§5§l[재림자] §f" + p.getName()
                     + " §7가 10번 죽고도 살아남았다 — 칭호 획득!");
         }
-        if (n == 100 && hasTitle("immortal_soul")) {
+        if (totalDeaths >= 100 && hasTitle("immortal_soul")
+                && !plugin.titles().owned(p.getUniqueId()).contains("immortal_soul")) {
             plugin.titles().grant(p, "immortal_soul");
         }
     }
@@ -55,6 +61,8 @@ public final class TitleAutoGrantListener implements Listener {
     @EventHandler
     public void onStatChange(RebornStatChangeEvent e) {
         Player p = e.getPlayer();
+        // 이미 칭호 보유 시 KV 영속화된 결과로 즉시 차단 (재시작 후에도 중복 broadcast 없음)
+        if (plugin.titles().owned(p.getUniqueId()).contains("absolute")) return;
         if (absoluteTitled.contains(p.getUniqueId())) return;
         try {
             double total = RebornCore.get().api().getTotalStats(p.getUniqueId());

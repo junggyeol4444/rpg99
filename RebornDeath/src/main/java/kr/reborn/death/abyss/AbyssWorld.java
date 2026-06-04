@@ -37,6 +37,16 @@ public final class AbyssWorld implements Listener {
         RebornCore.get().scheduler().runTimer(this::tickAbyssResidents, 1200L, 1200L);
     }
 
+    /** 플레이어 join 시 — 심연 월드에 있으면 자동으로 insideAbyss에 등록. */
+    @EventHandler
+    public void onJoin(org.bukkit.event.player.PlayerJoinEvent e) {
+        Player p = e.getPlayer();
+        if (isAbyss(p.getWorld())) {
+            insideAbyss.add(p.getUniqueId());
+            // 진입 페널티는 다시 적용 안 함 (이미 첫 진입 시 적용됨)
+        }
+    }
+
     @EventHandler
     public void onTeleport(PlayerTeleportEvent e) {
         if (e.getTo() == null) return;

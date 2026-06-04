@@ -27,8 +27,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class EnchantEquipListener implements Listener {
 
+    private static final String NS = "RebornCraft.enchantEquip";
+
     private final RebornCraft plugin;
-    /** uuid → 마지막 적용된 보너스 양 */
+    /** uuid → 마지막 적용된 보너스 양 (KV 영속화로 crash 시 누적 방지) */
     private final Map<UUID, Integer> lastApplied = new ConcurrentHashMap<>();
 
     public EnchantEquipListener(RebornCraft plugin) { this.plugin = plugin; }
@@ -42,7 +44,11 @@ public final class EnchantEquipListener implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
-        reapplyBonus(e.getPlayer(), e.getPlayer().getInventory().getItemInMainHand());
+        // 이전 세션에서 적용된 보너스 KV에서 로드 — 정상 종료면 0이지만 crash이면 미정리 잔여
+        Player p = e.getPlayer();
+        int prev = RebornCore.get().kv().getInt(NS, p.getUniqueId(), "applied", 0);
+        if (prev > 0) lastApplied.put(p.getUniqueId(), prev);
+        reapplyBonus(p, p.getInventory().getItemInMainHand());
     }
 
     @EventHandler
@@ -51,6 +57,8 @@ public final class EnchantEquipListener implements Listener {
         if (last != null && last > 0) {
             applyDelta(e.getPlayer().getUniqueId(), -last);
         }
+        // 정상 종료 → KV 0으로
+        RebornCore.get().kv().putInt(NS, e.getPlayer().getUniqueId(), "applied", 0);
     }
 
     private void reapplyBonus(Player p, ItemStack item) {
@@ -61,6 +69,8 @@ public final class EnchantEquipListener implements Listener {
         if (delta == 0) return;
         applyDelta(p.getUniqueId(), delta);
         lastApplied.put(p.getUniqueId(), newBonus);
+        // 적용량 KV 저장 — crash 시에도 정확히 반영된 양 추적
+        RebornCore.get().kv().putInt(NS, p.getUniqueId(), "applied", newBonus);
     }
 
     private void applyDelta(UUID uuid, int delta) {

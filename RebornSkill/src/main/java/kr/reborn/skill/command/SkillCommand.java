@@ -61,8 +61,12 @@ public final class SkillCommand implements CommandExecutor {
                 Msg.send(p, "&a학습 완료.");
                 break;
             case "equip":
-                if (a.length < 3) return true;
-                plugin.store().equip(p.getUniqueId(), Integer.parseInt(a[1]), a[2]);
+                if (a.length < 3) { Msg.warn(p, "/skill equip <slot> <skillId>"); return true; }
+                int slot;
+                try { slot = Integer.parseInt(a[1]); }
+                catch (NumberFormatException ex) { Msg.error(p, "슬롯 번호가 숫자가 아니다: " + a[1]); return true; }
+                if (plugin.registry().get(a[2]) == null) { Msg.error(p, "스킬 없음: " + a[2]); return true; }
+                plugin.store().equip(p.getUniqueId(), slot, a[2]);
                 Msg.send(p, "&a장착 완료.");
                 break;
             case "info":

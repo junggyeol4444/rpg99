@@ -70,7 +70,8 @@ public final class AbyssWorld implements Listener {
     }
 
     private void onEnter(Player p) {
-        insideAbyss.add(p.getUniqueId());
+        // 이미 심연 set에 있으면 페널티 중복 적용 안 함
+        if (!insideAbyss.add(p.getUniqueId())) return;
         PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
         if (d == null) return;
         // 모든 공통 스탯 50% 즉시 감소 (영구 아닌 buff로 처리하면 좋지만 간이로는 즉시 감소)
@@ -88,7 +89,8 @@ public final class AbyssWorld implements Listener {
     }
 
     private void onExit(Player p) {
-        insideAbyss.remove(p.getUniqueId());
+        // 심연 set에서 제거 — 없었으면 페널티도 없었던 것이므로 복원 안 함
+        if (!insideAbyss.remove(p.getUniqueId())) return;
         PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
         if (d == null) return;
         // 스탯 복원 (50% 다시 더해 = 원복)

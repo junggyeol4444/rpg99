@@ -46,6 +46,22 @@ public final class QuestCommand implements CommandExecutor {
             case "create":
                 Msg.warn(p, "&7자기 생성 퀘스트는 아직 구현되지 않았다. /quest list에서 기존 퀘스트를 선택하라.");
                 break;
+            case "contrib": {
+                if (a.length < 2) { Msg.warn(p, "/quest contrib <questId>"); return true; }
+                var contribs = plugin.contrib().of(a[1]);
+                if (contribs.isEmpty()) { Msg.send(p, "&7기여 기록 없음: " + a[1]); break; }
+                Msg.send(p, "&6=== " + a[1] + " 기여도 (상위 10) ===");
+                contribs.entrySet().stream()
+                        .sorted(java.util.Map.Entry.<java.util.UUID, Double>comparingByValue().reversed())
+                        .limit(10)
+                        .forEach(e -> {
+                            var off = org.bukkit.Bukkit.getOfflinePlayer(e.getKey());
+                            String name = off.getName() != null ? off.getName()
+                                    : e.getKey().toString().substring(0, 8);
+                            p.sendMessage("§e" + name + " §7- §a" + String.format("%.0f", e.getValue()));
+                        });
+                break;
+            }
         }
         return true;
     }

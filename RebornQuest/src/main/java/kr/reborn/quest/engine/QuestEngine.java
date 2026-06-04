@@ -104,6 +104,10 @@ public final class QuestEngine {
             if (!obj.type.equalsIgnoreCase(type)) continue;
             if (!matchesTarget(obj.target, target)) continue;
             prog.count += n;
+            // WORLD 퀘스트는 기여도 트래커에 누적 (보상 분배 시 사용)
+            if ("WORLD".equalsIgnoreCase(q.type) || (q.world != null && !q.world.isEmpty())) {
+                plugin.contrib().add(q.id, p.getUniqueId(), n);
+            }
             if (prog.count >= obj.amount) advance(p, q, prog);
             else { persist(p.getUniqueId(), e.getKey(), prog); announce(p, q, obj, prog); }
         }

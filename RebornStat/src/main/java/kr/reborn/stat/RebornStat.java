@@ -52,6 +52,9 @@ public final class RebornStat extends JavaPlugin {
         if (getCommand("arraymeditate") != null) {
             getCommand("arraymeditate").setExecutor(new kr.reborn.stat.command.ArrayMeditateCommand(this));
         }
+        if (getCommand("element") != null) {
+            getCommand("element").setExecutor(new kr.reborn.stat.command.ElementCommand(this));
+        }
 
         getServer().getPluginManager().registerEvents(growth, this);
         getServer().getPluginManager().registerEvents(

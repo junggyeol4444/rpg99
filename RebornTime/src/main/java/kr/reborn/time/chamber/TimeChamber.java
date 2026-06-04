@@ -29,9 +29,35 @@ public final class TimeChamber {
 
     public boolean enter(Player p, String chamberId) {
         PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
-        if (RebornCore.get().api().getTotalStats(p.getUniqueId())
-                < plugin.getConfig().getInt("time-chamber.enter-tier-stats", 200)) {
-            Msg.error(p, "중룡 이상이어야 진입 가능."); return false;
+        // 기획서 5-12: 드래곤 가문 시간의 방은 강화된 진입 조건
+        boolean isDragonFamilyChamber = chamberId != null
+                && chamberId.startsWith("dragon_chamber_");
+        if (isDragonFamilyChamber) {
+            // 중룡 이상(총합 200+) + 용력 500+ 또는 드래곤 로드 가문 허가(PlayerData.status 마커)
+            int reqDragonPower = plugin.getConfig().getInt("time-chamber.enter-dragon-power", 500);
+            double dragonPower = d == null ? 0
+                    : RebornCore.get().api().getStat(p.getUniqueId(),
+                            kr.reborn.core.data.StatType.DRAGON_POWER);
+            boolean familyPermission = d != null
+                    && d.status().containsKey("dragon_chamber_permit:" + chamberId);
+            int reqTier = plugin.getConfig().getInt("time-chamber.enter-tier-stats", 200);
+            double total = RebornCore.get().api().getTotalStats(p.getUniqueId());
+            if (total < reqTier) {
+                Msg.error(p, "중룡 이상(총합 " + reqTier + "+) 필요. 현재 " + (int) total);
+                return false;
+            }
+            if (dragonPower < reqDragonPower && !familyPermission) {
+                Msg.error(p, "용력 " + reqDragonPower + " 이상 또는 가문 허가 필요. 현재 용력 "
+                        + (int) dragonPower);
+                Msg.warn(p, "&7가문 허가는 5대 드래곤 로드 가주에게 받을 수 있음.");
+                return false;
+            }
+        } else {
+            // 비-드래곤 챔버는 기존 단순 조건 유지
+            if (RebornCore.get().api().getTotalStats(p.getUniqueId())
+                    < plugin.getConfig().getInt("time-chamber.enter-tier-stats", 200)) {
+                Msg.error(p, "중룡 이상이어야 진입 가능."); return false;
+            }
         }
         long cd = plugin.getConfig().getLong("time-chamber.reentry-cooldown-real-hours", 24) * 3_600_000L;
         Long le = lastExit.get(p.getUniqueId());
@@ -43,6 +69,8 @@ public final class TimeChamber {
         p.teleport(w.getSpawnLocation());
         entryAt.put(p.getUniqueId(), System.currentTimeMillis());
         entryChamber.put(p.getUniqueId(), chamberId);
+        // 가문 허가 1회 사용 시 소비
+        if (d != null) d.status().remove("dragon_chamber_permit:" + chamberId);
         Msg.send(p, "&5" + chamberLabel(chamberId) + " 진입 — 내부 " + ratioOf(chamberId) + "× 가속.");
         return true;
     }
@@ -64,13 +92,24 @@ public final class TimeChamber {
         Msg.send(p, "&5" + chamberLabel(chamber) + " 퇴장 — 내부 " + internalYears + "년 경과.");
     }
 
-    /** 매 1분 = 내부 (ratio)분 = 스탯 미세 +. */
+    /** 매 1분 = 내부 (ratio)분 = 스탯 미세 +. + 내부 100년 cap 강제 퇴장. */
     private void tickInside() {
-        for (var entry : entryAt.entrySet()) {
+        long now = System.currentTimeMillis();
+        int maxYears = plugin.getConfig().getInt("time-chamber.max-internal-years", 100);
+        for (var entry : new java.util.HashMap<>(entryAt).entrySet()) {
             Player p = Bukkit.getPlayer(entry.getKey());
             if (p == null) continue;
             String chamber = entryChamber.get(entry.getKey());
             int ratio = ratioOf(chamber);
+            // 내부 경과 시간(년) = realHours × ratio
+            double realHours = (now - entry.getValue()) / 3_600_000.0;
+            int internalYears = (int) (realHours * ratio);
+            if (internalYears >= maxYears) {
+                // 강제 퇴장 — 기획서 5-12
+                Msg.warn(p, "&5시간의 방 — 내부 " + maxYears + "년 도달, 강제 퇴장.");
+                exit(p);
+                continue;
+            }
             try {
                 StatType primary = primaryStatOf(chamber);
                 RebornCore.get().api().addStat(p.getUniqueId(), primary, ratio * 0.5, "chamber:" + chamber);

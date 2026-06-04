@@ -172,6 +172,16 @@ public final class QuestEngine {
         Map<String, Progress> map = active.get(p.getUniqueId());
         if (map != null) map.remove(q.id);
         RebornCore.get().kv().remove(NS, p.getUniqueId(), q.id);
+        // 영구 완료 마커 — PlayerData.status에 "quest_complete:<id>" 기록
+        // 외부 시스템(예: /element이 ancient_spirit_test 통과 확인)이 참조
+        try {
+            var d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+            if (d != null) {
+                d.status().put("quest_complete:" + q.id,
+                        new kr.reborn.core.data.PlayerData.StatusEffect(
+                                "quest_complete:" + q.id, "QUEST", Long.MAX_VALUE, 1));
+            }
+        } catch (Throwable ignored) {}
         // 퀘스트 종류·세계별 고유 완료 연출
         renderCompletion(p, q);
         applyRewards(p, q);

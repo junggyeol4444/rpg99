@@ -34,6 +34,9 @@ commands:
   arraymeditate:
     description: 무협 진법·선계 도반 합동 양생 (30블록 내 같은 세계 동료)
     aliases: [array, dao]
+  element:
+    description: 정령계 주 속성 선택 (4대 + 12소원소; 빛/어둠은 시험 필요)
+    usage: /element [FIRE|WATER|EARTH|WIND|LIGHT|DARK|LIGHTNING|ICE|POISON|METAL|CRYSTAL|LAVA|MIST|SAND|WOOD|SOUND]
 permissions:
   rebornstat.use:
     default: true

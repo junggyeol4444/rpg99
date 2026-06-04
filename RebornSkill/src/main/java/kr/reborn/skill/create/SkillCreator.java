@@ -29,14 +29,28 @@ import java.util.UUID;
 public final class SkillCreator {
 
     private static final int THRESHOLD = 100;
+    private static final String NS = "RebornSkill.patternCount";
 
     private final RebornSkill plugin;
-    /** 플레이어별 행동 패턴 누적 (휘발성). */
+    /** 플레이어별 행동 패턴 누적 — KV 영속화 (lazy load). */
     private final Map<UUID, Map<String, Integer>> patternCount = new HashMap<>();
+    private final java.util.Set<UUID> loaded = new java.util.HashSet<>();
     /** 이미 창조된 패턴 → 스킬 id (영구·공유). */
     private final Map<String, String> createdByPattern = new HashMap<>();
 
     public SkillCreator(RebornSkill p) { this.plugin = p; }
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            var all = kr.reborn.core.RebornCore.get().kv().loadAll(NS, p);
+            Map<String, Integer> m = new HashMap<>();
+            for (var e : all.entrySet()) {
+                try { m.put(e.getKey(), Integer.parseInt(e.getValue())); }
+                catch (Throwable ignored) {}
+            }
+            if (!m.isEmpty()) patternCount.put(p, m);
+        }
+    }
 
     private File file() { return new File(plugin.getDataFolder(), "created-skills.yml"); }
 
@@ -63,11 +77,15 @@ public final class SkillCreator {
             grant(p, existing);  // 공유 — 같은 행동을 한 다른 플레이어도 습득
             return;
         }
+        ensureLoaded(p.getUniqueId());
         var m = patternCount.computeIfAbsent(p.getUniqueId(), x -> new HashMap<>());
         int n = m.merge(patternKey, 1, Integer::sum);
         if (n >= THRESHOLD) {
             m.remove(patternKey);
+            kr.reborn.core.RebornCore.get().kv().remove(NS, p.getUniqueId(), patternKey);
             createSkill(p, patternKey);
+        } else {
+            kr.reborn.core.RebornCore.get().kv().putInt(NS, p.getUniqueId(), patternKey, n);
         }
     }
 

@@ -155,6 +155,8 @@ public final class AchievementManager {
     public void incrementProgress(Player p, String achievementId, int delta) {
         Achievement def = defs.get(achievementId);
         if (def == null) return;
+        // 이미 획득한 업적은 진척 누적 안 함 — earnedOf로 KV 로드 보장
+        if (earnedOf(p.getUniqueId()).contains(achievementId)) return;
         Set<String> set = earned.computeIfAbsent(p.getUniqueId(), k -> new HashSet<>());
         if (set.contains(achievementId)) return;
         ensureProgressLoaded(p.getUniqueId());

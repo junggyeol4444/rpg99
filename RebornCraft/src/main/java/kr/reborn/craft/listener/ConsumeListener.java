@@ -56,6 +56,10 @@ public final class ConsumeListener implements Listener {
                 RebornCore.get().api().addStat(p.getUniqueId(), st, v, "POTION:" + ci.id);
             }
             Msg.send(p, "&b전 스탯 +" + v);
+        } else if (ci.consumeType == CustomItem.ConsumeType.CUSTOM
+                && ci.id != null && ci.id.endsWith("_pill")) {
+            // 단약 — 세계에 따라 MartialGrowth.consumePill 또는 ImmortalGrowth.consumePill 호출
+            tryConsumePill(p, ci.id);
         } else if (ci.consumeType == CustomItem.ConsumeType.LEARN_SKILL) {
             String skill = String.valueOf(ci.consumeValue);
             // RebornSkill 리플렉션 — learnByApi(UUID, String)
@@ -77,5 +81,24 @@ public final class ConsumeListener implements Listener {
         stack.setAmount(stack.getAmount() - 1);
         Bukkit.getPluginManager().callEvent(new RebornItemConsumeEvent(p, ci));
         e.setCancelled(true);
+    }
+
+    /** 단약 사용 — 거주 세계에 따라 적절한 Growth.consumePill 호출. */
+    private void tryConsumePill(Player p, String pillId) {
+        try {
+            var d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+            if (d == null) return;
+            var sp = Bukkit.getPluginManager().getPlugin("RebornStat");
+            if (sp == null) return;
+            Object growth = sp.getClass().getMethod("growth").invoke(sp);
+            Object strategy = growth.getClass().getMethod("of",
+                    kr.reborn.core.data.WorldKey.class).invoke(growth, d.worldKey());
+            if (strategy == null) return;
+            // consumePill(Player, String) — MartialGrowth·ImmortalGrowth 모두 동일 시그니처
+            strategy.getClass().getMethod("consumePill",
+                    Player.class, String.class).invoke(strategy, p, pillId);
+        } catch (Throwable t) {
+            // 해당 세계에 consumePill 없으면 silent fail
+        }
     }
 }

@@ -23,6 +23,48 @@ public final class ExchangeManager {
     public ExchangeManager(RebornEconomy plugin) {
         this.plugin = plugin;
         reload();
+        // 기획서 15장: "환율은 세계 AI가 경제 상황에 따라 실시간 조정"
+        // 매 5분(6000 ticks)마다 WorldAI inflation 기반 동적 환율 조정
+        RebornCore.get().scheduler().runTimerAsync(this::tickDynamicRates, 6000L, 6000L);
+    }
+
+    /** WorldAI inflation 기반 환율 자동 변동. RebornWorldAI 리플렉션. */
+    private void tickDynamicRates() {
+        try {
+            var ai = Bukkit.getPluginManager().getPlugin("RebornWorldAI");
+            if (ai == null) return;
+            Object all = ai.getClass().getMethod("all").invoke(ai);
+            if (!(all instanceof java.util.Collection<?> col)) return;
+            // 세계별 inflation 수집 (currency → inflation)
+            Map<kr.reborn.core.data.WorldKey, Double> inflations = new HashMap<>();
+            for (Object worldAi : col) {
+                try {
+                    Object world = worldAi.getClass().getMethod("world").invoke(worldAi);
+                    Object state = worldAi.getClass().getMethod("state").invoke(worldAi);
+                    double inflation = (double) state.getClass().getField("inflation").get(state);
+                    if (world instanceof kr.reborn.core.data.WorldKey wk) {
+                        inflations.put(wk, inflation);
+                    }
+                } catch (Throwable ignored) {}
+            }
+            // 환율 = baseRate × (toInflation / fromInflation) — 인플레이션 높은 통화가 약세
+            for (var fromEntry : new HashMap<>(rates).entrySet()) {
+                String from = fromEntry.getKey();
+                var fromCur = plugin.currencies().get(from);
+                if (fromCur == null) continue;
+                Double fromInfl = inflations.get(fromCur.world);
+                if (fromInfl == null || fromInfl <= 0) continue;
+                for (var toEntry : new HashMap<>(fromEntry.getValue()).entrySet()) {
+                    String to = toEntry.getKey();
+                    var toCur = plugin.currencies().get(to);
+                    if (toCur == null) continue;
+                    Double toInfl = inflations.get(toCur.world);
+                    if (toInfl == null || toInfl <= 0) continue;
+                    double multiplier = fromInfl / toInfl;
+                    adjustRate(from, to, multiplier);
+                }
+            }
+        } catch (Throwable ignored) {}
     }
 
     public void reload() {

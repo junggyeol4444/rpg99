@@ -31,7 +31,21 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class SpiritGrowth implements GrowthStrategy {
 
-    public enum Element { FIRE, WATER, EARTH, WIND, LIGHT, DARK }
+    /**
+     * 기획서 5-4: 4대 원소 + 12 소원소 + 혼돈.
+     * 4대: FIRE, WATER, EARTH, WIND
+     * 12 소원소: LIGHT·DARK·LIGHTNING·ICE·POISON·METAL·CRYSTAL·LAVA·MIST·SAND·WOOD·SOUND
+     * 특수: CHAOS (기연으로만)
+     */
+    public enum Element {
+        // 4대 원소
+        FIRE, WATER, EARTH, WIND,
+        // 12 소원소 (LIGHT/DARK는 태초의 정령 시험 필요)
+        LIGHT, DARK, LIGHTNING, ICE, POISON, METAL,
+        CRYSTAL, LAVA, MIST, SAND, WOOD, SOUND,
+        // 기연 전용 특수
+        CHAOS
+    }
 
     private static final String NS = "RebornStat.spirit";
 

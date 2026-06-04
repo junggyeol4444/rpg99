@@ -201,7 +201,7 @@ public final class DialogueManager {
                 String kind = cond.substring("memory:".length()).trim();
                 if (npc.soul == null) return false;
                 Memory.Kind k = Memory.Kind.valueOf(kind.toUpperCase());
-                return npc.soul.memory.has(p.getUniqueId().toString(), k);
+                return npc.soul.memory.hasMemoryOf(p.getUniqueId().toString(), k);
             }
             if (cond.startsWith("hasItem:")) {
                 String body = cond.substring("hasItem:".length());

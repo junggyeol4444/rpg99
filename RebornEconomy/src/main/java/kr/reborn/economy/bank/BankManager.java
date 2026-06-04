@@ -196,6 +196,7 @@ public final class BankManager {
             for (BankAccount a : map.values()) {
                 if (now - a.lastInterestAt < 60_000L) continue; // 1분 = 1일
                 a.lastInterestAt = now;
+                boolean changed = false;
                 // 예금 이자
                 if (a.deposit > 0) {
                     double rate = depositRate;
@@ -207,10 +208,12 @@ public final class BankManager {
                                 .getDouble("bank.maturity-bonus-7d", 0.005);
                     }
                     a.deposit += (long)(a.deposit * rate);
+                    changed = true;
                 }
                 // 대출 이자
                 if (a.loan > 0) {
                     a.loan += (long)(a.loan * loanRate);
+                    changed = true;
                     // 7일 미상환마다 신용 -10
                     if (now - a.openedAt > 7 * 86_400_000L) {
                         a.credit = Math.max(0, a.credit - 1);
@@ -220,6 +223,8 @@ public final class BankManager {
                         }
                     }
                 }
+                // 이자 적용된 계좌만 즉시 영속화 (crash 시에도 1일치 이자 보존)
+                if (changed) persist(a);
             }
         }
     }

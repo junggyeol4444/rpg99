@@ -54,6 +54,7 @@ public final class RebornClan extends JavaPlugin {
         if (clans != null) clans.saveAll();
         if (marriages != null) marriages.save();
         if (territories != null) territories.save();
+        if (kingdoms != null) kingdoms.saveAll();
     }
 
     public ClanManager clans() { return clans; }

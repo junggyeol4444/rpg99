@@ -13,12 +13,64 @@ import java.util.UUID;
 
 public final class KingdomManager {
 
+    private static final String NS = "RebornClan.kingdom";
+
     private final RebornClan plugin;
     private final Map<String, Kingdom> kingdoms = new HashMap<>();
     /** kingdomId → {ALLY, ENEMY, AT_WAR, NEUTRAL} */
     private final Map<String, Map<String, Relation>> relations = new HashMap<>();
 
-    public KingdomManager(RebornClan p) { this.plugin = p; }
+    public KingdomManager(RebornClan p) {
+        this.plugin = p;
+        loadAll();
+    }
+
+    private void loadAll() {
+        try {
+            var all = kr.reborn.core.RebornCore.get().kv().loadAll(NS, null);
+            // key: "k.<id>" → "name|king|clans_csv"  또는 "r.<a>.<b>" → "RELATION"
+            for (var e : all.entrySet()) {
+                if (e.getKey().startsWith("k.")) {
+                    String id = e.getKey().substring(2);
+                    String[] parts = e.getValue().split("\\|", -1);
+                    if (parts.length < 3) continue;
+                    try {
+                        UUID king = UUID.fromString(parts[1]);
+                        Kingdom k = new Kingdom(id, parts[0], king);
+                        for (String c : parts[2].split(",")) if (!c.isEmpty()) k.clans.add(c);
+                        kingdoms.put(id, k);
+                    } catch (Throwable ignored) {}
+                } else if (e.getKey().startsWith("r.")) {
+                    String[] parts = e.getKey().substring(2).split("\\.", 2);
+                    if (parts.length != 2) continue;
+                    try {
+                        Relation r = Relation.valueOf(e.getValue());
+                        relations.computeIfAbsent(parts[0], k -> new HashMap<>()).put(parts[1], r);
+                    } catch (Throwable ignored) {}
+                }
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    public void saveAll() {
+        var kv = kr.reborn.core.RebornCore.get().kv();
+        for (Kingdom k : kingdoms.values()) {
+            String enc = k.name + "|" + k.king + "|" + String.join(",", k.clans);
+            kv.put(NS, null, "k." + k.id, enc);
+        }
+        for (var e : relations.entrySet()) {
+            for (var re : e.getValue().entrySet()) {
+                kv.put(NS, null, "r." + e.getKey() + "." + re.getKey(), re.getValue().name());
+            }
+        }
+    }
+
+    private void persistKingdom(Kingdom k) {
+        try {
+            String enc = k.name + "|" + k.king + "|" + String.join(",", k.clans);
+            kr.reborn.core.RebornCore.get().kv().put(NS, null, "k." + k.id, enc);
+        } catch (Throwable ignored) {}
+    }
 
     public boolean create(Player king, String id, String name) {
         var clan = plugin.clans().ofPlayer(king.getUniqueId());
@@ -30,6 +82,7 @@ public final class KingdomManager {
         k.clans.add(clan.id);
         clan.kingdomId = id;
         kingdoms.put(id, k);
+        persistKingdom(k);
         Bukkit.broadcastMessage("§6§l[왕국 건국] §f" + king.getName() + "이(가) " + name + " 왕국을 세웠다!");
         Msg.send(king, "&6왕국 건설: " + name);
         return true;
@@ -51,6 +104,7 @@ public final class KingdomManager {
         if (existing != null) return existing;
         Kingdom k = new Kingdom(id, name, UUID.nameUUIDFromBytes(("npc:" + npcId).getBytes()));
         kingdoms.put(id, k);
+        persistKingdom(k);
         return k;
     }
 
@@ -98,6 +152,11 @@ public final class KingdomManager {
     private void setRelation(String a, String b, Relation r) {
         relations.computeIfAbsent(a, k -> new HashMap<>()).put(b, r);
         relations.computeIfAbsent(b, k -> new HashMap<>()).put(a, r);
+        try {
+            var kv = kr.reborn.core.RebornCore.get().kv();
+            kv.put(NS, null, "r." + a + "." + b, r.name());
+            kv.put(NS, null, "r." + b + "." + a, r.name());
+        } catch (Throwable ignored) {}
     }
 
     public enum Relation { ALLY, NEUTRAL, ENEMY, AT_WAR }

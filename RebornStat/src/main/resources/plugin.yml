@@ -19,6 +19,13 @@ commands:
     description: 깨달음 미니게임 답변
   fortune:
     description: 기연 목록·획득 확인
+  transform:
+    description: 요계 변신 (요기 100 소모, 30초)
+  moonritual:
+    description: 요계 보름달 의식 (요기 대량 누적)
+  pray:
+    description: 천계 신전 기도
+    usage: /pray [npcId]
 permissions:
   rebornstat.use:
     default: true

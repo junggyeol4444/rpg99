@@ -34,6 +34,15 @@ public final class RebornStat extends JavaPlugin {
         getCommand("meditate").setExecutor(new MeditateCommand(this));
         getCommand("answer").setExecutor(new AnswerCommand(this));
         getCommand("fortune").setExecutor(new kr.reborn.stat.serendipity.FortuneCommand(this));
+        if (getCommand("transform") != null) {
+            getCommand("transform").setExecutor(new kr.reborn.stat.command.TransformCommand(this));
+        }
+        if (getCommand("moonritual") != null) {
+            getCommand("moonritual").setExecutor(new kr.reborn.stat.command.MoonRitualCommand(this));
+        }
+        if (getCommand("pray") != null) {
+            getCommand("pray").setExecutor(new kr.reborn.stat.command.PrayCommand(this));
+        }
 
         getServer().getPluginManager().registerEvents(growth, this);
         getServer().getPluginManager().registerEvents(

@@ -157,10 +157,34 @@ public final class AchievementManager {
         if (def == null) return;
         Set<String> set = earned.computeIfAbsent(p.getUniqueId(), k -> new HashSet<>());
         if (set.contains(achievementId)) return;
+        ensureProgressLoaded(p.getUniqueId());
         Map<String, Integer> map = progress.computeIfAbsent(p.getUniqueId(), k -> new HashMap<>());
         int cur = map.merge(achievementId, delta, Integer::sum);
         if (cur >= def.requiredProgress) {
             grant(p, achievementId);
+        } else {
+            // 진척만 갱신 (완료되지 않은 항목만 KV에 저장)
+            try { kr.reborn.core.RebornCore.get().kv().putInt(NS,
+                    p.getUniqueId(), "p." + achievementId, cur); }
+            catch (Throwable ignored) {}
+        }
+    }
+
+    private final java.util.Set<UUID> progressLoaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private void ensureProgressLoaded(UUID p) {
+        if (progressLoaded.add(p)) {
+            try {
+                var all = kr.reborn.core.RebornCore.get().kv().loadAll(NS, p);
+                Map<String, Integer> m = new HashMap<>();
+                for (var e : all.entrySet()) {
+                    if (e.getKey().startsWith("p.")) {
+                        try { m.put(e.getKey().substring(2), Integer.parseInt(e.getValue())); }
+                        catch (Throwable ignored) {}
+                    }
+                }
+                if (!m.isEmpty()) progress.put(p, m);
+            } catch (Throwable ignored) {}
         }
     }
 
@@ -173,11 +197,13 @@ public final class AchievementManager {
         if (set.contains(achievementId)) return;
         set.add(achievementId);
         int newPts = totalPoints.merge(p.getUniqueId(), def.rarity.points, Integer::sum);
-        // 영속화 — earned set은 콤마 join, points는 따로
+        // 영속화 — earned set은 콤마 join, points는 따로, 진척 키는 제거
         try {
             kr.reborn.core.RebornCore.get().kv().put(NS, p.getUniqueId(), "earned",
                     String.join(",", set));
             kr.reborn.core.RebornCore.get().kv().putInt(NS, p.getUniqueId(), "points", newPts);
+            // 완료된 진척 KV에서 제거 (해당 키 더 이상 필요 없음)
+            kr.reborn.core.RebornCore.get().kv().remove(NS, p.getUniqueId(), "p." + achievementId);
         } catch (Throwable ignored) {}
         Msg.send(p, def.rarity.color + "&l[업적 달성] §f" + def.name
                 + " &7+§e" + def.rarity.points + " §7점");

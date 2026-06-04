@@ -6,17 +6,95 @@ import kr.reborn.ship.data.Ship;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 
 import java.util.*;
 
 public final class ShipRegistry {
 
+    private static final String NS = "RebornShip.ship";
+
     private final RebornShip plugin;
     private final Map<UUID, List<Ship>> byOwner = new HashMap<>();
     private final List<Ship> all = new ArrayList<>();
 
-    public ShipRegistry(RebornShip p) { this.plugin = p; }
+    public ShipRegistry(RebornShip p) {
+        this.plugin = p;
+        loadAll();
+    }
+
+    private void loadAll() {
+        try {
+            var data = kr.reborn.core.RebornCore.get().kv().loadAll(NS, null);
+            for (var e : data.entrySet()) {
+                Ship s = decode(e.getValue());
+                if (s == null) continue;
+                all.add(s);
+                byOwner.computeIfAbsent(s.owner, k -> new ArrayList<>()).add(s);
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    /** 외부 호출 — 모든 배 영속화. plugin onDisable에서 호출. */
+    public void saveAll() {
+        for (Ship s : all) persist(s);
+    }
+
+    void persist(Ship s) {
+        try {
+            kr.reborn.core.RebornCore.get().kv().put(NS, null, s.id.toString(), encode(s));
+        } catch (Throwable ignored) {}
+    }
+
+    /** 인코딩: owner|name|grade|hp|maxHp|world|hx|hy|hz|blockCount|state|rotation|blocks_csv */
+    private String encode(Ship s) {
+        StringBuilder blocks = new StringBuilder();
+        for (var e : s.blocks.entrySet()) {
+            if (blocks.length() > 0) blocks.append(';');
+            blocks.append(e.getKey()).append('=').append(e.getValue().getAsString());
+        }
+        return s.owner + "|" + s.name + "|" + s.grade + "|" + s.hp + "|" + s.maxHp + "|"
+                + (s.helm.getWorld() == null ? "world" : s.helm.getWorld().getName()) + "|"
+                + s.helm.getX() + "|" + s.helm.getY() + "|" + s.helm.getZ() + "|"
+                + s.blockCount + "|" + s.state.name() + "|" + s.rotation + "|" + blocks;
+    }
+
+    private Ship decode(String value) {
+        try {
+            String[] parts = value.split("\\|", 13);
+            if (parts.length < 13) return null;
+            UUID owner = UUID.fromString(parts[0]);
+            String name = parts[1];
+            int grade = Integer.parseInt(parts[2]);
+            double hp = Double.parseDouble(parts[3]);
+            double maxHp = Double.parseDouble(parts[4]);
+            org.bukkit.World w = org.bukkit.Bukkit.getWorld(parts[5]);
+            if (w == null) return null;
+            org.bukkit.Location helm = new org.bukkit.Location(w,
+                    Double.parseDouble(parts[6]), Double.parseDouble(parts[7]),
+                    Double.parseDouble(parts[8]));
+            int blockCount = Integer.parseInt(parts[9]);
+            Ship s = new Ship(owner, name, grade, hp, helm, blockCount);
+            s.maxHp = maxHp;
+            try { s.state = Ship.State.valueOf(parts[10]); } catch (Throwable ignored) {}
+            s.rotation = Integer.parseInt(parts[11]);
+            // 블록 디코딩 — "x,y,z=blockdata"
+            if (!parts[12].isEmpty()) {
+                for (String block : parts[12].split(";")) {
+                    int eq = block.indexOf('=');
+                    if (eq < 0) continue;
+                    try {
+                        String key = block.substring(0, eq);
+                        String bdStr = block.substring(eq + 1);
+                        BlockData bd = org.bukkit.Bukkit.createBlockData(bdStr);
+                        s.blocks.put(key, bd);
+                    } catch (Throwable ignored) {}
+                }
+            }
+            return s;
+        } catch (Throwable t) { return null; }
+    }
 
     /**
      * 조타석을 바라보는 위치에서 등록.
@@ -43,6 +121,7 @@ public final class ShipRegistry {
         }
         all.add(s);
         byOwner.computeIfAbsent(owner.getUniqueId(), x -> new ArrayList<>()).add(s);
+        persist(s);
         Msg.send(owner, "&6배 등록: " + name + " (등급 " + grade + ", 블록 " + connected.size() + ")");
         return s;
     }
@@ -53,6 +132,8 @@ public final class ShipRegistry {
     /** 배 등록 해제 (해체·침몰 후). */
     public void unregister(Ship s) {
         all.remove(s);
+        try { kr.reborn.core.RebornCore.get().kv().remove(NS, null, s.id.toString()); }
+        catch (Throwable ignored) {}
         List<Ship> own = byOwner.get(s.owner);
         if (own != null) own.remove(s);
     }

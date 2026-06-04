@@ -50,6 +50,11 @@ public final class RebornGod extends JavaPlugin {
                 + " 교단 " + religions.all().size());
     }
 
+    @Override
+    public void onDisable() {
+        if (religions != null) religions.saveAll();
+    }
+
     public GodManager gods() { return gods; }
     public DomainManager domains() { return domains; }
     public ReligionManager religions() { return religions; }

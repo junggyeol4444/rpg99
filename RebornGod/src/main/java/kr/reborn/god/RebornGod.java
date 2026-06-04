@@ -53,6 +53,7 @@ public final class RebornGod extends JavaPlugin {
     @Override
     public void onDisable() {
         if (religions != null) religions.saveAll();
+        if (gods != null) gods.saveAll();
     }
 
     public GodManager gods() { return gods; }

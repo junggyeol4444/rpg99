@@ -21,6 +21,8 @@ import java.util.UUID;
  */
 public final class GodManager {
 
+    private static final String NS = "RebornGod.playerGod";
+
     private final RebornGod plugin;
     private final Map<UUID, God> playerGods = new HashMap<>();
     private final Map<String, God> npcGods = new HashMap<>();
@@ -28,6 +30,47 @@ public final class GodManager {
     public GodManager(RebornGod p) {
         this.plugin = p;
         loadNpcGods();
+        loadPlayerGods();
+    }
+
+    private void loadPlayerGods() {
+        try {
+            var data = kr.reborn.core.RebornCore.get().kv().loadNamespace(NS);
+            // owner=playerUUID, key=field, value=...
+            for (var ownerEntry : data.entrySet()) {
+                String ownerStr = ownerEntry.getKey();
+                if (ownerStr.isEmpty()) continue;
+                try {
+                    UUID owner = UUID.fromString(ownerStr);
+                    Map<String, String> fields = ownerEntry.getValue();
+                    String name = fields.getOrDefault("name", "?");
+                    double divinity = parseD(fields.get("divinity"), 100);
+                    God g = new God(owner, "", name, divinity);
+                    g.influence = parseD(fields.get("influence"), 0);
+                    g.warOpponent = fields.getOrDefault("warOpponent", "");
+                    g.domainWorld = fields.getOrDefault("domainWorld", "");
+                    playerGods.put(owner, g);
+                } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    private double parseD(String s, double def) {
+        if (s == null) return def;
+        try { return Double.parseDouble(s); } catch (Throwable ignored) { return def; }
+    }
+
+    /** 외부 호출 — 모든 플레이어 신 영구화. */
+    public void saveAll() {
+        var kv = kr.reborn.core.RebornCore.get().kv();
+        for (God g : playerGods.values()) {
+            if (g.owner == null) continue;
+            kv.put(NS, g.owner, "name", g.name);
+            kv.putDouble(NS, g.owner, "divinity", g.divinity);
+            kv.putDouble(NS, g.owner, "influence", g.influence);
+            kv.put(NS, g.owner, "warOpponent", g.warOpponent);
+            kv.put(NS, g.owner, "domainWorld", g.domainWorld);
+        }
     }
 
     private void loadNpcGods() {
@@ -73,6 +116,10 @@ public final class GodManager {
         }
         God g = new God(p.getUniqueId(), "", p.getName() + " (신)", 100);
         playerGods.put(p.getUniqueId(), g);
+        // 즉시 영구화 — 등극 사실은 절대 손실되면 안 됨
+        var kv = RebornCore.get().kv();
+        kv.put(NS, p.getUniqueId(), "name", g.name);
+        kv.putDouble(NS, p.getUniqueId(), "divinity", g.divinity);
         RebornCore.get().api().setStat(p.getUniqueId(), StatType.DIVINITY, 100);
         Bukkit.broadcastMessage("§6§l[신격] §f" + p.getName() + "이(가) 신의 자리에 올랐다! §7(시작 신성 100)");
         return true;
@@ -83,6 +130,7 @@ public final class GodManager {
         if (g == null) return;
         g.divinity = Math.max(0, g.divinity + delta);
         RebornCore.get().api().setStat(p.getUniqueId(), StatType.DIVINITY, g.divinity);
+        RebornCore.get().kv().putDouble(NS, p.getUniqueId(), "divinity", g.divinity);
     }
 
     /** 신성 등급 — God.tier 위임 (config tiers 사용). */

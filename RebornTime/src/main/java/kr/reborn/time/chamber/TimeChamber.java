@@ -87,6 +87,12 @@ public final class TimeChamber {
     private String chamberLabel(String chamberId) {
         return switch (chamberId) {
             case "dragon_chamber" -> "용계 시간방";
+            // 기획서 5-12: 5대 드래곤 로드 가문 영역 시간의 방
+            case "dragon_chamber_aurelius" -> "아우렐리스 가문 시간의 방 (성광)";
+            case "dragon_chamber_ignifer"  -> "이그니페르 가문 시간의 방 (화염)";
+            case "dragon_chamber_nocterna" -> "녹테르나 가문 시간의 방 (산성)";
+            case "dragon_chamber_cerylis"  -> "세릴리스 가문 시간의 방 (뇌전)";
+            case "dragon_chamber_silvarex" -> "실바렉스 가문 시간의 방 (독)";
             case "immortal_seclusion" -> "선계 폐관 동굴";
             case "martial_cliff" -> "전설의 절벽";
             case "demon_tower" -> "마계 마기탑";
@@ -103,6 +109,10 @@ public final class TimeChamber {
             case "demon_tower" -> "demon";
             case "spirit_grove" -> "spirit";
             case "mind_palace" -> "lobby";
+            // 5대 드래곤 가문 시간의 방은 모두 dragon 세계로 복귀
+            case "dragon_chamber_aurelius", "dragon_chamber_ignifer",
+                 "dragon_chamber_nocterna", "dragon_chamber_cerylis",
+                 "dragon_chamber_silvarex" -> "dragon";
             default -> "dragon";
         };
     }
@@ -114,6 +124,10 @@ public final class TimeChamber {
             case "demon_tower" -> StatType.DEMON_KI;
             case "spirit_grove" -> StatType.SPIRIT_POWER;
             case "mind_palace" -> StatType.MENTAL;
+            // 5대 드래곤 가문 방은 모두 용력 누적, 환경은 추가 보너스 부여
+            case "dragon_chamber_aurelius", "dragon_chamber_ignifer",
+                 "dragon_chamber_nocterna", "dragon_chamber_cerylis",
+                 "dragon_chamber_silvarex" -> StatType.DRAGON_POWER;
             default -> StatType.DRAGON_POWER;
         };
     }

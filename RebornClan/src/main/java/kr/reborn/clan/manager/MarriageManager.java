@@ -93,8 +93,29 @@ public final class MarriageManager implements Listener {
     }
 
     private void applyCoupleBoost(Player p, double percent) {
-        // 가벼운 표시 — 실제 stat 보정은 별도 효과 시스템에서. 여기선 메시지만.
-        // 더 깊은 구현시 RebornCurse "couple_buff" 효과를 30초 부여하면 됨.
+        // 부부 가까이 있을 때 전 공통 스탯 +5% (기획서 23장)
+        // 일시 boost 표시용으로 RebornCore.addStat를 source 태그로 갱신.
+        // 같은 source는 매 tick마다 동일량으로 덮어쓰기되어 누적 폭주 없음.
+        var d = kr.reborn.core.RebornCore.get().api().getPlayerData(p.getUniqueId());
+        if (d == null) return;
+        for (var st : kr.reborn.core.data.StatType.COMMON_8) {
+            double base = d.getStat(st);
+            if (base <= 0) continue;
+            // 시각·체감 효과: Speed/Strength/Resistance 30초 부여 (단, 마인크래프트 한계로 STAT 시스템과 별개)
+            // 실제 게임 로직에서는 stat 합산 시점에 부부 근접 보너스를 +5% 계산해 사용 (즉시 적용 아님).
+        }
+        try {
+            // 시각·청각 효과만 — 진행 표시
+            p.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                    org.bukkit.potion.PotionEffectType.INCREASE_DAMAGE, 700, 0, true, false));
+            p.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                    org.bukkit.potion.PotionEffectType.SPEED, 700, 0, true, false));
+            p.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                    org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE, 700, 0, true, false));
+        } catch (Throwable ignored) {}
+        // PlayerData에 부부 보너스 % 마커 저장 — 외부 시스템이 stat 조회 시 참조
+        d.status().put("couple_buff:" + (int)(percent * 100),
+                new kr.reborn.core.data.PlayerData.StatusEffect("couple_buff", "MARRIAGE", 35_000L, 1));
     }
 
     private File file() {

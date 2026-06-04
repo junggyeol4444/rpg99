@@ -51,7 +51,7 @@ public final class BankManager {
             RebornCore.get().kv().putLong(NS, a.owner, prefix + "loan", a.loan);
             RebornCore.get().kv().putInt(NS, a.owner, prefix + "credit", a.credit);
             RebornCore.get().kv().putLong(NS, a.owner, prefix + "maturityAt", a.maturityAt);
-            RebornCore.get().kv().putLong(NS, a.owner, prefix + "lastPaidAt", a.lastPaidAt);
+            RebornCore.get().kv().putLong(NS, a.owner, prefix + "lastInterestAt", a.lastInterestAt);
         } catch (Throwable ignored) {}
     }
 
@@ -66,7 +66,7 @@ public final class BankManager {
             a.loan = RebornCore.get().kv().getLong(NS, uuid, prefix + "loan", 0);
             a.credit = RebornCore.get().kv().getInt(NS, uuid, prefix + "credit", 70);
             a.maturityAt = RebornCore.get().kv().getLong(NS, uuid, prefix + "maturityAt", 0);
-            a.lastPaidAt = RebornCore.get().kv().getLong(NS, uuid, prefix + "lastPaidAt",
+            a.lastInterestAt = RebornCore.get().kv().getLong(NS, uuid, prefix + "lastInterestAt",
                     System.currentTimeMillis());
             return a;
         } catch (Throwable t) {

@@ -26,6 +26,9 @@ commands:
   pray:
     description: 천계 신전 기도
     usage: /pray [npcId]
+  petition:
+    description: 정령계 원소왕 청원
+    usage: /petition <FIRE|WATER|EARTH|WIND|LIGHT|DARK>
 permissions:
   rebornstat.use:
     default: true

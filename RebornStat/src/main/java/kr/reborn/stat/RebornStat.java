@@ -43,6 +43,9 @@ public final class RebornStat extends JavaPlugin {
         if (getCommand("pray") != null) {
             getCommand("pray").setExecutor(new kr.reborn.stat.command.PrayCommand(this));
         }
+        if (getCommand("petition") != null) {
+            getCommand("petition").setExecutor(new kr.reborn.stat.command.PetitionCommand(this));
+        }
 
         getServer().getPluginManager().registerEvents(growth, this);
         getServer().getPluginManager().registerEvents(

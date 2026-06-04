@@ -46,6 +46,21 @@ public final class HiddenWorldListener implements Listener {
         RebornCore.get().scheduler().runTimer(this::scrambleTimeRealm, 6000L, 6000L);
     }
 
+    /** 재시작 후 — 현재 월드 기준으로 set 자동 등록. */
+    @EventHandler
+    public void onJoin(org.bukkit.event.player.PlayerJoinEvent e) {
+        Player p = e.getPlayer();
+        WorldType type = classifyWorld(p.getWorld());
+        UUID id = p.getUniqueId();
+        switch (type) {
+            case TIME_REALM: inTimeRealm.add(id); break;
+            case DREAM:      inDream.add(id); break;
+            case VOID:       inVoid.add(id); break;
+            case GOD:        inGodRealm.add(id); break;
+            default: break;
+        }
+    }
+
     @EventHandler
     public void onTeleport(PlayerTeleportEvent e) {
         if (e.getTo() != null && e.getFrom().getWorld() != e.getTo().getWorld()) {

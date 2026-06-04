@@ -23,10 +23,12 @@ public final class Fortune {
     public final String skillReward;   // 지급 스킬 id (없으면 "")
     public final String message;
     public final Map<StatType, Double> statRewards;
+    /** 특수 효과 키 — FortuneManager가 매칭하여 추가 동작 실행 (예: chaos_element_unlock). */
+    public final String special;
 
     public Fortune(String id, String name, WorldKey world, Trigger trigger, String param,
                    double chance, boolean broadcast, String skillReward, String message,
-                   Map<StatType, Double> statRewards) {
+                   Map<StatType, Double> statRewards, String special) {
         this.id = id;
         this.name = name;
         this.world = world;
@@ -37,5 +39,6 @@ public final class Fortune {
         this.skillReward = skillReward == null ? "" : skillReward;
         this.message = message == null ? "" : message;
         this.statRewards = statRewards;
+        this.special = special == null ? "" : special;
     }
 }

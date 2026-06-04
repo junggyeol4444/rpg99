@@ -199,6 +199,8 @@ fortunes:
   # ── 정령계 ──
   elemental_king_core: { name: "&3정령왕의 핵 파편", world: SPIRIT, trigger: KILL, chance: 0.01, broadcast: true, message: "소멸한 정령왕의 핵. 원소 친화가 극대화된다.", stats: { SPIRIT_POWER: 500 } }
   harmony_spring:     { name: "&a조화의 샘", world: SPIRIT, trigger: EXPLORE, chance: 0.003, message: "모든 원소가 조화를 이루는 샘.", stats: { SPIRIT_POWER: 200 } }
+  # 기획서 5-4: 13번째 숨겨진 숲 — 카오스 정령과의 접촉. 발견 자체가 기연.
+  chaos_forest_discovery: { name: "&5&l숨겨진 13번째 숲 (혼돈)", world: SPIRIT, trigger: EXPLORE, chance: 0.0001, broadcast: true, special: "chaos_element_unlock", message: "혼돈의 정령 카오스와 접촉. 모든 원소 친화가 동시에 일어난다 — 정신력이 부족하면 정령체가 폭주하여 소멸.", stats: { SPIRIT_POWER: 1000, MENTAL: 100 } }
   # ── 무협계 ──
   hermit_cave:        { name: "&6무명 고수의 동굴", world: MARTIAL, trigger: EXPLORE, chance: 0.002, broadcast: true, skill: dokgo_gugeom, message: "폭포 뒤 동굴에서 은둔고수의 비급과 내공을 얻었다.", stats: { INNER_KI: 500 } }
   lightning_body:     { name: "&e뇌격 체질", world: MARTIAL, trigger: EXPLORE, chance: 0.001, message: "낙뢰를 맞고 살아남아 뇌전 속성이 각성했다.", stats: { ENDURANCE: 100, STRENGTH: 100, AGILITY: 100, INTELLIGENCE: 100, MENTAL: 100, LUCK: 100, CHARISMA: 100, CHARM: 100 } }

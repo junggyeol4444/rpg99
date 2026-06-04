@@ -50,7 +50,7 @@ public final class FortuneRegistry {
             Fortune f = new Fortune(id, s.getString("name", id), w, trig,
                     s.getString("param", ""), s.getDouble("chance", 0.01),
                     s.getBoolean("broadcast", false), s.getString("skill", ""),
-                    s.getString("message", ""), rewards);
+                    s.getString("message", ""), rewards, s.getString("special", ""));
             byId.put(id, f);
             if (w == null) global.add(f);
             else byWorld.computeIfAbsent(w, k -> new ArrayList<>()).add(f);

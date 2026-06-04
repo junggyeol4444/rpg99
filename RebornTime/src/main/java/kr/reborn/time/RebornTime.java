@@ -31,6 +31,9 @@ public final class RebornTime extends JavaPlugin {
         getCommand("worldtravel").setExecutor(new WorldTravelCommand(this));
         getCommand("time").setExecutor(new TimeCommand(this));
         getCommand("chamber").setExecutor(new ChamberCommand(this));
+        if (getCommand("dragonpermit") != null) {
+            getCommand("dragonpermit").setExecutor(new kr.reborn.time.command.DragonPermitCommand(this));
+        }
 
         long interval = getConfig().getLong("sync-interval-seconds", 60) * 20L;
         RebornCore.get().scheduler().runTimer(sync::syncAll, interval, interval);

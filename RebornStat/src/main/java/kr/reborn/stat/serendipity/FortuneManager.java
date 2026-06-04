@@ -86,6 +86,8 @@ public final class FortuneManager implements Listener {
             RebornCore.get().api().addStat(p.getUniqueId(), e.getKey(), e.getValue(), "fortune:" + f.id);
         }
         if (!f.skillReward.isEmpty()) grantSkill(p.getUniqueId(), f.skillReward);
+        // 특수 효과 처리 — 기획서 5-4 chaos_element_unlock 등
+        if (!f.special.isEmpty()) handleSpecial(p, f);
         mark(d, f.id);
         RebornCore.get().tierManager().checkAndAdvance(p, d);  // 기연으로 경지 상승 가능
         Msg.send(p, "&6&l[기연] &r&e" + f.name);
@@ -96,6 +98,38 @@ public final class FortuneManager implements Listener {
         }
         p.getWorld().playSound(p.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1.2f);
         return true;
+    }
+
+    /** 기연 특수 효과 매처. */
+    private void handleSpecial(Player p, Fortune f) {
+        switch (f.special) {
+            case "chaos_element_unlock" -> {
+                // 13번째 숲: 정신력 부족 시 폭주
+                double mental = RebornCore.get().api().getStat(p.getUniqueId(), StatType.MENTAL);
+                if (mental < 100) {
+                    Bukkit.broadcastMessage("§4§l[정령 폭주] §f" + p.getName()
+                            + " §7이(가) 카오스를 견디지 못하고 정령체가 폭주 — 모든 정수 소멸.");
+                    try { p.damage(p.getMaxHealth()); } catch (Throwable ignored) {}
+                    return;
+                }
+                // SpiritGrowth.absorbEssence(CHAOS, 200) — 리플렉션 회피, 직접 호출
+                kr.reborn.stat.growth.GrowthStrategy s = plugin.growth()
+                        .of(kr.reborn.core.data.WorldKey.SPIRIT);
+                if (s instanceof kr.reborn.stat.growth.impl.SpiritGrowth sg) {
+                    sg.absorbEssence(p, kr.reborn.stat.growth.impl.SpiritGrowth.Element.CHAOS, 200);
+                }
+                // 모든 원소 친화도 +50 (기획서: 모든 원소 친화가 동시에 상승)
+                if (s instanceof kr.reborn.stat.growth.impl.SpiritGrowth sg2) {
+                    for (var e : kr.reborn.stat.growth.impl.SpiritGrowth.Element.values()) {
+                        if (e == kr.reborn.stat.growth.impl.SpiritGrowth.Element.CHAOS) continue;
+                        sg2.absorbEssence(p, e, 50);
+                    }
+                }
+                Bukkit.broadcastMessage("§5§l[혼돈의 정령] §f" + p.getName()
+                        + " §7이(가) 카오스의 일족이 되었다 — 모든 원소를 다스리는 자.");
+            }
+            default -> {}
+        }
     }
 
     private void grantSkill(UUID uuid, String skillId) {

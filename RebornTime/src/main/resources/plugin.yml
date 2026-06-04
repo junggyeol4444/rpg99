@@ -6,7 +6,7 @@ folia-supported: true
 authors: [ReincarnationWorld]
 description: 시간 동기화·세계 이동·시간의 방·달
 depend: [RebornCore]
-softdepend: [RebornStat]
+softdepend: [RebornStat, RebornHiddenClass]
 load: POSTWORLD
 commands:
   worldtravel:
@@ -16,5 +16,8 @@ commands:
     description: 시간 정보
   chamber:
     description: 시간의 방
+  dragonpermit:
+    description: 5대 드래곤 가문 시간의 방 허가증 발급 (용왕 클래스 또는 OP)
+    usage: /dragonpermit grant <player> <chamberId>
 permissions:
   reborntime.use: { default: true }

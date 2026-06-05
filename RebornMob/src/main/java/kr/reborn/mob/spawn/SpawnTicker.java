@@ -1,7 +1,6 @@
 package kr.reborn.mob.spawn;
 
 import kr.reborn.core.data.WorldKey;
-import kr.reborn.core.util.Items;
 import kr.reborn.core.util.Rand;
 import kr.reborn.mob.RebornMob;
 import kr.reborn.mob.def.MobDef;
@@ -45,8 +44,12 @@ public final class SpawnTicker {
 
     private int countCustomMobs(Chunk c) {
         int n = 0;
+        NamespacedKey key = new NamespacedKey(plugin, "rmob");
         for (Entity e : c.getEntities()) {
-            if (e instanceof LivingEntity le && Items.tag(plugin, le.getEquipment() == null ? null : null, "rmob") != null) n++;
+            if (e instanceof LivingEntity le
+                    && le.getPersistentDataContainer().has(key, PersistentDataType.STRING)) {
+                n++;
+            }
         }
         return n;
     }

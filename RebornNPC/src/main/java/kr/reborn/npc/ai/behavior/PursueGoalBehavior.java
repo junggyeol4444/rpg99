@@ -152,6 +152,70 @@ public final class PursueGoalBehavior implements Behavior {
                 }
                 break;
             }
+            case FIND_LOVE: {
+                // 매력적인 다른 NPC에게 접근 — SocialBehavior가 만남을 처리
+                RebornNpc partner = findRomanticCandidate(npc);
+                if (partner != null && partner.location != null) {
+                    if (mob.getLocation().distance(partner.location) > 5) {
+                        mob.getPathfinder().moveTo(partner.location, 0.85);
+                    }
+                    npc.soul.needs.add(kr.reborn.npc.soul.Needs.Kind.LOVE, +0.1);
+                }
+                break;
+            }
+            case GAIN_WEALTH: {
+                // 직업이 상인이면 정착, 아니면 사람 많은 곳 (시장)
+                if ("merchant".equals(npc.job) || "trader".equals(npc.job)) {
+                    npc.soul.needs.add(kr.reborn.npc.soul.Needs.Kind.SAFETY, +0.2);
+                } else {
+                    RebornNpc nearest = findByJob(npc, "merchant");
+                    if (nearest != null && nearest.location != null
+                            && mob.getLocation().distance(nearest.location) > 10) {
+                        mob.getPathfinder().moveTo(nearest.location, 0.75);
+                    }
+                }
+                break;
+            }
+            case START_BUSINESS: {
+                // 상점 위치 찾기 — 마을 중심부 머무름
+                npc.soul.needs.add(kr.reborn.npc.soul.Needs.Kind.AUTONOMY, +0.15);
+                npc.soul.needs.add(kr.reborn.npc.soul.Needs.Kind.STATUS, +0.1);
+                break;
+            }
+            case ACCUMULATE_KNOWLEDGE: {
+                // 사서·노학자 NPC 근처에 — 책의 흐름
+                RebornNpc scholar = findByJob(npc, "scholar");
+                if (scholar == null) scholar = findByJob(npc, "librarian");
+                if (scholar != null && scholar.location != null
+                        && mob.getLocation().distance(scholar.location) > 8) {
+                    mob.getPathfinder().moveTo(scholar.location, 0.7);
+                }
+                npc.soul.needs.add(kr.reborn.npc.soul.Needs.Kind.MASTERY, +0.3);
+                break;
+            }
+            case FOUND_RELIGION: {
+                // 신앙심 깊은 NPC 옆 — 가르침을 모으는 자세
+                npc.soul.needs.add(kr.reborn.npc.soul.Needs.Kind.ACHIEVEMENT, +0.4);
+                npc.soul.needs.add(kr.reborn.npc.soul.Needs.Kind.STATUS, +0.2);
+                // 마을 중앙 정착 — 신자 모집
+                break;
+            }
+            case DESTROY_RIVAL_FACTION: {
+                // 적대 세력 영역 정찰
+                if (!g.target.isEmpty()) {
+                    RebornNpc enemy = plugin.registry().get(g.target);
+                    if (enemy != null && enemy.location != null
+                            && mob.getLocation().distance(enemy.location) > 15) {
+                        mob.getPathfinder().moveTo(enemy.location, 0.95);
+                    }
+                }
+                break;
+            }
+            case BETRAY: {
+                // 충성이 매우 낮을 때 — 주군에게서 멀어짐, 적대 세력 NPC 접근
+                npc.soul.needs.add(kr.reborn.npc.soul.Needs.Kind.AUTONOMY, +0.5);
+                break;
+            }
             default:
                 break;
         }
@@ -191,6 +255,37 @@ public final class PursueGoalBehavior implements Behavior {
             if (f.location.getWorld() != self.location.getWorld()) continue;
             double d = f.location.distance(self.location);
             if (d < bestD) { bestD = d; best = f; }
+        }
+        return best;
+    }
+
+    /** 다른 미혼 NPC 중 거리 25 이내 가장 가까운. */
+    private RebornNpc findRomanticCandidate(RebornNpc self) {
+        if (self.location == null) return null;
+        RebornNpc best = null;
+        double bestD = 25;
+        for (RebornNpc other : plugin.registry().all()) {
+            if (other == self || other.dead || other.location == null) continue;
+            if (other.location.getWorld() != self.location.getWorld()) continue;
+            if (other.soul != null && !other.soul.family.isEmpty()
+                    && other.soul.family.contains(self.id)) continue; // 가족 제외
+            double d = other.location.distance(self.location);
+            if (d < bestD) { bestD = d; best = other; }
+        }
+        return best;
+    }
+
+    /** 특정 직업의 가장 가까운 NPC. */
+    private RebornNpc findByJob(RebornNpc self, String job) {
+        if (self.location == null || job == null) return null;
+        RebornNpc best = null;
+        double bestD = 80;
+        for (RebornNpc other : plugin.registry().all()) {
+            if (other == self || other.dead || other.location == null) continue;
+            if (!job.equals(other.job)) continue;
+            if (other.location.getWorld() != self.location.getWorld()) continue;
+            double d = other.location.distance(self.location);
+            if (d < bestD) { bestD = d; best = other; }
         }
         return best;
     }

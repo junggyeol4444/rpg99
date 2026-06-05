@@ -98,18 +98,48 @@ public final class WorldAI {
     }
 
     private void analyzeEconomy() {
-        // RebornEconomy hook (선택). 데이터 없으면 적당히 변동.
-        state.inflation = Math.max(50, Math.min(300, state.inflation + Rand.rangeD(-5, 5)));
-        state.tradeActivity = Math.max(0.1, Math.min(3.0, state.tradeActivity + Rand.rangeD(-0.1, 0.1)));
+        // 1. 같은 세계 온라인 플레이어 수 추세 → 거래 활성도
+        int worldPop = 0;
+        for (var p : Bukkit.getOnlinePlayers()) {
+            var d = kr.reborn.core.RebornCore.get().api().getPlayerData(p.getUniqueId());
+            if (d != null && d.worldKey() == world) worldPop++;
+        }
+        // 인구 영향: pop > 5 → 거래 활성 ↑, pop < 2 → ↓
+        double popDelta = worldPop >= 5 ? 0.08 : worldPop < 2 ? -0.05 : 0.0;
+        state.tradeActivity = Math.max(0.1, Math.min(3.0,
+                state.tradeActivity + popDelta + Rand.rangeD(-0.05, 0.05)));
+        // 2. 거래 활성 ↑ → 인플레 ↑ (수요 증가)
+        double tradeImpact = (state.tradeActivity - 1.0) * 2.0;
+        state.inflation = Math.max(50, Math.min(300,
+                state.inflation + tradeImpact + Rand.rangeD(-3, 3)));
     }
 
     private void analyzePolitics() {
-        state.tension = Math.max(0, Math.min(100, state.tension + Rand.rangeD(-3, 3)));
-        state.stability = Math.max(0, Math.min(100, state.stability + Rand.rangeD(-2, 2)));
+        // 안정 ↓ → 긴장 ↑ (피드백 루프)
+        double stabFb = (50 - state.stability) * 0.04;
+        state.tension = Math.max(0, Math.min(100,
+                state.tension + stabFb + Rand.rangeD(-2, 2)));
+        // 긴장 ↑ → 안정 ↓
+        double tensFb = -state.tension * 0.02;
+        state.stability = Math.max(0, Math.min(100,
+                state.stability + tensFb + Rand.rangeD(-1, 1)));
     }
 
     private void analyzeMobs() {
-        state.mobBalance = Math.max(0, Math.min(2.0, state.mobBalance + Rand.rangeD(-0.05, 0.05)));
+        // RebornMob의 같은 세계 활성 몹 수에 비례
+        double active = 0.0;
+        try {
+            var mp = Bukkit.getPluginManager().getPlugin("RebornMob");
+            if (mp != null) {
+                Object ctl = mp.getClass().getMethod("controller").invoke(mp);
+                Object cnt = ctl.getClass().getMethod("active").invoke(ctl);
+                if (cnt instanceof Number n) active = n.doubleValue();
+            }
+        } catch (Throwable ignored) {}
+        // 활성 몹이 50 이상 → mobBalance ↑, 10 이하 → ↓
+        double mobDelta = active > 50 ? 0.03 : active < 10 ? -0.03 : 0.0;
+        state.mobBalance = Math.max(0, Math.min(2.0,
+                state.mobBalance + mobDelta + Rand.rangeD(-0.02, 0.02)));
     }
 
     private void analyzeWeather() {

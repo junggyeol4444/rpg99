@@ -29,21 +29,34 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class ApocalypseGrowth implements GrowthStrategy {
 
+    private static final String NS = "RebornStat.apocalypse";
+
     /** uuid → 방사능 누적량 (0~∞) */
     private final Map<UUID, Double> radiation = new ConcurrentHashMap<>();
     /** uuid → 비축 식수일 */
     private final Map<UUID, Integer> waterDays = new ConcurrentHashMap<>();
     /** uuid → 비축 식량일 */
     private final Map<UUID, Integer> foodDays = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            radiation.put(p, RebornCore.get().kv().getDouble(NS, p, "rad", 0.0));
+            waterDays.put(p, RebornCore.get().kv().getInt(NS, p, "water", 0));
+            foodDays.put(p, RebornCore.get().kv().getInt(NS, p, "food", 0));
+        }
+    }
 
     @Override public WorldKey world() { return WorldKey.APOCALYPSE; }
 
     @Override
     public void onMonsterKill(Player p, PlayerData d, double mobLevel) {
+        ensureLoaded(p.getUniqueId());
         StatType st = StatType.COMMON_8[Rand.range(0, 7)];
         RebornCore.get().api().addStat(p.getUniqueId(), st, 0.4, "survive-kill");
         // 변종 처치 시 방사능 약간 증가
-        radiation.merge(p.getUniqueId(), 0.5, Double::sum);
+        double cur = radiation.merge(p.getUniqueId(), 0.5, Double::sum);
+        RebornCore.get().kv().putDouble(NS, p.getUniqueId(), "rad", cur);
         // 음식 드롭 (즉시 보충)
         if (Rand.chance(0.3)) {
             consumeFood(p, 1);
@@ -71,7 +84,9 @@ public final class ApocalypseGrowth implements GrowthStrategy {
 
     /** 외부 호출 — 방사능 피폭. */
     public void onRadiationExposure(Player p, double dose) {
+        ensureLoaded(p.getUniqueId());
         double cur = radiation.merge(p.getUniqueId(), dose, Double::sum);
+        RebornCore.get().kv().putDouble(NS, p.getUniqueId(), "rad", cur);
         // 매 50마다 알림
         if (cur >= 50 && cur - dose < 50) {
             Msg.warn(p, "&2방사능 누적 50 — 방호복 권장.");
@@ -87,12 +102,15 @@ public final class ApocalypseGrowth implements GrowthStrategy {
             } catch (Throwable ignored) {}
             // 50 차감 (저주 부여 후)
             radiation.put(p.getUniqueId(), cur - 50);
+            RebornCore.get().kv().putDouble(NS, p.getUniqueId(), "rad", cur - 50);
         }
     }
 
     /** 외부 호출 — 식수 비축. */
     public void consumeWater(Player p, int days) {
+        ensureLoaded(p.getUniqueId());
         int cur = waterDays.merge(p.getUniqueId(), days, Integer::sum);
+        RebornCore.get().kv().putInt(NS, p.getUniqueId(), "water", cur);
         if (cur >= 14 && cur - days < 14) {
             RebornCore.get().api().addStat(p.getUniqueId(), StatType.MENTAL, 5, "14d-water");
             Msg.send(p, "&b식수 2주 비축 — 정신 +5");
@@ -101,7 +119,9 @@ public final class ApocalypseGrowth implements GrowthStrategy {
 
     /** 외부 호출 — 식량 비축. */
     public void consumeFood(Player p, int days) {
+        ensureLoaded(p.getUniqueId());
         int cur = foodDays.merge(p.getUniqueId(), days, Integer::sum);
+        RebornCore.get().kv().putInt(NS, p.getUniqueId(), "food", cur);
         if (cur >= 14 && cur - days < 14) {
             RebornCore.get().api().addStat(p.getUniqueId(), StatType.ENDURANCE, 3, "14d-food");
             Msg.send(p, "&6식량 2주 비축 — 체력 +3");
@@ -113,9 +133,11 @@ public final class ApocalypseGrowth implements GrowthStrategy {
 
     /** MED_BAY 도달 시 정화. */
     public void onMedBayEnter(Player p) {
+        ensureLoaded(p.getUniqueId());
         double cur = radiation.getOrDefault(p.getUniqueId(), 0.0);
         if (cur > 0) {
             radiation.put(p.getUniqueId(), 0.0);
+            RebornCore.get().kv().putDouble(NS, p.getUniqueId(), "rad", 0.0);
             Msg.send(p, "&a메드베이 — 방사능 " + (int)cur + " 제거.");
         }
         try { p.setHealth(p.getMaxHealth()); } catch (Throwable ignored) {}
@@ -130,7 +152,7 @@ public final class ApocalypseGrowth implements GrowthStrategy {
         Msg.warn(p, "&c&l변종 습격! 잠든 사이 발견되었다.");
     }
 
-    public double radiationOf(UUID p) { return radiation.getOrDefault(p, 0.0); }
-    public int waterStockpileOf(UUID p) { return waterDays.getOrDefault(p, 0); }
-    public int foodStockpileOf(UUID p) { return foodDays.getOrDefault(p, 0); }
+    public double radiationOf(UUID p) { ensureLoaded(p); return radiation.getOrDefault(p, 0.0); }
+    public int waterStockpileOf(UUID p) { ensureLoaded(p); return waterDays.getOrDefault(p, 0); }
+    public int foodStockpileOf(UUID p) { ensureLoaded(p); return foodDays.getOrDefault(p, 0); }
 }

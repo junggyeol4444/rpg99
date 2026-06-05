@@ -86,4 +86,22 @@ public final class PriceController {
     public Map<String, Double> snapshot(WorldKey world) {
         return new HashMap<>(mult.getOrDefault(world, java.util.Collections.emptyMap()));
     }
+
+    /**
+     * 전 세계·전 카테고리 시세에 factor 적용 (주간 시장 등 글로벌 이벤트용).
+     * 외부 reflection 호출 진입점 — Calendar.tick 등이 사용.
+     * factor=0.9면 모든 multiplier ×0.9 (10% 할인). 영속화 포함.
+     */
+    public void applyGlobalFactor(double factor) {
+        var kv = kr.reborn.core.RebornCore.get().kv();
+        for (var w : WorldKey.values()) {
+            var per = mult.computeIfAbsent(w, k -> new HashMap<>());
+            for (String cat : BASE_PRICE.keySet()) {
+                double cur = per.getOrDefault(cat, 1.0);
+                double next = Math.max(0.3, Math.min(3.0, cur * factor));
+                per.put(cat, next);
+                kv.putDouble(NS, null, w.name() + ":" + cat, next);
+            }
+        }
+    }
 }

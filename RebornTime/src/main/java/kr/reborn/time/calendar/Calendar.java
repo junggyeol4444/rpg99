@@ -61,22 +61,16 @@ public final class Calendar {
         int seasonIdx = (d / 15) % 24;
         Bukkit.broadcastMessage("§e§l[환생력] §6Y" + year() + "M" + month() + "D" + dayOfMonth()
                 + " §7(누적 " + d + "일) §8| §7" + SEASONS[seasonIdx]);
-        // 7일 주간 시장
+        // 7일 주간 시장 — PriceController.applyGlobalFactor(0.9) 호출
         if (d % 7 == 0) {
             Bukkit.broadcastMessage("§a§l[주간 시장] §7오늘 모든 시세 -10% — 상인들이 분주하다.");
-            // PriceController에 reflection으로 전체 카테고리 0.9 곱
             try {
                 var ep = Bukkit.getPluginManager().getPlugin("RebornEconomy");
                 if (ep != null) {
                     Object pc = ep.getClass().getMethod("priceController").invoke(ep);
                     if (pc != null) {
-                        for (kr.reborn.core.data.WorldKey w : kr.reborn.core.data.WorldKey.values()) {
-                            for (String cat : new String[]{"FOOD","METAL","MAGIC","WEAPON","ARMOR","RARE","INFO","MEDICINE"}) {
-                                pc.getClass().getMethod("updateCategoryPrice",
-                                                kr.reborn.core.data.WorldKey.class, String.class, double.class)
-                                        .invoke(pc, w, cat, basePrice(cat) * 0.9);
-                            }
-                        }
+                        pc.getClass().getMethod("applyGlobalFactor", double.class)
+                                .invoke(pc, 0.9);
                     }
                 }
             } catch (Throwable ignored) {}
@@ -147,20 +141,6 @@ public final class Calendar {
             np.getClass().getMethod("nudgeGlobalFavor", double.class)
                     .invoke(np, delta);
         } catch (Throwable ignored) {}
-    }
-
-    private double basePrice(String cat) {
-        return switch (cat) {
-            case "FOOD" -> 10;
-            case "METAL" -> 100;
-            case "MAGIC" -> 500;
-            case "WEAPON" -> 300;
-            case "ARMOR" -> 250;
-            case "RARE" -> 5000;
-            case "INFO" -> 200;
-            case "MEDICINE" -> 50;
-            default -> 100;
-        };
     }
 
     public String formatNow() {

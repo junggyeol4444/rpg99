@@ -89,8 +89,8 @@ public final class PatternEngine {
                         Entity minion = boss.getWorld().spawnEntity(pos, boss.getType());
                         if (minion instanceof LivingEntity le) {
                             le.setCustomName("§7부하 (" + def.name + ")");
-                            le.setMaxHealth(20);
-                            le.setHealth(20);
+                            var attr = le.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH);
+                            if (attr != null) { attr.setBaseValue(20); le.setHealth(20); }
                         }
                     } catch (Throwable ignored) {}
                 }

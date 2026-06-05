@@ -157,11 +157,14 @@ public final class ReincarnationMemory {
         if (last.achievements.contains("became_sea_king")) {
             plugin.api().addStat(p.getUniqueId(), StatType.OCEAN_POWER, 200, "past-life-sea");
         }
-        // 불사 → 체력 +20%
+        // 불사 → 체력 +20% (Attribute API — Bukkit 1.20+ 권장 방식)
         if (last.achievements.contains("undying")) {
             try {
-                p.setMaxHealth(p.getMaxHealth() * 1.2);
-                Msg.send(p, "&7  전생의 불사 — 최대 체력 +20%");
+                var attr = p.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH);
+                if (attr != null) {
+                    attr.setBaseValue(attr.getBaseValue() * 1.2);
+                    Msg.send(p, "&7  전생의 불사 — 최대 체력 +20%");
+                }
             } catch (Throwable ignored) {}
         }
         // 전생 스킬 일부 잔존 (각 스킬 마다 10% 확률)

@@ -74,6 +74,7 @@ public final class WorldAI {
         analyzePolitics();
         analyzeMobs();
         analyzeWeather();
+        propagateToNeighbors();
         decideQuests();
         directNpcs();
         directFactions();
@@ -85,6 +86,59 @@ public final class WorldAI {
 
         Bukkit.getPluginManager().callEvent(new RebornWorldAIAnalysisEvent(world,
                 state.inflation, state.tension, state.stability));
+    }
+
+    /**
+     * 연결된 세계로 영향 전파 — 13세계가 격리되지 않도록.
+     * 연결권(group1: FANTASY/DEMON/HEAVEN/SPIRIT, group2: MARTIAL/IMMORTAL/YOKAI)이
+     * 같은 세계의 tension/inflation 미세 전이. WAR_ERA/DARK_AGE이면 더 강하게.
+     */
+    private void propagateToNeighbors() {
+        var group = neighborsOf(world);
+        if (group.isEmpty()) return;
+        // 이 세계의 압력 = (tension - 30) / 100 (긴장이 평균보다 높으면 양수)
+        double pressure = (state.tension - 30) / 100.0;
+        // 시대 보정
+        try {
+            var ep = plugin.epoch().of(world);
+            if (ep == kr.reborn.worldai.history.EpochManager.Epoch.DARK_AGE) pressure *= 2.5;
+            else if (ep == kr.reborn.worldai.history.EpochManager.Epoch.WAR_ERA) pressure *= 1.7;
+        } catch (Throwable ignored) {}
+        // 인플레 영향
+        double inflationLeak = (state.inflation - 100) / 200.0;
+        for (var nw : group) {
+            var ai = plugin.of(nw);
+            if (ai == null) continue;
+            // 긴장 전이 (절반 강도) — 한 세계 전쟁이 옆 세계에 풍문·난민 영향
+            ai.state().tension = Math.max(0, Math.min(100,
+                    ai.state().tension + pressure * 1.5));
+            // 인플레 전이 — 무역 영향, 0.3배만
+            ai.state().inflation = Math.max(50, Math.min(300,
+                    ai.state().inflation + inflationLeak * 0.6));
+        }
+    }
+
+    private static final java.util.List<java.util.Set<kr.reborn.core.data.WorldKey>> NEIGHBOR_GROUPS =
+            java.util.List.of(
+                    // group1: 판타지-마계-천계-정령계 연결권
+                    java.util.EnumSet.of(kr.reborn.core.data.WorldKey.FANTASY,
+                            kr.reborn.core.data.WorldKey.DEMON,
+                            kr.reborn.core.data.WorldKey.HEAVEN,
+                            kr.reborn.core.data.WorldKey.SPIRIT),
+                    // group2: 무협-선계-요계 연결권
+                    java.util.EnumSet.of(kr.reborn.core.data.WorldKey.MARTIAL,
+                            kr.reborn.core.data.WorldKey.IMMORTAL,
+                            kr.reborn.core.data.WorldKey.YOKAI));
+
+    private java.util.List<kr.reborn.core.data.WorldKey> neighborsOf(kr.reborn.core.data.WorldKey self) {
+        java.util.List<kr.reborn.core.data.WorldKey> out = new java.util.ArrayList<>();
+        for (var group : NEIGHBOR_GROUPS) {
+            if (!group.contains(self)) continue;
+            for (var k : group) {
+                if (k != self) out.add(k);
+            }
+        }
+        return out;
     }
 
     private void directFactions() {

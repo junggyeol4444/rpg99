@@ -147,7 +147,8 @@ public final class ConsumeListener implements Listener {
             var cp = Bukkit.getPluginManager().getPlugin("RebornCurse");
             if (cp != null) {
                 Object effects = cp.getClass().getMethod("effects").invoke(cp);
-                effects.getClass().getMethod("removeByTag", Player.class, String.class)
+                // PlayerEffectManager.cure(Player, String)
+                effects.getClass().getMethod("cure", Player.class, String.class)
                         .invoke(effects, p, curseType);
                 Msg.send(p, "&a저주 정화: " + curseType);
             }
@@ -158,56 +159,55 @@ public final class ConsumeListener implements Listener {
     }
 
     private void tryRestoreMeridian(Player p) {
-        try {
-            var sp = Bukkit.getPluginManager().getPlugin("RebornSkill");
-            if (sp != null) {
-                Object meridian = sp.getClass().getMethod("meridian").invoke(sp);
-                meridian.getClass().getMethod("restore", java.util.UUID.class)
-                        .invoke(meridian, p.getUniqueId());
-                Msg.send(p, "&5경맥 회복");
-            }
-        } catch (Throwable ignored) {
-            markStatus(p, "meridian_restored", 0L);
-        }
+        // 경맥 회복 — RebornSkill에 별도 시스템이 없으므로 PlayerData 마커만 사용
+        // (외부 모듈이 status:meridian_restored 확인 가능)
+        markStatus(p, "meridian_restored", 3600L);
+        Msg.send(p, "&5경맥 회복");
     }
 
     private void tryBoostAllElements(Player p, double value) {
+        // 오행단 — SpiritGrowth 거주자만 효과. 비-정령계는 마커만.
         try {
-            var sp = Bukkit.getPluginManager().getPlugin("RebornStat");
-            if (sp != null) {
-                Object growth = sp.getClass().getMethod("growth").invoke(sp);
-                var d = RebornCore.get().api().getPlayerData(p.getUniqueId());
-                if (d == null) return;
-                Object strategy = growth.getClass().getMethod("of",
-                        kr.reborn.core.data.WorldKey.class).invoke(growth, d.worldKey());
-                if (strategy != null) {
-                    strategy.getClass().getMethod("boostAllElements", Player.class, double.class)
-                            .invoke(strategy, p, value);
-                }
+            var d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+            if (d == null) return;
+            if (d.worldKey() != kr.reborn.core.data.WorldKey.SPIRIT) {
+                Msg.send(p, "&6오행 — 정령계 외에서는 약효 절반.");
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        kr.reborn.core.data.StatType.SPIRIT_POWER, value * 50, "ITEM:five-element");
+                return;
             }
-        } catch (Throwable ignored) {
-            Msg.send(p, "&6오행 — 모든 원소 +" + value);
-        }
+            var sp = Bukkit.getPluginManager().getPlugin("RebornStat");
+            if (sp == null) return;
+            Object growth = sp.getClass().getMethod("growth").invoke(sp);
+            Object strategy = growth.getClass().getMethod("of",
+                    kr.reborn.core.data.WorldKey.class).invoke(growth, d.worldKey());
+            if (strategy == null) return;
+            Class<?> elementCls = Class.forName(
+                    "kr.reborn.stat.growth.impl.SpiritGrowth$Element");
+            Object[] elements = elementCls.getEnumConstants();
+            var absorb = strategy.getClass().getMethod("absorbEssence",
+                    Player.class, elementCls, double.class);
+            for (Object el : elements) {
+                // CHAOS 제외 — 일반 영약으로 카오스 친화도는 안 오름
+                if ("CHAOS".equals(el.toString())) continue;
+                absorb.invoke(strategy, p, el, value * 10);
+            }
+            Msg.send(p, "&6오행단 — 모든 원소 친화 +" + (int)(value * 10));
+        } catch (Throwable ignored) {}
     }
 
     private void tryTierUp(Player p) {
+        // 직접 경지 강제 승급은 위험 — 자연스러운 승급을 유도.
+        // 보너스 스탯 부여 후 자동 승급 체크.
         try {
-            var sp = Bukkit.getPluginManager().getPlugin("RebornStat");
-            if (sp != null) {
-                Object growth = sp.getClass().getMethod("growth").invoke(sp);
-                var d = RebornCore.get().api().getPlayerData(p.getUniqueId());
-                if (d == null) return;
-                Object strategy = growth.getClass().getMethod("of",
-                        kr.reborn.core.data.WorldKey.class).invoke(growth, d.worldKey());
-                if (strategy != null) {
-                    strategy.getClass().getMethod("forcePromote", Player.class)
-                            .invoke(strategy, p);
-                }
+            var d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+            if (d == null) return;
+            for (var st : kr.reborn.core.data.StatType.COMMON_8) {
+                RebornCore.get().api().addStat(p.getUniqueId(), st, 100, "ITEM:gujeon-geumdan");
             }
-        } catch (Throwable ignored) {
-            markStatus(p, "tier_up_pending", 0L);
-            Msg.send(p, "&6경지 돌파 자격을 획득했다");
-        }
+            RebornCore.get().tierManager().checkAndAdvance(p, d);
+            Msg.send(p, "&6구전금단 — 모든 스탯 +100, 경지 자동 평가");
+        } catch (Throwable ignored) {}
     }
 
     private void tryTierUpCircle(Player p) {

@@ -100,7 +100,8 @@ public final class BerserkEngine {
             LivingEntity target = findNearestTarget(p);
             if (target == null) continue;
             RebornCore.get().scheduler().runEntityTask(target, () -> {
-                try { target.damage(6.0 + Math.random() * 4.0, p); } catch (Throwable ignored) {}
+                try { target.damage(kr.reborn.core.util.Rand.rangeD(6.0, 10.0), p); }
+                catch (Throwable ignored) {}
             });
             try { p.getWorld().spawnParticle(Particle.CRIT, target.getLocation(), 20, 0.5, 0.5, 0.5); }
             catch (Throwable ignored) {}

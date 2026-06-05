@@ -83,7 +83,7 @@ public final class ConsumeListener implements Listener {
                 Msg.send(p, "&b" + ci.consumeMultiStats.size() + "개 스탯 상승");
             }
             case ADD_RANDOM_COMMON -> {
-                double bonus = ci.consumeMin + Math.random() * (ci.consumeMax - ci.consumeMin);
+                double bonus = kr.reborn.core.util.Rand.rangeD(ci.consumeMin, ci.consumeMax);
                 for (StatType st : StatType.COMMON_8) {
                     RebornCore.get().api().addStat(u, st, bonus, src);
                 }
@@ -238,7 +238,7 @@ public final class ConsumeListener implements Listener {
     private void tryLearnRandomSpiritSkill(Player p) {
         String[] spiritSkills = { "spirit_fire_lance", "spirit_water_orb",
                 "spirit_earth_wall", "spirit_wind_blade", "spirit_light_heal" };
-        String pick = spiritSkills[(int) (Math.random() * spiritSkills.length)];
+        String pick = spiritSkills[kr.reborn.core.util.Rand.range(0, spiritSkills.length - 1)];
         tryLearnSkill(p, pick);
         Msg.send(p, "&3정령왕의 축복 — 무작위 정령 스킬 습득");
     }

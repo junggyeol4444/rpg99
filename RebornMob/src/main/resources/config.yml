@@ -53,6 +53,7 @@ monsters:
   fantasy_red_dragon:    { base: ENDER_DRAGON, name: "&4&l레드 드래곤 (고룡)", world: FANTASY, hp: 8000, damage: 200, ai: BOSS, phases: 4 }
   fantasy_gold_dragon:   { base: ENDER_DRAGON, name: "&6&l골드 드래곤 (고룡)", world: FANTASY, hp: 10000, damage: 250, ai: BOSS, phases: 5 }
   fantasy_lich:          { base: WITHER_SKELETON, name: "&5에인션트 리치", world: FANTASY, hp: 3000, damage: 80, ai: BOSS, phases: 3 }
+  fantasy_hero_knight:   { base: VINDICATOR, name: "&6&l연합군 영웅 기사", world: FANTASY, hp: 12000, damage: 180, ai: BOSS, phases: 3, drops: [{ item: DIAMOND, chance: 1.0, amount: [4, 8] }] }
 
   # ─── 마계 ────────────────────────────────────
   demon_hellhound:       { base: WOLF, name: "&4지옥견", world: DEMON, hp: 60, damage: 18, ai: PACK }
@@ -221,6 +222,8 @@ bosses:
   martial_cult_master:     { base: WITHER_SKELETON, name: "&5&l[보스] 마교 교주",          world: MARTIAL, hp: 32000, damage: 350, phases: 4, drops: [{ item: WITHER_ROSE, chance: 1.0, amount: [5, 9] }] }
   martial_sect_leader:     { base: ZOMBIE,       name: "&7정파 장문인",                     world: MARTIAL, hp: 8000, damage: 100, phases: 2, ai: BOSS, drops: [{ item: GOLD_INGOT, chance: 1.0, amount: [4, 8] }] }
   martial_sapa_lord:       { base: WITHER_SKELETON, name: "&4사파 거두",                    world: MARTIAL, hp: 10000, damage: 130, phases: 2, ai: BOSS }
+  martial_cult_protector:  { base: WITHER_SKELETON, name: "&5마교 호법",                     world: MARTIAL, hp: 18000, damage: 220, phases: 3, ai: BOSS, drops: [{ item: WITHER_ROSE, chance: 1.0, amount: [2, 4] }] }
+  martial_current_alliance_head: { base: VINDICATOR, name: "&6현 무림맹주",                  world: MARTIAL, hp: 30000, damage: 320, phases: 3, ai: BOSS, drops: [{ item: GOLD_INGOT, chance: 1.0, amount: [20, 40] }] }
 
   # ─── 선계 ───
   immortal_demon_sage:     { base: WITHER,       name: "&5&l[보스] 부활한 고대 마선",       world: IMMORTAL, hp: 70000, damage: 650, phases: 6, drops: [{ item: NETHER_STAR, chance: 1.0, amount: [4, 7] }] }

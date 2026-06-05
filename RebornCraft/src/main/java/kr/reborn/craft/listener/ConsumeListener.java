@@ -45,42 +45,202 @@ public final class ConsumeListener implements Listener {
         }
         cooldowns.put(key, now);
 
-        if (ci.consumeType == CustomItem.ConsumeType.HEAL) {
-            double v = ci.consumeValue instanceof Number n ? n.doubleValue() : 0;
-            p.setHealth(Math.min(p.getMaxHealth(), p.getHealth() + v));
-            Msg.send(p, "&a회복: +" + v);
-        } else if (ci.consumeType == CustomItem.ConsumeType.STAT_BOOST) {
-            // 단순 모든 공통 스탯 +값
-            double v = ci.consumeValue instanceof Number n ? n.doubleValue() : 1;
-            for (StatType st : StatType.COMMON_8) {
-                RebornCore.get().api().addStat(p.getUniqueId(), st, v, "POTION:" + ci.id);
-            }
-            Msg.send(p, "&b전 스탯 +" + v);
-        } else if (ci.consumeType == CustomItem.ConsumeType.CUSTOM
-                && ci.id != null && ci.id.endsWith("_pill")) {
-            // 단약 — 세계에 따라 MartialGrowth.consumePill 또는 ImmortalGrowth.consumePill 호출
-            tryConsumePill(p, ci.id);
-        } else if (ci.consumeType == CustomItem.ConsumeType.LEARN_SKILL) {
-            String skill = String.valueOf(ci.consumeValue);
-            // RebornSkill 리플렉션 — learnByApi(UUID, String)
-            boolean learned = false;
-            try {
-                var sp = Bukkit.getPluginManager().getPlugin("RebornSkill");
-                if (sp != null) {
-                    sp.getClass().getMethod("learnByApi", java.util.UUID.class, String.class)
-                            .invoke(sp, p.getUniqueId(), skill);
-                    learned = true;
-                }
-            } catch (Throwable t) {
-                Msg.error(p, "스킬 습득 실패: " + t.getMessage());
-            }
-            if (learned) Msg.send(p, "&d비급 습득: §f" + skill);
-        }
+        applyConsumeEffect(p, ci);
 
         // 1개 소모
         stack.setAmount(stack.getAmount() - 1);
         Bukkit.getPluginManager().callEvent(new RebornItemConsumeEvent(p, ci));
         e.setCancelled(true);
+    }
+
+    /** 영약·단약 효과 분기. */
+    private void applyConsumeEffect(Player p, CustomItem ci) {
+        if (ci.consumeType == null) return;
+        double v = ci.consumeValue instanceof Number n ? n.doubleValue() : 0;
+        String src = "ITEM:" + ci.id;
+        UUID u = p.getUniqueId();
+        switch (ci.consumeType) {
+            case HEAL -> {
+                p.setHealth(Math.min(p.getMaxHealth(), p.getHealth() + v));
+                Msg.send(p, "&a회복: +" + (int) v);
+            }
+            case STAT_BOOST, ADD_ALL_COMMON -> {
+                for (StatType st : StatType.COMMON_8) {
+                    RebornCore.get().api().addStat(u, st, v, src);
+                }
+                Msg.send(p, "&b전 스탯 +" + (int) v);
+            }
+            case ADD_STAT -> {
+                if (ci.consumeStat != null) {
+                    RebornCore.get().api().addStat(u, ci.consumeStat, v, src);
+                    Msg.send(p, "&b" + ci.consumeStat.name() + " +" + (int) v);
+                }
+            }
+            case ADD_MULTI -> {
+                for (var e : ci.consumeMultiStats.entrySet()) {
+                    RebornCore.get().api().addStat(u, e.getKey(), e.getValue(), src);
+                }
+                Msg.send(p, "&b" + ci.consumeMultiStats.size() + "개 스탯 상승");
+            }
+            case ADD_RANDOM_COMMON -> {
+                double bonus = ci.consumeMin + Math.random() * (ci.consumeMax - ci.consumeMin);
+                for (StatType st : StatType.COMMON_8) {
+                    RebornCore.get().api().addStat(u, st, bonus, src);
+                }
+                Msg.send(p, "&b각성 — 전 스탯 +" + (int) bonus);
+            }
+            case BUFF -> applyBuff(p, ci, v, false);
+            case DEBUFF -> applyBuff(p, ci, v, true);
+            case CURE_CURSE -> tryCureCurse(p, String.valueOf(ci.consumeValue));
+            case ANTI_PARANOIA -> {
+                RebornCore.get().api().addStat(u, StatType.MENTAL, v * 100, src);
+                Msg.send(p, "&b심마 저항 — 정신 안정");
+            }
+            case RESTORE_MERIDIAN -> tryRestoreMeridian(p);
+            case BUFF_RECIPE -> markStatus(p, "buff_recipe", (long) (ci.consumeDuration > 0 ? ci.consumeDuration : 3600));
+            case BUFF_TRAIN -> markStatus(p, "buff_train", (long) (ci.consumeDuration > 0 ? ci.consumeDuration : 3600));
+            case ALL_ELEMENTS -> tryBoostAllElements(p, v);
+            case TIER_UP -> tryTierUp(p);
+            case TIER_UP_CIRCLE -> tryTierUpCircle(p);
+            case STOP_AGING -> markStatus(p, "stop_aging", 86400L * 30);
+            case TRIBULATION_BOOST -> markStatus(p, "tribulation_boost", 3600L);
+            case REVIVE -> markStatus(p, "revive_charge", 86400L * 7);
+            case LEARN_SKILL -> tryLearnSkill(p, String.valueOf(ci.consumeValue));
+            case LEARN_RANDOM_SPIRIT_SKILL -> tryLearnRandomSpiritSkill(p);
+            case CUSTOM -> {
+                if (ci.id != null && (ci.id.endsWith("_pill") || ci.id.endsWith("_pil"))) {
+                    tryConsumePill(p, ci.id);
+                }
+            }
+            case CURE, BLESS, ENERGY -> {
+                // 일반 회복/축복/기력 — STAT_BOOST와 동일 처리
+                for (StatType st : StatType.COMMON_8) {
+                    RebornCore.get().api().addStat(u, st, v * 0.5, src);
+                }
+            }
+        }
+    }
+
+    private void applyBuff(Player p, CustomItem ci, double v, boolean negative) {
+        if (ci.consumeStat == null) return;
+        double effective = negative ? -Math.abs(v) : Math.abs(v);
+        long sec = ci.consumeDuration > 0 ? ci.consumeDuration : 600;
+        RebornCore.get().api().addStat(p.getUniqueId(), ci.consumeStat, effective, "BUFF:" + ci.id);
+        markStatus(p, "buff:" + ci.id + ":" + ci.consumeStat.name(), sec);
+        Msg.send(p, (negative ? "&c" : "&b") + ci.consumeStat.name() + " "
+                + (effective >= 0 ? "+" : "") + (int) effective + " (" + sec + "s)");
+    }
+
+    private void markStatus(Player p, String key, long durationSec) {
+        try {
+            var d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+            if (d != null) {
+                long ticks = durationSec > 0 ? durationSec * 20L : Long.MAX_VALUE / 2;
+                d.status().put(key,
+                        new kr.reborn.core.data.PlayerData.StatusEffect(key, "BLESSING", ticks, 1));
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    private void tryCureCurse(Player p, String curseType) {
+        try {
+            var cp = Bukkit.getPluginManager().getPlugin("RebornCurse");
+            if (cp != null) {
+                Object effects = cp.getClass().getMethod("effects").invoke(cp);
+                effects.getClass().getMethod("removeByTag", Player.class, String.class)
+                        .invoke(effects, p, curseType);
+                Msg.send(p, "&a저주 정화: " + curseType);
+            }
+        } catch (Throwable ignored) {
+            // Curse 플러그인 미설치 시 정화 마커만
+            markStatus(p, "cured:" + curseType, 86400L);
+        }
+    }
+
+    private void tryRestoreMeridian(Player p) {
+        try {
+            var sp = Bukkit.getPluginManager().getPlugin("RebornSkill");
+            if (sp != null) {
+                Object meridian = sp.getClass().getMethod("meridian").invoke(sp);
+                meridian.getClass().getMethod("restore", java.util.UUID.class)
+                        .invoke(meridian, p.getUniqueId());
+                Msg.send(p, "&5경맥 회복");
+            }
+        } catch (Throwable ignored) {
+            markStatus(p, "meridian_restored", 0L);
+        }
+    }
+
+    private void tryBoostAllElements(Player p, double value) {
+        try {
+            var sp = Bukkit.getPluginManager().getPlugin("RebornStat");
+            if (sp != null) {
+                Object growth = sp.getClass().getMethod("growth").invoke(sp);
+                var d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+                if (d == null) return;
+                Object strategy = growth.getClass().getMethod("of",
+                        kr.reborn.core.data.WorldKey.class).invoke(growth, d.worldKey());
+                if (strategy != null) {
+                    strategy.getClass().getMethod("boostAllElements", Player.class, double.class)
+                            .invoke(strategy, p, value);
+                }
+            }
+        } catch (Throwable ignored) {
+            Msg.send(p, "&6오행 — 모든 원소 +" + value);
+        }
+    }
+
+    private void tryTierUp(Player p) {
+        try {
+            var sp = Bukkit.getPluginManager().getPlugin("RebornStat");
+            if (sp != null) {
+                Object growth = sp.getClass().getMethod("growth").invoke(sp);
+                var d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+                if (d == null) return;
+                Object strategy = growth.getClass().getMethod("of",
+                        kr.reborn.core.data.WorldKey.class).invoke(growth, d.worldKey());
+                if (strategy != null) {
+                    strategy.getClass().getMethod("forcePromote", Player.class)
+                            .invoke(strategy, p);
+                }
+            }
+        } catch (Throwable ignored) {
+            markStatus(p, "tier_up_pending", 0L);
+            Msg.send(p, "&6경지 돌파 자격을 획득했다");
+        }
+    }
+
+    private void tryTierUpCircle(Player p) {
+        try {
+            var d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+            if (d != null) {
+                double cur = RebornCore.get().api().getStat(p.getUniqueId(), StatType.MANA);
+                RebornCore.get().api().addStat(p.getUniqueId(), StatType.MANA,
+                        Math.max(100, cur * 0.2), "ITEM:circle_up");
+                Msg.send(p, "&5써클 돌파의 자격을 획득했다");
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    private void tryLearnSkill(Player p, String skill) {
+        try {
+            var sp = Bukkit.getPluginManager().getPlugin("RebornSkill");
+            if (sp != null) {
+                sp.getClass().getMethod("learnByApi", java.util.UUID.class, String.class)
+                        .invoke(sp, p.getUniqueId(), skill);
+                Msg.send(p, "&d비급 습득: §f" + skill);
+            }
+        } catch (Throwable t) {
+            Msg.error(p, "스킬 습득 실패: " + t.getMessage());
+        }
+    }
+
+    private void tryLearnRandomSpiritSkill(Player p) {
+        String[] spiritSkills = { "spirit_fire_lance", "spirit_water_orb",
+                "spirit_earth_wall", "spirit_wind_blade", "spirit_light_heal" };
+        String pick = spiritSkills[(int) (Math.random() * spiritSkills.length)];
+        tryLearnSkill(p, pick);
+        Msg.send(p, "&3정령왕의 축복 — 무작위 정령 스킬 습득");
     }
 
     /** 단약 사용 — 거주 세계에 따라 적절한 Growth.consumePill 호출. */

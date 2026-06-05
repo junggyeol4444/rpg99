@@ -81,10 +81,23 @@ public final class Calendar {
                 }
             } catch (Throwable ignored) {}
         }
-        // 30일 보름달 — 누적 횟수 표시
+        // 30일 보름달 — 누적 횟수 표시 + 요계 거주자에게 24시간 마커
         if (d % 30 == 0) {
             int moonNum = d / 30;
             Bukkit.broadcastMessage("§5§l[보름달] §7요계 보너스 ×2 §8— §7" + moonNum + "번째 보름달. 요괴가 활동을 시작한다.");
+            try {
+                long dayTicks = 24L * 3600L * 20L;
+                for (var p : Bukkit.getOnlinePlayers()) {
+                    var d2 = RebornCore.get().api().getPlayerData(p.getUniqueId());
+                    if (d2 == null) continue;
+                    if (d2.worldKey() == kr.reborn.core.data.WorldKey.YOKAI) {
+                        d2.status().put("full_moon_bonus",
+                                new kr.reborn.core.data.PlayerData.StatusEffect(
+                                        "full_moon_bonus", "BLESSING", dayTicks, 1));
+                        p.sendMessage("§5§l[보름달의 가호] §f요기 누적 ×2 (24시간)");
+                    }
+                }
+            } catch (Throwable ignored) {}
         }
         // 90일 분기 축제 — 분기명 표시
         if (d % 90 == 0) {

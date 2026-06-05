@@ -49,9 +49,18 @@ public final class YokaiGrowth implements GrowthStrategy {
         boolean night = t >= 13000 && t <= 23000;
         boolean fullMoon = p.getWorld().getFullTime() / 24000L % 8 == 0;
         var c = RebornStat.get().getConfig();
-        if (fullMoon && night) return c.getDouble("growth.yokai.full-moon-mult", 10.0);
-        return night ? c.getDouble("growth.yokai.night-mult", 3.0)
-                     : c.getDouble("growth.yokai.day-mult", 0.5);
+        double base;
+        if (fullMoon && night) base = c.getDouble("growth.yokai.full-moon-mult", 10.0);
+        else base = night ? c.getDouble("growth.yokai.night-mult", 3.0)
+                          : c.getDouble("growth.yokai.day-mult", 0.5);
+        // 환생력 30일 주기 보름달 마커 (Calendar.java가 24시간 부여)
+        try {
+            var d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+            if (d != null && d.status().containsKey("full_moon_bonus")) {
+                base *= 2.0;
+            }
+        } catch (Throwable ignored) {}
+        return base;
     }
 
     @Override

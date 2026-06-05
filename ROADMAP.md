@@ -31,6 +31,21 @@
 - Famous NPC가 자동 spawn되지 않던 결함
 - Reflection 타깃 메서드 7건 누락 → 구현
 
+**기획서 ver.17.0 정합성 결함** (전수 감사 2차):
+- ✓ 5-4: 정령계 17 원소 (FIRE/WATER/EARTH/WIND + 12소원소 + CHAOS)
+- ✓ 5-4: 13번째 숨겨진 숲 — 혼돈 정령 접촉 (정신력 부족 시 폭주 사망)
+- ✓ 5-4: /element 명령 — 빛/어둠은 태초의 정령 시험 후 가능, 혼돈은 불가
+- ✓ 5-5/5-6: TAO_POWER (도력) 누적 — 무협/선계에서 데드 스탯이었음
+- ✓ 5-5: 비급 70종 (30 → 70 — 무협 30·선계 4·판타지 6 추가)
+- ✓ 5-5: 영약 40종 효과 실제 작동 (ConsumeType 7 → 25로 확장,
+       ADD_STAT/ADD_MULTI/BUFF/CURE_CURSE/ANTI_PARANOIA 등 처리)
+- ✓ 5-12: 5대 드래곤 가문 시간의 방 (aurelius/ignifer/nocterna/cerylis/silvarex)
+       + 환경별 보너스 (HOLY/FIRE/ACID/LIGHTNING/POISON) + 가문 허가증 시스템
+- ✓ 13장: 히든 월드 6개 실제 진입 — lazy world 생성, 해금 시 자유 이동
+- ✓ 15장: 환율 세계 AI 동적 조정 (5분마다 inflation 기반 갱신)
+- ✓ 23장: 부부 30블록 근접 시 공통 스탯 +5% (실제 PotionEffect + status 마커)
+- ✓ 월드 퀘스트 dead target 보강 (fantasy_hero_knight/cult_protector/alliance_head)
+
 
 ## Phase 1 — 기반 시스템 깊이 (모든 세계 공통)
 

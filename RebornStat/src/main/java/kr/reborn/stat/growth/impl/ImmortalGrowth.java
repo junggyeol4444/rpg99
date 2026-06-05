@@ -71,12 +71,16 @@ public final class ImmortalGrowth implements GrowthStrategy {
     @Override
     public void onQuestComplete(Player p, PlayerData d, double weight) {
         RebornCore.get().api().addStat(p.getUniqueId(), StatType.IMMORTAL_KI, 5 * weight, "quest");
+        // 도력도 동시 누적 (기획서 5-6: 선계 = 도술 중심)
+        RebornCore.get().api().addStat(p.getUniqueId(), StatType.TAO_POWER, 4 * weight, "quest-tao");
         accumulateCelestialQi(p, 5 * weight);
     }
 
     @Override
     public void onMeditate(Player p, PlayerData d, double quality) {
         RebornCore.get().api().addStat(p.getUniqueId(), StatType.IMMORTAL_KI, 6 * quality, "meditate");
+        // 도력 동시 누적 (선계 양생 = 도술의 본산)
+        RebornCore.get().api().addStat(p.getUniqueId(), StatType.TAO_POWER, 5 * quality, "meditate-tao");
         double celestial = quality >= 0.9 ? 12.0 : 6.0;
         accumulateCelestialQi(p, celestial * quality);
         // 영석 발견

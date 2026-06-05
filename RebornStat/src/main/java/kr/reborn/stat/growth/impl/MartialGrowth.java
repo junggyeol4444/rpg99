@@ -80,6 +80,8 @@ public final class MartialGrowth implements GrowthStrategy {
     @Override
     public void onQuestComplete(Player p, PlayerData d, double weight) {
         RebornCore.get().api().addStat(p.getUniqueId(), StatType.INNER_KI, 3 * weight, "quest");
+        // 도술 수련자 — 도력도 누적 (기획서 5-5: "무공과 도술 둘 다 수련 가능")
+        RebornCore.get().api().addStat(p.getUniqueId(), StatType.TAO_POWER, 1.5 * weight, "quest-tao");
         // 깨달음 약간 누적
         gainEnlightenment(p, 1.0 * weight);
     }
@@ -89,6 +91,9 @@ public final class MartialGrowth implements GrowthStrategy {
         double mult = clanMultiplier(d);
         RebornCore.get().api().addStat(p.getUniqueId(),
                 StatType.INNER_KI, 5 * quality * mult, "meditate");
+        // 도력 동시 누적 (도술 수련자 대비. 내공의 60% 비율)
+        RebornCore.get().api().addStat(p.getUniqueId(),
+                StatType.TAO_POWER, 3 * quality * mult, "meditate-tao");
         // 운기 결과에 따라 분기
         if (quality >= 0.9) {
             // 깨달음 5% 확률

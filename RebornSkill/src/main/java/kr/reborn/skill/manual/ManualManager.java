@@ -153,6 +153,132 @@ public final class ManualManager {
         add("time_manipulation", "시간 조작술", "time_rewind",
                 SecretManual.Rarity.MYTHIC, WorldKey.MARTIAL, 240,
                 "time_guardian_temple", "시간의 흐름을 거스른다");
+
+        // ===== 기획서 5-5 추가 무협 비급 (40종 보강) =====
+        add("cheonma_singong", "천마신공", "cheonma_singong",
+                SecretManual.Rarity.MYTHIC, WorldKey.MARTIAL, 180,
+                "cult_secret_chamber", "마교 최강 비급 — 천마의 경지에 이르는 유일한 무공");
+        add("heupseung_daebeop", "흡성대법", "heupseung_daebeop",
+                SecretManual.Rarity.LEGENDARY, WorldKey.MARTIAL, 90,
+                "sapa_underground", "타인의 내공을 흡수하는 금기 무공");
+        add("yeokgeun_segyeong", "역근세수경", "yeokgeun_segyeong",
+                SecretManual.Rarity.LEGENDARY, WorldKey.MARTIAL, 120,
+                "shaolin_inner_chamber", "근골을 재구성하여 신체 한계 돌파");
+        add("bichun_singong", "비천신공", "bichun_singong",
+                SecretManual.Rarity.LEGENDARY, WorldKey.MARTIAL, 100,
+                "western_desert_ruins", "경공의 극치, 완성 시 자유 비행");
+        add("bukmyeong_singong", "북명신공", "bukmyeong_singong",
+                SecretManual.Rarity.MYTHIC, WorldKey.MARTIAL, 150,
+                "north_sea_abyss", "북해 심연 내공 변환술");
+        add("geongon_daenai", "건곤대나이", "geongon_daenai",
+                SecretManual.Rarity.LEGENDARY, WorldKey.MARTIAL, 100,
+                "mingo_secret_vault", "공격 흡수·반전의 7층 변환술");
+        add("saja_hu", "사자후", "saja_hu",
+                SecretManual.Rarity.EPIC, WorldKey.MARTIAL, 60,
+                "shaolin_temple", "내공을 소리에 실어 광역 정신 공격");
+        add("tanji_sintong", "탄지신통", "tanji_sintong",
+                SecretManual.Rarity.RARE, WorldKey.MARTIAL, 40,
+                "common_wuxia_market", "손가락 튕김으로 검기 발사");
+        add("ognyeo_simgyeong", "옥녀심경", "ognyeo_simgyeong",
+                SecretManual.Rarity.LEGENDARY, WorldKey.MARTIAL, 100,
+                "ognyeo_palace", "쌍수 합벽 전용 — 단독 수련 시 주화입마");
+        add("guyumchong_jingyeong", "구음진경", "guyum_jingyeong",
+                SecretManual.Rarity.LEGENDARY, WorldKey.MARTIAL, 120,
+                "wudang_secret_room", "도가 음기 비급 — 구양진경과 쌍벽");
+        add("gyuhwa_botjeon", "규화보전", "gyuhwa_botjeon",
+                SecretManual.Rarity.MYTHIC, WorldKey.MARTIAL, 180,
+                "imperial_palace_secret", "금기 무공 — 천하무적급 속도·검술");
+        add("taggu_bongbeop", "타구봉법", "taggu_bongbeop",
+                SecretManual.Rarity.RARE, WorldKey.MARTIAL, 30,
+                "gaebang_main_hall", "개방 방주에게만 전수되는 비전 봉법");
+        add("ilyangji", "일양지", "ilyangji",
+                SecretManual.Rarity.EPIC, WorldKey.MARTIAL, 60,
+                "danli_palace", "손가락 끝에 양기를 집중한 원거리 점혈");
+        add("hwasan_geombeop", "화산검법", "hwasan_geombeop",
+                SecretManual.Rarity.RARE, WorldKey.MARTIAL, 40,
+                "hwasan_temple", "기검(변칙)과 정검(정통) 두 갈래");
+        add("byeoksa_geombeop", "벽사검법", "byeoksa_geombeop",
+                SecretManual.Rarity.MYTHIC, WorldKey.MARTIAL, 180,
+                "imperial_palace_secret", "규화보전 파생 — 천하 최고의 속도");
+        add("yukmaeg_singeom", "육맥신검", "yukmaeg_singeom",
+                SecretManual.Rarity.LEGENDARY, WorldKey.MARTIAL, 130,
+                "dali_royal_chamber", "6개 손가락에서 검기 발사");
+        add("neungpa_mibo", "능파미보", "neungpa_mibo",
+                SecretManual.Rarity.EPIC, WorldKey.MARTIAL, 80,
+                "ihyeong_hidden_cave", "역경 64괘 기반 신법 — 회피의 극치");
+        add("dumi_jii", "두미지", "dumi_jii",
+                SecretManual.Rarity.EPIC, WorldKey.MARTIAL, 70,
+                "muyong_hidden_temple", "공격 흡수·반격의 전환 무공");
+        add("manryu_gwijong", "만류귀종", "manryu",
+                SecretManual.Rarity.MYTHIC, WorldKey.MARTIAL, 240,
+                "deep_meditation_caves", "모든 무공 원리 통합 깨달음형");
+        add("musang_singong", "무상신공", "musang_singong",
+                SecretManual.Rarity.MYTHIC, WorldKey.MARTIAL, 200,
+                "wuyong_ancient_vault", "형태가 없는 내공 — 어떤 무공이든 모방");
+        add("muyeong_sinbeop", "무영신법", "muyeong_sinbeop",
+                SecretManual.Rarity.EPIC, WorldKey.MARTIAL, 60,
+                "assassin_guild_secret", "그림자조차 남기지 않는 은신 신법");
+        add("hwagong_daebeop", "화공대법", "hwagong_daebeop",
+                SecretManual.Rarity.LEGENDARY, WorldKey.MARTIAL, 90,
+                "seongsupa_ancient", "상대 내공 완전 소멸 — 금기 무공");
+        add("baekbo_singwon", "백보신권", "baekbo_singwon",
+                SecretManual.Rarity.EPIC, WorldKey.MARTIAL, 80,
+                "shaolin_temple", "권기를 100보 밖까지 날리는 원거리 권법");
+        add("manggeom_gwijong", "만검귀종", "manggeom_gwijong",
+                SecretManual.Rarity.MYTHIC, WorldKey.MARTIAL, 200,
+                "geom_immortal_cave", "이기어검술의 궁극 — 수만 검 동시 조종");
+        add("hwangol_taltae", "환골탈태술", "hwangol_taltae",
+                SecretManual.Rarity.MYTHIC, WorldKey.MARTIAL, 200,
+                "seongsupa_ancient", "신체 완전 재구성 — 성공 시 전 스탯 2배");
+        add("cheonin_habil_gong", "천인합일공", "cheonin_habil_gong",
+                SecretManual.Rarity.MYTHIC, WorldKey.MARTIAL, 240,
+                "deep_meditation_caves", "천지와 합일하는 궁극의 내공심법");
+        add("sibalban_muye", "십팔반무예", "sibalban_muye",
+                SecretManual.Rarity.LEGENDARY, WorldKey.MARTIAL, 150,
+                "muye_grandmaster_school", "18가지 무기 극한 수련 깨달음");
+        add("polong_geombeop", "폭풍검법", "polong_geombeop",
+                SecretManual.Rarity.RARE, WorldKey.MARTIAL, 40,
+                "common_wuxia_market", "폭풍을 일으키는 단체전 특화 검법");
+        add("sabaeg_pagoda", "철포삼", "cheolposam",
+                SecretManual.Rarity.EPIC, WorldKey.MARTIAL, 60,
+                "shaolin_temple", "전신 근육·피부 내공 강화 방어 무공");
+        add("geumjong_jo", "금종조", "geumjong_jo",
+                SecretManual.Rarity.LEGENDARY, WorldKey.MARTIAL, 100,
+                "shaolin_inner_chamber", "소림 72절기 중 최강 방어 무공");
+
+        // ===== 기획서 5-6 추가 선계 비급 (4종) =====
+        add("cheonhwa_bongsin_gyeol", "천화봉신결", "cheonhwa_bongsin",
+                SecretManual.Rarity.MYTHIC, WorldKey.IMMORTAL, 240,
+                "taeheo_immortal_palace", "태허선궁 비전 — 신에 근접하는 힘");
+        add("gujeon_hyeongong", "구전현공", "gujeon_hyeongong",
+                SecretManual.Rarity.MYTHIC, WorldKey.IMMORTAL, 200,
+                "ancient_caveheaven", "9번의 돌파로 선기 극한 정제");
+        add("taeeul_noebeop", "태을뇌법", "taeeul_noebeop",
+                SecretManual.Rarity.LEGENDARY, WorldKey.IMMORTAL, 120,
+                "lightning_caveheaven", "뇌전 조종 도술 — 천사 경지 진가");
+        add("hondonsimbeob", "혼돈심법", "hondonsimbeob",
+                SecretManual.Rarity.LEGENDARY, WorldKey.IMMORTAL, 150,
+                "honbang_marketplace", "선기+마기 동시 수련 금기 — 마선의 길");
+
+        // ===== 기획서 5-1 추가 판타지 마법서 (6종 핵심) =====
+        add("meteor_strike", "메테오 스트라이크", "meteor",
+                SecretManual.Rarity.MYTHIC, WorldKey.FANTASY, 240,
+                "magic_tower_top", "9서클 — 도시 하나를 소멸시키는 운석 소환");
+        add("time_stop", "타임 스톱", "time_stop",
+                SecretManual.Rarity.MYTHIC, WorldKey.FANTASY, 240,
+                "ancient_archmage_vault", "9서클 — 시간 정지 (금기 마법)");
+        add("dragon_word", "드래곤 워드", "dragon_word",
+                SecretManual.Rarity.MYTHIC, WorldKey.FANTASY, 300,
+                "dragon_lair_ancient", "용언 마법 — 드래곤으로부터 직접 전수");
+        add("dimension_gate", "디멘션 게이트", "dimension_gate",
+                SecretManual.Rarity.LEGENDARY, WorldKey.FANTASY, 150,
+                "dimensional_research_lab", "8서클 — 차원 이동 마법");
+        add("gate_of_babylon", "게이트 오브 바빌론", "gate_of_babylon",
+                SecretManual.Rarity.MYTHIC, WorldKey.FANTASY, 240,
+                "ancient_archmage_vault", "9서클 — 보관 차원 무기 동시 사출");
+        add("life_drain", "라이프 드레인", "life_drain",
+                SecretManual.Rarity.EPIC, WorldKey.FANTASY, 80,
+                "necromancer_tower", "6서클 — 흑마법 분류, 생명력 흡수");
     }
 
     private void add(String id, String name, String skillId, SecretManual.Rarity r,

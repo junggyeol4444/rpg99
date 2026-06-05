@@ -37,10 +37,10 @@ public final class BankManager {
 
     public BankManager(RebornEconomy plugin) {
         this.plugin = plugin;
-        // 1분마다 이자 정산
-        RebornCore.get().scheduler().runTimerAsync(this::tickInterest, 1200L, 1200L);
-        // 1분마다 영속화
-        RebornCore.get().scheduler().runTimerAsync(this::flush, 1200L, 1200L);
+        // 이자 정산은 sync — account 객체 mutation + flush와 race window 방지
+        RebornCore.get().scheduler().runTimer(this::tickInterest, 1200L, 1200L);
+        // flush는 30초 어긋나게 async — tickInterest 직후 안정적으로 KV write
+        RebornCore.get().scheduler().runTimerAsync(this::flush, 1800L, 1200L);
     }
 
     /** 계좌 → KV 저장 (deposit:cur, loan:cur, credit, maturityAt). */

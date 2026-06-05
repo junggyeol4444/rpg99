@@ -22,12 +22,33 @@ public final class EpochManager {
 
     public enum Epoch { GOLDEN_AGE, PEACE_ERA, TENSION_ERA, WAR_ERA, DARK_AGE }
 
+    private static final String NS = "RebornWorldAI.epoch";
+
     private final RebornWorldAI plugin;
     private final Map<WorldKey, Epoch> currentEpoch = new EnumMap<>(WorldKey.class);
 
     public EpochManager(RebornWorldAI plugin) {
         this.plugin = plugin;
         for (WorldKey w : WorldKey.values()) currentEpoch.put(w, Epoch.PEACE_ERA);
+        loadAll();
+    }
+
+    private void loadAll() {
+        try {
+            var all = kr.reborn.core.RebornCore.get().kv().loadAll(NS, null);
+            for (var e : all.entrySet()) {
+                try {
+                    WorldKey w = WorldKey.valueOf(e.getKey());
+                    Epoch ep = Epoch.valueOf(e.getValue());
+                    currentEpoch.put(w, ep);
+                } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    private void persist(WorldKey w, Epoch ep) {
+        try { kr.reborn.core.RebornCore.get().kv().put(NS, null, w.name(), ep.name()); }
+        catch (Throwable ignored) {}
     }
 
     public void cycle(WorldKey world) {
@@ -54,6 +75,7 @@ public final class EpochManager {
         Epoch prev = currentEpoch.get(world);
         if (prev != next) {
             currentEpoch.put(world, next);
+            persist(world, next);
             String label = label(next);
             Bukkit.broadcastMessage("§6§l[" + world + " 시대 전환] §f"
                     + label(prev) + " §7→ §6" + label);

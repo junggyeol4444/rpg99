@@ -70,37 +70,91 @@ public final class PowerEngine {
 
     private void apply(Player p, String powerName) {
         String n = powerName;
+        // 권능 이름 해시 → 각 권능 고유 강도 변동 (±25%) — "전쟁의 불꽃"·"충성의 불꽃"이 같은 카테고리여도 강도가 다름
+        int h = Math.abs(n.hashCode());
+        double intensity = 0.75 + (h % 51) / 100.0;  // 0.75 ~ 1.25
+        int rad = 5 + (h % 4);                       // 5 ~ 8 블록 범위 변동
+
         // 카테고리화 — 키워드 우선순위
-        if (containsAny(n, "왕좌", "지배", "선언", "명령", "지휘", "왕의", "전쟁의 불꽃", "충성의 불꽃")) {
-            auraStrength(p, 8, 240);
+        if (containsAny(n, "왕좌", "지배", "선언", "명령", "지휘", "왕의")) {
+            auraStrength(p, (int)(8 * intensity), 240);
+        } else if (containsAny(n, "전쟁의 불꽃", "충성의 불꽃")) {
+            // 불꽃류는 화염 부가
+            auraStrength(p, (int)(6 * intensity), 240);
+            try { p.setFireTicks(0); } catch (Throwable ignored) {}
+            for (var e : p.getNearbyEntities(rad, rad, rad)) {
+                if (e instanceof LivingEntity le && !(e instanceof Player)) {
+                    try { le.setFireTicks(60); } catch (Throwable ignored) {}
+                }
+            }
         } else if (containsAny(n, "소환", "군단", "헬하운드", "수하", "포탑", "심해 소환")) {
-            summonMinions(p, 2);
+            summonMinions(p, n, 1 + (h % 3));
         } else if (containsAny(n, "사슬", "속박", "도주 불가", "감금", "꿈의 감옥", "정체의 시간")) {
-            chainHold(p, 5, 100);
-        } else if (containsAny(n, "방패", "보호", "방어", "보루", "장막", "은밀", "위장", "은신", "회피")) {
-            buffResistance(p, 200);
-        } else if (containsAny(n, "치유", "회복", "축복", "가호", "명예 회복", "치유 봉쇄")) {
-            healSelf(p, 30);
-        } else if (containsAny(n, "역병", "독", "부패", "감염", "쇠약", "역공")) {
-            aoeDot(p, 6, PotionEffectType.POISON, 100);
+            chainHold(p, rad, (int)(100 * intensity));
+        } else if (containsAny(n, "방패", "보호", "방어", "보루", "장막")) {
+            buffResistance(p, (int)(200 * intensity));
+        } else if (containsAny(n, "은밀", "위장", "은신", "회피")) {
+            // 은신 계열 — 투명화·속도
+            try {
+                p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, (int)(200 * intensity), 0));
+                p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, (int)(200 * intensity), 1));
+            } catch (Throwable ignored) {}
+        } else if (containsAny(n, "치유", "회복", "축복", "가호", "명예 회복")) {
+            healSelf(p, 30 * intensity);
+        } else if (containsAny(n, "치유 봉쇄")) {
+            // 치유 봉쇄 — 적 회복 차단 (속도 디버프로 근사)
+            aoeDot(p, rad, PotionEffectType.SLOW, 200);
+            aoeDot(p, rad, PotionEffectType.WEAKNESS, 200);
+        } else if (containsAny(n, "역병", "독", "부패", "감염", "쇠약")) {
+            aoeDot(p, rad, PotionEffectType.POISON, (int)(100 * intensity));
+        } else if (containsAny(n, "역공")) {
+            // 역공 — 방어 + 광역 데미지
+            buffResistance(p, 100);
+            aoeDamage(p, rad, 10 * intensity, true);
         } else if (containsAny(n, "저주", "고통", "비탄", "원한")) {
-            aoeDot(p, 6, PotionEffectType.WITHER, 100);
+            aoeDot(p, rad, PotionEffectType.WITHER, (int)(100 * intensity));
         } else if (containsAny(n, "탐지", "투시", "감지", "발견", "보물", "해부학", "투시안")) {
-            utilityGlow(p, 10, 200);
+            utilityGlow(p, rad * 1.5, (int)(200 * intensity));
         } else if (containsAny(n, "분노", "광기", "광폭", "불의 재", "전소")) {
-            auraStrength(p, 12, 200);
-        } else if (containsAny(n, "폭발", "분출", "지옥", "화염", "벼락", "지진", "낙뢰", "해일", "대홍수")) {
-            aoeDamage(p, 7, 18, true);
+            auraStrength(p, (int)(12 * intensity), 200);
+        } else if (containsAny(n, "지옥", "화염")) {
+            aoeDamage(p, rad, 18 * intensity, true);
+            for (var e : p.getNearbyEntities(rad, rad, rad)) {
+                if (e instanceof LivingEntity le && !(e instanceof Player)) {
+                    try { le.setFireTicks(80); } catch (Throwable ignored) {}
+                }
+            }
+        } else if (containsAny(n, "벼락", "낙뢰")) {
+            // 벼락 — 시각 효과 + 광역
+            try { p.getWorld().strikeLightningEffect(p.getLocation()); } catch (Throwable ignored) {}
+            aoeDamage(p, rad, 22 * intensity, false);
+        } else if (containsAny(n, "지진")) {
+            aoeDamage(p, rad + 2, 15 * intensity, true);
+            // 적 점프 봉쇄
+            for (var e : p.getNearbyEntities(rad, rad, rad)) {
+                if (e instanceof LivingEntity le && !(e instanceof Player)) {
+                    try { le.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 100, 128, true, false)); }
+                    catch (Throwable ignored) {}
+                }
+            }
+        } else if (containsAny(n, "해일", "대홍수", "분출")) {
+            aoeDamage(p, rad + 1, 18 * intensity, true);
         } else if (containsAny(n, "심판", "처단")) {
-            aoeDamage(p, 8, 25, false);
+            aoeDamage(p, rad + 2, 25 * intensity, false);
+        } else if (containsAny(n, "폭발")) {
+            aoeDamage(p, rad, 20 * intensity, true);
+            try { p.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, p.getLocation(), 3); }
+            catch (Throwable ignored) {}
         } else {
-            // 기본: 자기 강화 + 광휘
-            buffResistance(p, 200);
-            p.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 200, 1));
+            // 기본: 자기 강화 + 광휘 (강도는 해시 기반으로 변동)
+            buffResistance(p, (int)(200 * intensity));
+            p.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE,
+                    (int)(200 * intensity), 1));
         }
         p.getWorld().spawnParticle(Particle.SPELL_WITCH, p.getLocation().add(0, 1, 0), 30, 0.5, 0.8, 0.5, 0.1);
         p.getWorld().playSound(p.getLocation(), Sound.BLOCK_BEACON_POWER_SELECT, 1f, 1f);
-        Msg.send(p, "&6&l[권능] &r&e" + powerName + " &7발동");
+        Msg.send(p, "&6&l[권능] &r&e" + powerName + " &7발동 §8(강도 "
+                + String.format("%.2f", intensity) + ")");
     }
 
     // ───────────────────────── 효과 ─────────────────────────
@@ -167,11 +221,12 @@ public final class PowerEngine {
         }
     }
 
-    private void summonMinions(Player p, int count) {
+    private void summonMinions(Player p, String powerName, int count) {
         if (p.getWorld() == null) return;
+        EntityType type = pickMinionType(powerName);
         for (int i = 0; i < count; i++) {
             var at = p.getLocation().add(Math.random() * 2 - 1, 0, Math.random() * 2 - 1);
-            Entity m = p.getWorld().spawnEntity(at, EntityType.WOLF);
+            Entity m = p.getWorld().spawnEntity(at, type);
             if (m instanceof LivingEntity ml) {
                 ml.setCustomName("§b" + p.getName() + "의 수하");
                 ml.setCustomNameVisible(true);
@@ -179,6 +234,20 @@ public final class PowerEngine {
             }
         }
         p.getWorld().playSound(p.getLocation(), Sound.ENTITY_EVOKER_PREPARE_SUMMON, 1f, 1f);
+    }
+
+    /** 권능 이름 키워드로 소환 종족 결정 — "헬하운드"는 WOLF, "심해 소환"은 GUARDIAN 등. */
+    private EntityType pickMinionType(String n) {
+        if (n.contains("헬하운드") || n.contains("늑대")) return EntityType.WOLF;
+        if (n.contains("심해") || n.contains("바다") || n.contains("해양")) return EntityType.GUARDIAN;
+        if (n.contains("포탑") || n.contains("골렘") || n.contains("기계")) return EntityType.IRON_GOLEM;
+        if (n.contains("악마") || n.contains("마군") || n.contains("지옥")) return EntityType.WITHER_SKELETON;
+        if (n.contains("천사") || n.contains("정령")) return EntityType.VEX;
+        if (n.contains("언데드") || n.contains("죽음") || n.contains("강시")) return EntityType.ZOMBIE;
+        if (n.contains("뱀") || n.contains("독")) return EntityType.SILVERFISH;
+        if (n.contains("새") || n.contains("비행")) return EntityType.PHANTOM;
+        // 기본: 군단
+        return EntityType.PIGLIN;
     }
 
     private boolean allyOf(Player a, Player b) {

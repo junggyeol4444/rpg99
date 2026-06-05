@@ -143,26 +143,66 @@ public final class WorldAI {
     }
 
     private void analyzeWeather() {
-        double pct = plugin.getConfig().getDouble("thresholds.disaster-percent-per-cycle", 1.5) / 100.0;
+        // 재해 확률은 상태에 비례 — 평시 1.5%, 긴장/암흑기엔 가속
+        double base = plugin.getConfig().getDouble("thresholds.disaster-percent-per-cycle", 1.5) / 100.0;
+        double tensionMult = 1.0 + (state.tension / 100.0) * 1.5;  // tension 100 → ×2.5
+        double stabilityMult = 1.0 + ((100 - state.stability) / 100.0) * 1.0;
+        // 시대 보정 (DARK_AGE / WAR_ERA에서 재해 빈번)
+        double epochMult = 1.0;
+        try {
+            var ep = plugin.epoch().of(world);
+            switch (ep) {
+                case DARK_AGE -> epochMult = 3.0;
+                case WAR_ERA -> epochMult = 2.0;
+                case GOLDEN_AGE -> epochMult = 0.3;
+                default -> {}
+            }
+        } catch (Throwable ignored) {}
+        double pct = Math.min(0.5, base * tensionMult * stabilityMult * epochMult);
         if (Rand.chance(pct)) {
-            String[] disasters = {"earthquake", "tsunami", "mana_burst", "ley_break"};
-            String d = disasters[Rand.range(0, disasters.length - 1)];
+            String d = chooseDisasterForWorld();
             Bukkit.getPluginManager().callEvent(new RebornDisasterStartEvent(world, d, 600));
         }
-        // 커스텀 날씨 1% 확률
-        if (Rand.chance(0.01)) {
+        // 커스텀 날씨 — 안정 낮을수록 발생률 ↑
+        double weatherPct = 0.01 + (100 - state.stability) / 5000.0;
+        if (Rand.chance(weatherPct)) {
             var sec = plugin.getConfig().getConfigurationSection("weathers");
             if (sec != null) {
+                java.util.List<String> candidates = new java.util.ArrayList<>();
                 for (String key : sec.getKeys(false)) {
                     var s = sec.getConfigurationSection(key);
                     if (s != null && world.name().equals(s.getString("world"))) {
-                        Bukkit.getPluginManager().callEvent(
-                                new RebornWeatherChangeEvent(world, key, s.getInt("duration-min", 10)));
-                        break;
+                        candidates.add(key);
                     }
+                }
+                if (!candidates.isEmpty()) {
+                    String pick = candidates.get(Rand.range(0, candidates.size() - 1));
+                    var s = sec.getConfigurationSection(pick);
+                    Bukkit.getPluginManager().callEvent(
+                            new RebornWeatherChangeEvent(world, pick, s.getInt("duration-min", 10)));
                 }
             }
         }
+    }
+
+    /** 세계 특성에 맞는 재해 선택. */
+    private String chooseDisasterForWorld() {
+        return switch (world) {
+            case FANTASY -> Rand.chance(0.5) ? "mana_burst" : "earthquake";
+            case OCEAN -> "tsunami";
+            case APOCALYPSE -> Rand.chance(0.5) ? "radiation_storm" : "ash_fall";
+            case MAGITECH -> "ley_break";
+            case DEMON -> "abyss_rift";
+            case HEAVEN -> "celestial_storm";
+            case SPIRIT -> "elemental_chaos";
+            case DRAGON -> "dragonfire_rain";
+            case EARTH -> "gate_break";
+            case CYBERPUNK -> "blackout";
+            case YOKAI -> "shadow_tide";
+            case MARTIAL -> "qi_disturbance";
+            case IMMORTAL -> "tribulation_lightning";
+            default -> "earthquake";
+        };
     }
 
     private void decideQuests() {

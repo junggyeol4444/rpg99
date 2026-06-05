@@ -64,16 +64,36 @@ public final class MartialGrowth implements GrowthStrategy {
 
     @Override
     public void onMonsterKill(Player p, PlayerData d, double mobLevel) {
-        // 의도적으로 0. 단, 마교 분기 = DEMON_KI 약간 흡수 가능
+        // 기획서 5-5: 무협 분기별 살생 효과 분리
         String clanType = clanType(d);
-        if ("cult".equals(clanType) || "unorthodox".equals(clanType)) {
-            RebornCore.get().api().addStat(p.getUniqueId(),
-                    StatType.DEMON_KI, 0.3, "martial-kill-cult");
-        }
-        // 의선/포두 등은 살생 시 -1 정신 (NPC 호의도 감소도 별도)
-        if ("orthodox".equals(clanType)) {
-            RebornCore.get().api().addStat(p.getUniqueId(),
-                    StatType.MENTAL, -0.1, "martial-kill-orthodox");
+        switch (clanType == null ? "" : clanType) {
+            case "cult" -> {
+                // 마교: 살생 = 마기 흡수 (DEMON_KI)
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.DEMON_KI, 0.5, "martial-kill-cult");
+                // 마교는 정신력에 부담 (심마 위험)
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.MENTAL, -0.05, "martial-kill-cult");
+            }
+            case "unorthodox" -> {
+                // 사파: 약탈/살생 = 내공 추가 + 잔인함 보정 (정신 약간 -)
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.INNER_KI, 0.3, "martial-kill-sapa");
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.STRENGTH, 0.1, "martial-kill-sapa");
+            }
+            case "orthodox" -> {
+                // 정파: 의선/포두 — 살생 금기 (정신 -, 도력 -)
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.MENTAL, -0.1, "martial-kill-orthodox");
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.TAO_POWER, -0.05, "martial-kill-orthodox");
+            }
+            default -> {
+                // 미정파: 매우 미미한 내공 (기본 무인 가정)
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.INNER_KI, 0.1, "martial-kill-none");
+            }
         }
     }
 

@@ -24,6 +24,10 @@ public final class MarriageManager implements Listener {
     private final RebornClan plugin;
     private final Map<UUID, Marriage> marriages = new ConcurrentHashMap<>();
     private final Map<UUID, UUID> proposals = new HashMap<>();
+    /** uuid → 현재 적용 중인 부부 보너스 (스탯별 양). 다음 tick에 정확히 차감 후 재적용. */
+    private final Map<UUID, java.util.EnumMap<StatType, Double>> lastCoupleBonus = new ConcurrentHashMap<>();
+    /** 이번 tick에서 buff 받은 uuid set — tick 종료 후 미수신 자에게서 회수. */
+    private final java.util.Set<UUID> boostedThisTick = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     public MarriageManager(RebornClan p) {
         this.plugin = p;
@@ -70,8 +74,10 @@ public final class MarriageManager implements Listener {
         if (m == null) { Msg.warn(p, "결혼하지 않았다."); return; }
         marriages.remove(m.a);
         marriages.remove(m.b);
+        // 양쪽 부부 보너스 즉시 회수
+        revokeCoupleBoost(m.a);
+        revokeCoupleBoost(m.b);
         Msg.send(p, "&7이혼이 성립되었다.");
-        // 부부 NPC 상대 호감도 급락 (RebornNPC 연동)
         save();
     }
 
@@ -79,6 +85,7 @@ public final class MarriageManager implements Listener {
     private void tickCoupleBuff() {
         double radius = plugin.getConfig().getDouble("marriage.buff-radius", 30);
         double percent = plugin.getConfig().getDouble("marriage.buff-stat-percent", 5) / 100.0;
+        boostedThisTick.clear();
         for (Marriage m : marriages.values()) {
             if (!m.npcId.isEmpty()) continue; // NPC 결혼은 거리 체크 안 함
             Player pa = Bukkit.getPlayer(m.a);
@@ -86,26 +93,43 @@ public final class MarriageManager implements Listener {
             if (pa == null || pb == null) continue;
             if (pa.getWorld() != pb.getWorld()) continue;
             if (pa.getLocation().distance(pb.getLocation()) > radius) continue;
-            // 일시 buff — 30초간 stat boost (실제로는 CurseEffect 시스템에 위임하는게 좋지만 간이로)
             applyCoupleBoost(pa, percent);
             applyCoupleBoost(pb, percent);
+            boostedThisTick.add(pa.getUniqueId());
+            boostedThisTick.add(pb.getUniqueId());
+        }
+        // 이전엔 받았지만 이번 tick엔 못 받은 사람 — 보너스 회수 (거리 벗어남)
+        for (UUID id : new java.util.HashSet<>(lastCoupleBonus.keySet())) {
+            if (!boostedThisTick.contains(id)) revokeCoupleBoost(id);
         }
     }
 
+    /** 이전 보너스를 정확히 차감 후 새 보너스 적용 — 누적·잔여 폭주 방지. */
     private void applyCoupleBoost(Player p, double percent) {
-        // 부부 가까이 있을 때 전 공통 스탯 +5% (기획서 23장)
-        // 일시 boost 표시용으로 RebornCore.addStat를 source 태그로 갱신.
-        // 같은 source는 매 tick마다 동일량으로 덮어쓰기되어 누적 폭주 없음.
-        var d = kr.reborn.core.RebornCore.get().api().getPlayerData(p.getUniqueId());
+        var d = RebornCore.get().api().getPlayerData(p.getUniqueId());
         if (d == null) return;
-        for (var st : kr.reborn.core.data.StatType.COMMON_8) {
+
+        var prev = lastCoupleBonus.computeIfAbsent(p.getUniqueId(),
+                k -> new java.util.EnumMap<>(StatType.class));
+        var fresh = new java.util.EnumMap<StatType, Double>(StatType.class);
+
+        for (var st : StatType.COMMON_8) {
             double base = d.getStat(st);
-            if (base <= 0) continue;
-            // 시각·체감 효과: Speed/Strength/Resistance 30초 부여 (단, 마인크래프트 한계로 STAT 시스템과 별개)
-            // 실제 게임 로직에서는 stat 합산 시점에 부부 근접 보너스를 +5% 계산해 사용 (즉시 적용 아님).
+            double prevBonus = prev.getOrDefault(st, 0.0);
+            // base에는 이전 보너스가 포함됨 → 자연 base 추출
+            double naturalBase = Math.max(0, base - prevBonus);
+            if (naturalBase <= 0) continue;
+            double newBonus = naturalBase * percent;
+            double delta = newBonus - prevBonus;
+            if (Math.abs(delta) > 0.01) {
+                RebornCore.get().api().addStat(p.getUniqueId(), st, delta, "couple-buff");
+            }
+            fresh.put(st, newBonus);
         }
+        lastCoupleBonus.put(p.getUniqueId(), fresh);
+
+        // 시각 효과
         try {
-            // 시각·청각 효과만 — 진행 표시
             p.addPotionEffect(new org.bukkit.potion.PotionEffect(
                     org.bukkit.potion.PotionEffectType.INCREASE_DAMAGE, 700, 0, true, false));
             p.addPotionEffect(new org.bukkit.potion.PotionEffect(
@@ -113,9 +137,17 @@ public final class MarriageManager implements Listener {
             p.addPotionEffect(new org.bukkit.potion.PotionEffect(
                     org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE, 700, 0, true, false));
         } catch (Throwable ignored) {}
-        // PlayerData에 부부 보너스 % 마커 저장 — 외부 시스템이 stat 조회 시 참조
-        d.status().put("couple_buff:" + (int)(percent * 100),
-                new kr.reborn.core.data.PlayerData.StatusEffect("couple_buff", "MARRIAGE", 35_000L, 1));
+    }
+
+    /** 거리 벗어남·이혼·오프라인 시 보너스 회수. */
+    public void revokeCoupleBoost(UUID uuid) {
+        var prev = lastCoupleBonus.remove(uuid);
+        if (prev == null) return;
+        for (var e : prev.entrySet()) {
+            if (e.getValue() != 0) {
+                RebornCore.get().api().addStat(uuid, e.getKey(), -e.getValue(), "couple-buff-revoke");
+            }
+        }
     }
 
     private File file() {

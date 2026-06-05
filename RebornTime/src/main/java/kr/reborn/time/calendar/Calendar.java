@@ -99,7 +99,7 @@ public final class Calendar {
                 }
             } catch (Throwable ignored) {}
         }
-        // 90일 분기 축제 — 분기명 표시
+        // 90일 분기 축제 — 분기명 표시 + 모든 가문 treasury +1000
         if (d % 90 == 0) {
             int quarter = (d / 90) % 4;
             String[] festivals = {
@@ -110,11 +110,43 @@ public final class Calendar {
             };
             Bukkit.broadcastMessage("§e§l[" + festivals[quarter].split(" — ")[0] + "] §7"
                     + festivals[quarter].split(" — ")[1] + " §6모든 가문 treasury +1000");
+            grantFestivalTreasury(1000.0);
         }
-        // 360일 신년
+        // 360일 신년 — NPC 전체 호의 +5
         if (d % 360 == 0) {
             Bukkit.broadcastMessage("§6§l[신년] §fY" + year() + " 신년 — 전체 NPC 호의 +5");
+            grantNewYearFavor(5.0);
         }
+    }
+
+    /** 분기 축제 — 모든 가문 treasury 추가. RebornClan 리플렉션 (Clan.treasury는 public 필드). */
+    private void grantFestivalTreasury(double amount) {
+        try {
+            var cp = Bukkit.getPluginManager().getPlugin("RebornClan");
+            if (cp == null) return;
+            Object clans = cp.getClass().getMethod("clans").invoke(cp);
+            if (clans == null) return;
+            Object all = clans.getClass().getMethod("all").invoke(clans);
+            if (all instanceof java.util.Collection<?> col) {
+                for (Object clan : col) {
+                    try {
+                        var field = clan.getClass().getField("treasury");
+                        double cur = field.getDouble(clan);
+                        field.setDouble(clan, cur + amount);
+                    } catch (Throwable ignored) {}
+                }
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    /** 신년 — 전체 NPC 호의 +값. RebornNPC 리플렉션. */
+    private void grantNewYearFavor(double delta) {
+        try {
+            var np = Bukkit.getPluginManager().getPlugin("RebornNPC");
+            if (np == null) return;
+            np.getClass().getMethod("nudgeGlobalFavor", double.class)
+                    .invoke(np, delta);
+        } catch (Throwable ignored) {}
     }
 
     private double basePrice(String cat) {

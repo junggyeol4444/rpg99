@@ -22,6 +22,14 @@ public final class Relations {
         npcScores.merge(id, delta, (a, b) -> Math.max(-100, Math.min(100, a + b)));
     }
 
+    /** 모든 기존 플레이어 호감도 일괄 조정 (신년 등 글로벌 이벤트용). */
+    public void adjustGlobalMood(double delta) {
+        for (var e : playerScores.entrySet()) {
+            playerScores.merge(e.getKey(), delta,
+                    (a, b) -> Math.max(-100, Math.min(100, a + b)));
+        }
+    }
+
     public Stage stagePlayer(UUID id) {
         double v = player(id);
         if (v <= -50) return Stage.NEMESIS;

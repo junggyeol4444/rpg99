@@ -115,6 +115,20 @@ public final class RebornNPC extends JavaPlugin {
         return affected;
     }
 
+    /**
+     * 외부 호출 API — 모든 NPC 호감도 일괄 조정 (전 플레이어 대상 기본 모드 ±).
+     * Calendar 신년 이벤트가 호출.
+     */
+    public int nudgeGlobalFavor(double delta) {
+        int affected = 0;
+        for (var npc : registry.all()) {
+            if (npc.dead) continue;
+            npc.relations.adjustGlobalMood(delta);
+            affected++;
+        }
+        return affected;
+    }
+
     /** 채팅에 숫자만 입력 시 대화 선택지로 처리. */
     public final class DialogueChatListener implements Listener {
         @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)

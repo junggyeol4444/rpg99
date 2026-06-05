@@ -184,6 +184,58 @@ public final class TimeChamber {
                 Bukkit.broadcastMessage("§5§l[절벽 수련] §f"
                         + p.getName() + " §7이(가) 깨달음을 얻고 내려왔다.");
             }
+            // 기획서 5-12: 5대 드래곤 가문 시간의 방 — 환경별 보조 보너스
+            applyDragonChamberEnvironmentBonus(p, chamberId, years);
         } catch (Throwable ignored) {}
+    }
+
+    /** 5대 드래곤 가문 환경(HOLY/FIRE/ACID/LIGHTNING/POISON)별 추가 스탯. */
+    private void applyDragonChamberEnvironmentBonus(Player p, String chamberId, int years) {
+        if (chamberId == null || !chamberId.startsWith("dragon_chamber_")) return;
+        double secondary = years * 2;
+        switch (chamberId) {
+            case "dragon_chamber_aurelius" -> {
+                // 성광(HOLY) 환경 → 신성·정신
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.DIVINITY, secondary, "dragon-aurelius-holy");
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.MENTAL, secondary, "dragon-aurelius-holy");
+            }
+            case "dragon_chamber_ignifer" -> {
+                // 화염(FIRE) 환경 → 근력·지구력
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.STRENGTH, secondary, "dragon-ignifer-fire");
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.ENDURANCE, secondary, "dragon-ignifer-fire");
+            }
+            case "dragon_chamber_nocterna" -> {
+                // 산성(ACID) 환경 → 지구력·매력
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.ENDURANCE, secondary, "dragon-nocterna-acid");
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.CHARM, secondary, "dragon-nocterna-acid");
+            }
+            case "dragon_chamber_cerylis" -> {
+                // 뇌전(LIGHTNING) 환경 → 민첩·지능
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.AGILITY, secondary, "dragon-cerylis-lightning");
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.INTELLIGENCE, secondary, "dragon-cerylis-lightning");
+            }
+            case "dragon_chamber_silvarex" -> {
+                // 독(POISON) 환경 → 지구력·행운, 독 면역 마커
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.ENDURANCE, secondary, "dragon-silvarex-poison");
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.LUCK, secondary, "dragon-silvarex-poison");
+                try {
+                    var d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+                    if (d != null) d.status().put("poison_resistance",
+                            new kr.reborn.core.data.PlayerData.StatusEffect(
+                                    "poison_resistance", "BLESSING", years * 1200L, 1));
+                } catch (Throwable ignored) {}
+            }
+            default -> {}
+        }
     }
 }

@@ -149,13 +149,15 @@ public final class AuctionManager {
 
     public void buyout(Player p, AuctionListing l) {
         if (l.buyoutPrice <= 0) return;
-        if (!active.remove(l)) return;
-        kr.reborn.core.RebornCore.get().kv().remove(NS, null, l.id.toString());
+        if (!active.contains(l)) { Msg.error(p, "매물이 만료되었습니다."); return; }
+        // 인출 먼저 시도 — 실패 시 active/KV에서 제거하지 않음
         if (!plugin.currencies().withdraw(p.getUniqueId(), l.currency, l.buyoutPrice)) {
             Msg.error(p, "잔액 부족.");
-            active.add(l);
             return;
         }
+        // 인출 성공 → 매물 제거 (원자성 확보)
+        active.remove(l);
+        kr.reborn.core.RebornCore.get().kv().remove(NS, null, l.id.toString());
         if (l.currentBidder != null) plugin.currencies().deposit(l.currentBidder, l.currency, l.currentBid);
         long fee = (long) Math.floor(l.buyoutPrice
                 * plugin.getConfig().getDouble("auction.sale-fee-percent", 3.0) / 100.0);

@@ -15,11 +15,70 @@ import java.util.UUID;
 
 public final class DomainManager {
 
+    private static final String NS = "RebornGod.domain";
+
     private final RebornGod plugin;
     /** domainWorld → 신 OR 권한 위임된 자 */
     private final Map<String, DomainRules> rules = new HashMap<>();
 
-    public DomainManager(RebornGod p) { this.plugin = p; }
+    public DomainManager(RebornGod p) {
+        this.plugin = p;
+        loadAll();
+    }
+
+    private void loadAll() {
+        try {
+            // NS+null+(worldName.field) 패턴: loadAll(NS, null)는 Map<key, value> 반환
+            var all = kr.reborn.core.RebornCore.get().kv().loadAll(NS, null);
+            Map<String, Map<String, String>> byWorld = new HashMap<>();
+            for (var e : all.entrySet()) {
+                int dot = e.getKey().indexOf('.');
+                if (dot < 0) continue;
+                String worldName = e.getKey().substring(0, dot);
+                String field = e.getKey().substring(dot + 1);
+                byWorld.computeIfAbsent(worldName, k -> new HashMap<>()).put(field, e.getValue());
+            }
+            for (var e : byWorld.entrySet()) {
+                String worldName = e.getKey();
+                var fields = e.getValue();
+                try {
+                    String ownerStr = fields.get("owner");
+                    if (ownerStr == null) continue;
+                    UUID owner = UUID.fromString(ownerStr);
+                    int size = Integer.parseInt(fields.getOrDefault("size", "500"));
+                    DomainRules r = new DomainRules(owner, size);
+                    String grav = fields.get("gravity");
+                    String dmg = fields.get("damageMult");
+                    String guests = fields.get("guests");
+                    if (grav != null) r.gravity = Double.parseDouble(grav);
+                    if (dmg != null) r.damageMult = Double.parseDouble(dmg);
+                    if (guests != null && !guests.isEmpty()) {
+                        for (String g : guests.split(",")) {
+                            try { r.allowedGuests.add(UUID.fromString(g)); }
+                            catch (Throwable ignored) {}
+                        }
+                    }
+                    rules.put(worldName, r);
+                } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    private void persist(String worldName, DomainRules r) {
+        try {
+            var kv = kr.reborn.core.RebornCore.get().kv();
+            kv.put(NS, null, worldName + ".owner", r.ownerGod.toString());
+            kv.putInt(NS, null, worldName + ".size", r.size);
+            kv.putDouble(NS, null, worldName + ".gravity", r.gravity);
+            kv.putDouble(NS, null, worldName + ".damageMult", r.damageMult);
+            StringBuilder gb = new StringBuilder();
+            for (UUID g : r.allowedGuests) {
+                if (gb.length() > 0) gb.append(',');
+                gb.append(g);
+            }
+            kv.put(NS, null, worldName + ".guests", gb.toString());
+        } catch (Throwable ignored) {}
+    }
 
     public boolean create(Player p) {
         God g = plugin.gods().of(p.getUniqueId());
@@ -42,7 +101,9 @@ public final class DomainManager {
         try { w.setGameRule(GameRule.KEEP_INVENTORY, true); } catch (Throwable ignored) {}
         try { w.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false); } catch (Throwable ignored) {}
         g.domainWorld = name;
-        rules.put(name, new DomainRules(p.getUniqueId(), size));
+        DomainRules r = new DomainRules(p.getUniqueId(), size);
+        rules.put(name, r);
+        persist(name, r);
         Msg.send(p, "&6신역 생성: " + name + " (크기: " + size + ")");
         return true;
     }
@@ -58,7 +119,10 @@ public final class DomainManager {
         God g = plugin.gods().of(owner.getUniqueId());
         if (g == null || g.domainWorld.isEmpty()) { Msg.error(owner, "신역 없음."); return; }
         DomainRules r = rules.get(g.domainWorld);
-        if (r != null) r.allowedGuests.add(guest.getUniqueId());
+        if (r != null) {
+            r.allowedGuests.add(guest.getUniqueId());
+            persist(g.domainWorld, r);
+        }
         Msg.send(owner, "&a" + guest.getName() + "을(를) 신역에 초대.");
         Msg.send(guest, "&6" + owner.getName() + "이(가) 신역에 초대했다.");
     }
@@ -67,10 +131,24 @@ public final class DomainManager {
         God g = plugin.gods().of(owner.getUniqueId());
         if (g == null) return;
         DomainRules r = rules.get(g.domainWorld);
-        if (r != null) r.allowedGuests.remove(guest.getUniqueId());
+        if (r != null) {
+            r.allowedGuests.remove(guest.getUniqueId());
+            persist(g.domainWorld, r);
+        }
         if (guest.getWorld().getName().equals(g.domainWorld)) {
-            World main = Bukkit.getWorld("world");
-            if (main != null) guest.teleport(main.getSpawnLocation());
+            // 거주 세계 (PlayerData.worldKey)로 복귀, 없으면 lobby
+            World main = null;
+            try {
+                var d = kr.reborn.core.RebornCore.get().api().getPlayerData(guest.getUniqueId());
+                if (d != null) main = Bukkit.getWorld(d.worldKey().name().toLowerCase());
+            } catch (Throwable ignored) {}
+            if (main == null) main = Bukkit.getWorld("lobby");
+            if (main == null) main = Bukkit.getWorld("world");
+            if (main != null) {
+                final World target = main;
+                kr.reborn.core.RebornCore.get().scheduler()
+                        .runEntityTask(guest, () -> guest.teleport(target.getSpawnLocation()));
+            }
         }
     }
 
@@ -98,6 +176,7 @@ public final class DomainManager {
                 r.damageMult = safeDouble(value, 1.0);
                 break;
         }
+        persist(g.domainWorld, r);
         Msg.send(owner, "&6신역 규칙 설정: " + key + "=" + value);
     }
 

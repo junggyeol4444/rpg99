@@ -67,6 +67,9 @@ public final class TradeManager {
         sessions.remove(s.b);
         Player a = Bukkit.getPlayer(s.a);
         Player b = Bukkit.getPlayer(s.b);
+        // 제안한 아이템 복귀
+        if (a != null && s.itemA != null) a.getInventory().addItem(s.itemA);
+        if (b != null && s.itemB != null) b.getInventory().addItem(s.itemB);
         if (a != null) Msg.warn(a, "거래 취소됨.");
         if (b != null) Msg.warn(b, "거래 취소됨.");
     }
@@ -78,6 +81,48 @@ public final class TradeManager {
         else s.readyB = true;
         Msg.send(p, "&7준비 완료.");
         if (s.readyA && s.readyB) startCountdown(s);
+    }
+
+    /** 손에 든 아이템 제안. 직전 제안이 있으면 인벤토리로 복귀. */
+    public void offerItem(Player p) {
+        Session s = sessions.get(p.getUniqueId());
+        if (s == null) { Msg.error(p, "진행 중인 거래가 없습니다."); return; }
+        ItemStack hand = p.getInventory().getItemInMainHand();
+        if (hand == null || hand.getType() == org.bukkit.Material.AIR) {
+            Msg.error(p, "손에 아이템이 없습니다."); return;
+        }
+        boolean isA = p.getUniqueId().equals(s.a);
+        // 직전 제안 복귀
+        ItemStack prev = isA ? s.itemA : s.itemB;
+        if (prev != null) p.getInventory().addItem(prev);
+        // 손에 든 아이템 제거 후 제안 set — 누적·복제 방지
+        ItemStack offered = hand.clone();
+        p.getInventory().setItemInMainHand(null);
+        if (isA) s.itemA = offered; else s.itemB = offered;
+        // ready 상태 리셋 (제안 변경 후 다시 확인 필요)
+        s.readyA = false; s.readyB = false;
+        Msg.send(p, "&a제안 갱신: &f" + offered.getType() + " ×" + offered.getAmount()
+                + " &7(상대방 다시 /trade ready 필요)");
+        Player other = Bukkit.getPlayer(isA ? s.b : s.a);
+        if (other != null) Msg.send(other, "&7상대가 아이템을 제안했다: " + offered.getType());
+    }
+
+    /** 화폐 제안. 직전 제안이 있으면 환불. 차감은 finalize에서. */
+    public void offerCurrency(Player p, String currency, long amount) {
+        Session s = sessions.get(p.getUniqueId());
+        if (s == null) { Msg.error(p, "진행 중인 거래가 없습니다."); return; }
+        if (amount < 0) { Msg.error(p, "금액은 0 이상"); return; }
+        if (amount > 0 && !plugin.currencies().has(p.getUniqueId(), currency, amount)) {
+            Msg.error(p, "잔액 부족"); return;
+        }
+        boolean isA = p.getUniqueId().equals(s.a);
+        if (isA) { s.currencyA = amount; s.currencyAId = currency; }
+        else     { s.currencyB = amount; s.currencyBId = currency; }
+        s.readyA = false; s.readyB = false;
+        Msg.send(p, "&a화폐 제안: &f" + amount + " " + currency
+                + " &7(상대방 다시 /trade ready 필요)");
+        Player other = Bukkit.getPlayer(isA ? s.b : s.a);
+        if (other != null) Msg.send(other, "&7상대가 " + amount + " " + currency + " 제안.");
     }
 
     private void startCountdown(Session s) {

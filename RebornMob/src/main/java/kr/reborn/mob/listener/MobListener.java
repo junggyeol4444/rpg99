@@ -49,16 +49,18 @@ public final class MobListener implements Listener {
                 e.getDrops().add(new ItemStack(m, amt));
             }
         }
+        Player killer = e.getEntity().getKiller();
         if (def.boss) {
             plugin.bosses().onDeath(le);
-            Player killer = e.getEntity().getKiller();
             if (killer != null) {
-                // 던전 진행 갱신
-                try { plugin.dungeons().onBossKill(killer, def.id); }
-                catch (Throwable ignored) {}
                 // 마계 영혼 흡수 — 보스급은 큰 영혼 (RebornStat 리플렉션)
                 notifyBossKillToGrowth(killer, le.getMaxHealth());
             }
+        }
+        // 던전 진행 갱신 — def.boss가 false여도 던전 floor.bossId면 카운트 (예: dragon_elder는 AI:BOSS이나 def.boss=false)
+        if (killer != null) {
+            try { plugin.dungeons().onBossKill(killer, def.id); }
+            catch (Throwable ignored) {}
         }
         plugin.controller().unregister(le.getUniqueId());
     }

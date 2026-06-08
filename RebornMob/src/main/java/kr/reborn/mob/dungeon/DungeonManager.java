@@ -367,23 +367,34 @@ public final class DungeonManager {
         Dungeon.Floor f = d.floor(floor);
         if (f == null) return;
         Location l = p.getLocation();
-        // 일반 몹 3마리
+        kr.reborn.mob.spawn.SpawnTicker ticker = new kr.reborn.mob.spawn.SpawnTicker(plugin);
+        // 일반 몹 3마리 — SpawnTicker.spawnAt 사용 (boss=false 몹도 정상 스폰)
         for (String mobId : f.mobIds) {
+            var def = plugin.registry().get(mobId);
+            if (def == null) continue;
             for (int i = 0; i < 3; i++) {
-                double dx = (Math.random() - 0.5) * 10;
-                double dz = (Math.random() - 0.5) * 10;
+                double dx = kr.reborn.core.util.Rand.rangeD(-5, 5);
+                double dz = kr.reborn.core.util.Rand.rangeD(-5, 5);
                 try {
-                    plugin.registry().get(mobId);
                     Location pos = l.clone().add(dx, 0, dz);
-                    plugin.bosses().summon(mobId, pos);
+                    ticker.spawnAt(def, pos);
                 } catch (Throwable ignored) {}
             }
         }
-        // 보스
+        // 보스 — bosses().summon은 def.boss=true만 처리
         if (f.bossId != null) {
             try {
                 Location pos = l.clone().add(0, 0, 8);
-                plugin.bosses().summon(f.bossId, pos);
+                var bossDef = plugin.registry().get(f.bossId);
+                if (bossDef != null && bossDef.boss) {
+                    plugin.bosses().summon(f.bossId, pos);
+                } else if (bossDef != null) {
+                    // boss 플래그가 없어도 강화해서 스폰 (예: 마지막 층 special mob)
+                    var le = ticker.spawnAt(bossDef, pos);
+                    if (le != null) {
+                        le.setCustomName("§5§l[보스] §f" + bossDef.name);
+                    }
+                }
             } catch (Throwable ignored) {}
         }
     }

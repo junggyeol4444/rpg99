@@ -75,10 +75,18 @@ public final class SchoolManager {
         try {
             var np = Bukkit.getPluginManager().getPlugin("RebornNPC");
             if (np == null) return;
+            // 같은 학파 NPC 호의 +30 (반경 50)
             np.getClass().getMethod("nudgeNearbyFavor",
                             Player.class, double.class, double.class)
                     .invoke(np, p, 50.0, 30.0);
-            // 라이벌 학파 NPC 호의 -30 (다른 메서드 필요 — 단순화)
+            // 라이벌 학파 NPC 호의 -30 — 직접 라이벌 학파 가입자 그룹에 broadcast
+            MartialSchool rival = RIVALS.get(ms);
+            if (rival != null) {
+                // 같은 서버에 라이벌 학파인 다른 플레이어가 있으면 NPC 호의도 영향
+                // (구체 라이벌 NPC 직접 -30은 NPC 학파 정보 부족으로 일단 글로벌 -3 으로 근사)
+                np.getClass().getMethod("nudgeGlobalFavor", double.class)
+                        .invoke(np, -3.0);
+            }
         } catch (Throwable ignored) {}
     }
 
@@ -97,8 +105,9 @@ public final class SchoolManager {
     }
 
     public boolean areRivals(UUID a, UUID b) {
-        MartialSchool sa = schools.get(a);
-        MartialSchool sb = schools.get(b);
+        // schools 캐시 비어있으면 KV에서 로드 (lazy)
+        MartialSchool sa = of(a);
+        MartialSchool sb = of(b);
         if (sa == null || sb == null) return false;
         return RIVALS.get(sa) == sb;
     }

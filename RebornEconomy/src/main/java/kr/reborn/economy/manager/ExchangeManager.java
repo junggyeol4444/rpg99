@@ -16,7 +16,8 @@ import java.util.UUID;
 public final class ExchangeManager {
 
     private final RebornEconomy plugin;
-    private final Map<String, Map<String, Double>> rates = new HashMap<>();
+    /** Concurrent — async tickDynamicRates와 sync exchange()가 동시 접근. */
+    private final Map<String, Map<String, Double>> rates = new java.util.concurrent.ConcurrentHashMap<>();
     private double feePercent;
     private double fluctuation;
 
@@ -76,7 +77,7 @@ public final class ExchangeManager {
         for (String from : sec.getKeys(false)) {
             ConfigurationSection inner = sec.getConfigurationSection(from);
             if (inner == null) continue;
-            Map<String, Double> map = new HashMap<>();
+            Map<String, Double> map = new java.util.concurrent.ConcurrentHashMap<>();
             for (String to : inner.getKeys(false)) {
                 map.put(to, inner.getDouble(to));
             }
@@ -132,7 +133,8 @@ public final class ExchangeManager {
 
     /** 동적 환율 변동: WorldAI hook. */
     public void adjustRate(String from, String to, double multiplier) {
-        Map<String, Double> m = rates.computeIfAbsent(from, k -> new HashMap<>());
+        Map<String, Double> m = rates.computeIfAbsent(from,
+                k -> new java.util.concurrent.ConcurrentHashMap<>());
         Double base = m.get(to);
         if (base == null) return;
         double cap = base * (1 + fluctuation / 100.0);

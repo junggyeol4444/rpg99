@@ -116,10 +116,13 @@ public final class BountyManager {
     }
 
     private void tickAutoBounty() {
-        // 1) 7일 미처치 현상금 +50% — async-safe (Map만 조작)
+        // 1) 7일 미처치 현상금 +50% — 누적 시간 추적 (tickAutoBounty가 1시간마다 호출됨)
+        //    7일 = 168시간 → 시간당 약 ×1.00241 (이자 누적식: 1.5^(1/168))
+        //    근사: 1.5^(1/168) ≈ 1.00242
+        double hourlyMult = Math.pow(1.5, 1.0 / 168.0);
         Map<UUID, Long> snap = new java.util.HashMap<>(bounties);
         for (var e : snap.entrySet()) {
-            bounties.put(e.getKey(), (long)(e.getValue() * 1.10));
+            bounties.put(e.getKey(), (long)(e.getValue() * hourlyMult));
         }
         // 2) 범죄 레벨 3+ 자동 현상금 — broadcastMessage는 sync 필요
         java.util.List<String> newBounties = new java.util.ArrayList<>();

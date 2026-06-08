@@ -213,12 +213,58 @@ public final class AchievementManager {
             Bukkit.broadcastMessage("§6§l[" + def.rarity + " 업적] §f"
                     + p.getName() + " §7가 §6" + def.name + " §7달성!");
         }
-        // 보상 적용 (간단화)
+        // 보상 적용 — config의 rewards 리스트 + 기본 동명 칭호 자동 부여
         for (String reward : def.rewards) {
-            if (reward.startsWith("title:")) {
-                plugin.titles().grant(p, reward.substring(6));
-            }
+            applyReward(p, reward);
         }
+        // 기본: 동명 칭호 자동 부여 (있으면)
+        try {
+            if (plugin.titles().get(achievementId) != null) {
+                plugin.titles().grant(p, achievementId);
+            }
+        } catch (Throwable ignored) {}
+        // 희귀도별 스탯 보너스 — LEGEND·DIAMOND는 큰 보상
+        try {
+            int statBonus = switch (def.rarity) {
+                case LEGEND -> 50;
+                case DIAMOND -> 30;
+                case PLATINUM -> 15;
+                case GOLD -> 8;
+                case SILVER -> 4;
+                case BRONZE -> 2;
+            };
+            for (var st : kr.reborn.core.data.StatType.COMMON_8) {
+                kr.reborn.core.RebornCore.get().api().addStat(p.getUniqueId(),
+                        st, statBonus, "achievement:" + achievementId);
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    /** "title:hero" / "stat:STRENGTH:50" / "currency:GOLD_COIN:1000" 형식. */
+    private void applyReward(Player p, String reward) {
+        try {
+            String[] parts = reward.split(":");
+            if (parts.length < 2) return;
+            switch (parts[0]) {
+                case "title" -> plugin.titles().grant(p, parts[1]);
+                case "stat" -> {
+                    if (parts.length < 3) return;
+                    var st = kr.reborn.core.data.StatType.valueOf(parts[1].toUpperCase());
+                    kr.reborn.core.RebornCore.get().api().addStat(p.getUniqueId(),
+                            st, Double.parseDouble(parts[2]), "achievement");
+                }
+                case "currency" -> {
+                    if (parts.length < 3) return;
+                    var ep = Bukkit.getPluginManager().getPlugin("RebornEconomy");
+                    if (ep != null) {
+                        Object cm = ep.getClass().getMethod("currencies").invoke(ep);
+                        cm.getClass().getMethod("deposit", UUID.class, String.class, long.class)
+                                .invoke(cm, p.getUniqueId(), parts[1], Long.parseLong(parts[2]));
+                    }
+                }
+                default -> {}
+            }
+        } catch (Throwable ignored) {}
     }
 
     public Set<String> earnedOf(UUID p) {

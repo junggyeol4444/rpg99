@@ -36,6 +36,9 @@ public final class RaceManager {
         List<Race> candidates = Race.availableFor(world);
         if (candidates.isEmpty()) return null;
         Race chosen = weightedPick(candidates);
+        // 환생 반복 호출로 종족 보너스가 누적되던 결함 방지 — 직전 종족 효과 회수
+        Race prev = raceOf(p.getUniqueId());
+        if (prev != null && prev != chosen) removeBonuses(p, prev);
         playerRace.put(p.getUniqueId(), chosen);
         applyBonuses(p, chosen);
         persist(p.getUniqueId(), chosen);
@@ -45,6 +48,8 @@ public final class RaceManager {
 
     /** 명시적 종족 설정 (관리자 명령 또는 특수 이벤트). */
     public void setRace(Player p, Race r) {
+        Race prev = raceOf(p.getUniqueId());
+        if (prev != null && prev != r) removeBonuses(p, prev);
         playerRace.put(p.getUniqueId(), r);
         applyBonuses(p, r);
         persist(p.getUniqueId(), r);
@@ -87,6 +92,16 @@ public final class RaceManager {
             try {
                 RebornCore.get().api().addStat(p.getUniqueId(),
                         e.getKey(), e.getValue(), "race:" + r.name());
+            } catch (Throwable ignored) {}
+        }
+    }
+
+    /** 종족 효과 회수 — 환생·재배정 시 호출. */
+    private void removeBonuses(Player p, Race r) {
+        for (var e : r.bonus.entrySet()) {
+            try {
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        e.getKey(), -e.getValue(), "race-revoke:" + r.name());
             } catch (Throwable ignored) {}
         }
     }

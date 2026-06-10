@@ -151,6 +151,9 @@ public final class TitleManager {
         if (!s.remove(id)) return;
         RebornCore.get().kv().put(NS, p.getUniqueId(), "owned", String.join(",", s));
         if (id.equals(active.get(p.getUniqueId()))) {
+            // 활성 칭호였으면 스탯 회수도 (이전엔 active만 비우고 stat 회수 안 함)
+            Title t = titles.get(id);
+            if (t != null) removeEffects(p, t);
             active.remove(p.getUniqueId());
             RebornCore.get().kv().remove(NS, p.getUniqueId(), "active");
         }
@@ -166,6 +169,12 @@ public final class TitleManager {
         if (t == null) return;
         String prev = active.put(p.getUniqueId(), id);
         RebornCore.get().kv().put(NS, p.getUniqueId(), "active", id);
+        // 이전 칭호 효과 회수 — 이전엔 누락돼 칭호 교체 시마다 스탯이 누적됐음
+        // (A 장착 +50, B 장착 +50 → STR +100 영구. 무한 사이클 가능)
+        if (prev != null && !prev.equals(id)) {
+            Title prevT = titles.get(prev);
+            if (prevT != null) removeEffects(p, prevT);
+        }
         applyEffects(p, t);
         Bukkit.getPluginManager().callEvent(new RebornTitleChangeEvent(p, prev, id));
         PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
@@ -180,6 +189,13 @@ public final class TitleManager {
         }
         if ("HIDDEN_MASTER_REVEAL".equals(t.special)) {
             Bukkit.broadcastMessage(Msg.PREFIX + Msg.c("&c&l은둔고수 " + p.getName() + "님이 정체를 드러냈다!"));
+        }
+    }
+
+    /** 칭호 효과 회수 — 비활성화·revoke 시 호출. */
+    private void removeEffects(Player p, Title t) {
+        for (var e : t.statBonuses.entrySet()) {
+            RebornCore.get().api().addStat(p.getUniqueId(), e.getKey(), -e.getValue(), "TITLE-REVOKE:" + t.id);
         }
     }
 

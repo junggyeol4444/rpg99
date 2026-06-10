@@ -49,10 +49,34 @@ public final class InheritanceManager implements Listener {
         Msg.send(p, "&6유언장 작성: 상속인 §f" + heirId);
     }
 
+    /** uuid의 유언장 lazy 로드 — 재시작 후에도 KV에서 복원. */
+    private Will willOf(UUID uuid) {
+        Will cached = wills.get(uuid);
+        if (cached != null) return cached;
+        try {
+            String heir = RebornCore.get().kv().get(NS, uuid, "heir");
+            if (heir == null || heir.isEmpty()) return null;
+            long at = RebornCore.get().kv().getLong(NS, uuid, "writtenAt", System.currentTimeMillis());
+            Will w = new Will(uuid, heir, at);
+            wills.put(uuid, w);
+            return w;
+        } catch (Throwable t) { return null; }
+    }
+
     /** 가문 사망 시 호출 — 자산 이양. */
     @EventHandler
     public void onDeath(PlayerDeathEvent e) {
         Player p = e.getEntity();
+        // 유언장은 가문 없어도 적용 (이전엔 무가문이면 return 먼저라 유언 무시)
+        Will w = willOf(p.getUniqueId());
+        if (w != null) {
+            wills.remove(p.getUniqueId());
+            try {
+                RebornCore.get().kv().remove(NS, p.getUniqueId(), "heir");
+                RebornCore.get().kv().remove(NS, p.getUniqueId(), "writtenAt");
+            } catch (Throwable ignored) {}
+            applyWill(p, w);
+        }
         Clan c = plugin.clans().ofPlayer(p.getUniqueId());
         if (c == null) return;
 
@@ -90,12 +114,6 @@ public final class InheritanceManager implements Listener {
                 }
             }
         } catch (Throwable ignored) {}
-
-        // 유언장 적용
-        Will w = wills.remove(p.getUniqueId());
-        if (w != null) {
-            applyWill(p, w);
-        }
     }
 
     private void applyWill(Player deceased, Will will) {

@@ -25,11 +25,17 @@ public final class ShopManager {
         public final long buy, sell;
         public int stock;       // -1 = 무한
         public final int restockMin;
+        /** 초기 stock (restock 시 회복 목표) */
+        public final int maxStock;
+        /** 마지막 restock 시각 (ms) — 0이면 아직 한 번도 restock 안 됨 */
+        public long lastRestockAt;
 
         public ShopItem(String id, Material material, String currency, long buy, long sell,
                         int stock, int restockMin) {
             this.id = id; this.material = material; this.currency = currency;
             this.buy = buy; this.sell = sell; this.stock = stock; this.restockMin = restockMin;
+            this.maxStock = stock;
+            this.lastRestockAt = System.currentTimeMillis();
         }
     }
 
@@ -49,6 +55,22 @@ public final class ShopManager {
     public ShopManager(RebornEconomy plugin) {
         this.plugin = plugin;
         load();
+        // 1분마다 모든 상점 restock 체크 — restock_minutes 경과 시 maxStock으로 회복
+        kr.reborn.core.RebornCore.get().scheduler().runTimer(this::tickRestock, 1200L, 1200L);
+    }
+
+    /** 매 분 호출 — 한정 stock 아이템이 restock_minutes 경과 시 maxStock으로 회복. */
+    private void tickRestock() {
+        long now = System.currentTimeMillis();
+        for (Shop shop : shops.values()) {
+            for (ShopItem it : shop.items) {
+                if (it.restockMin <= 0 || it.maxStock < 0) continue;
+                if (it.stock >= it.maxStock) continue;
+                if (now - it.lastRestockAt < it.restockMin * 60_000L) continue;
+                it.stock = it.maxStock;
+                it.lastRestockAt = now;
+            }
+        }
     }
 
     private void load() {

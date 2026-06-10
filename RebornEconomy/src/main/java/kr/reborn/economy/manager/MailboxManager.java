@@ -25,6 +25,9 @@ public final class MailboxManager {
 
     public MailboxManager(RebornEconomy plugin) {
         this.plugin = plugin;
+        // 1시간마다 만료 메일 정리 — 영구 적체 방지
+        kr.reborn.core.RebornCore.get().scheduler().runTimerAsync(
+                this::purgeExpired, 72000L, 72000L);
     }
 
     private void ensureLoaded(UUID owner) {

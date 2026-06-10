@@ -22,8 +22,8 @@ public final class ConditionListener implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
-        // 로그인 시 풀 체크 (누락 방지)
-        plugin.engine().fullCheck(e.getPlayer());
+        // 로그인 시 풀 체크 (누락 방지) — throttle 무시
+        plugin.engine().forceFullCheck(e.getPlayer());
     }
 
     @EventHandler

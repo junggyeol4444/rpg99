@@ -18,6 +18,8 @@ import java.util.UUID;
 public final class ConditionEngine {
 
     private final RebornHiddenClass plugin;
+    /** uuid → 마지막 fullCheck 시각 (ms). 5초 throttle. */
+    private final java.util.Map<UUID, Long> lastCheckAt = new java.util.concurrent.ConcurrentHashMap<>();
 
     public ConditionEngine(RebornHiddenClass plugin) {
         this.plugin = plugin;
@@ -35,13 +37,23 @@ public final class ConditionEngine {
         }
     }
 
-    /** 이벤트나 로그인 시 풀 체크 — ACHIEVEMENT만. */
+    /** 이벤트나 로그인 시 풀 체크 — ACHIEVEMENT만. 5초 throttle로 폭주 방지. */
     public void fullCheck(Player p) {
+        long now = System.currentTimeMillis();
+        Long last = lastCheckAt.get(p.getUniqueId());
+        if (last != null && now - last < 5_000L) return;
+        lastCheckAt.put(p.getUniqueId(), now);
         for (HiddenClass hc : plugin.registry().all()) {
             if (hc.type != HiddenClass.Type.ACHIEVEMENT) continue;
             if (plugin.progress().has(p.getUniqueId(), hc.id)) continue;
             if (matches(p, hc)) unlock(p, hc);
         }
+    }
+
+    /** 강제 풀 체크 — throttle 무시 (로그인·관리자 명령 등에서 사용). */
+    public void forceFullCheck(Player p) {
+        lastCheckAt.remove(p.getUniqueId());
+        fullCheck(p);
     }
 
     public boolean matches(Player p, HiddenClass hc) {

@@ -107,18 +107,25 @@ public final class MigrationEngine {
             Plugin np = Bukkit.getPluginManager().getPlugin("RebornNPC");
             if (np == null) return;
             Object registry = np.getClass().getMethod("registry").invoke(np);
+            // id 충돌 방지: timestamp + nanoTime + cycleSeq
             String id = "migrant_" + kind.name().toLowerCase() + "_"
-                    + (System.currentTimeMillis() % 100000);
+                    + System.currentTimeMillis() + "_" + (System.nanoTime() & 0xffff);
             String name = (kind == Kind.TRADER ? "§e[이주 상인] " : "§b[순례자] ")
                     + origin.name() + "에서 옴";
-            // 위치는 plugin 내부 결정 — 단순화: 첫번째 온라인 플레이어 위치
+            // 도착지 세계 거주 플레이어 곁에 스폰. 없으면 도착지 월드 스폰포인트 fallback.
             org.bukkit.entity.Player firstP = null;
             for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
-                if (kr.reborn.core.RebornCore.get().api().getPlayerData(p.getUniqueId())
-                        .worldKey() == dest) { firstP = p; break; }
+                var pd = kr.reborn.core.RebornCore.get().api().getPlayerData(p.getUniqueId());
+                if (pd != null && pd.worldKey() == dest) { firstP = p; break; }
             }
-            if (firstP == null) return;
-            Object loc = firstP.getLocation();
+            Object loc;
+            if (firstP != null) {
+                loc = firstP.getLocation();
+            } else {
+                var w = Bukkit.getWorld(dest.name().toLowerCase());
+                if (w == null) return;  // 월드 미로드면 스폰 포기
+                loc = w.getSpawnLocation();
+            }
             registry.getClass().getMethod("spawn",
                             String.class, String.class, WorldKey.class,
                             Class.forName("org.bukkit.Location"), String.class, String.class)

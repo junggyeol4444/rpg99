@@ -70,6 +70,13 @@ public final class AccessoryManager {
         ItemStack hand = p.getInventory().getItemInMainHand();
         CustomItem ci = plugin.items().ofItem(hand);
         if (ci != null && ci.type == CustomItem.Type.ACCESSORY) {
+            // 슬롯 검증 — 목걸이를 반지 슬롯에 끼우거나 반지를 귀걸이 슬롯에 끼우는 등의
+            // 슬롯 우회로 동일 효과 4중 적용을 막음
+            if (ci.accessorySlot != null && !matchesSlot(ci.accessorySlot, s)) {
+                Msg.error(p, "이 슬롯에 맞지 않는 장신구입니다 ("
+                        + ci.accessorySlot + " 전용).");
+                return;
+            }
             // 장착
             ItemStack equip = hand.clone();
             ItemStack prev = map.put(s, equip);
@@ -102,5 +109,14 @@ public final class AccessoryManager {
             RebornCore.get().api().addStat(p.getUniqueId(), e.getKey(), e.getValue() * sign,
                     "ACC:" + ci.id);
         }
+    }
+
+    /** ItemSlot이 UI Slot과 호환되는지 (RING은 RING_1·RING_2 모두 허용). */
+    private boolean matchesSlot(CustomItem.AccessorySlot itemSlot, Slot uiSlot) {
+        return switch (itemSlot) {
+            case RING -> uiSlot == Slot.RING_1 || uiSlot == Slot.RING_2;
+            case NECKLACE -> uiSlot == Slot.NECKLACE;
+            case EARRING -> uiSlot == Slot.EARRING;
+        };
     }
 }

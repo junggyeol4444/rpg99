@@ -70,12 +70,17 @@ public final class EnchantSystem {
             Msg.error(p, "이미 +10 강화 (최대).");
             return false;
         }
+        // 강화석은 필수 — 이전엔 stoneId null이면 비용 없이 시도 가능했음
+        if (stoneId == null || stoneId.isEmpty()) {
+            Msg.error(p, "강화석이 필요합니다 — /enchant try <stoneId> [rune]");
+            return false;
+        }
         double base = baseRate(curLv + 1);
         double stoneBonus = stoneBonus(stoneId);
         double total = Math.min(0.95, base + stoneBonus);
 
-        // 강화석 소비 (있을 때만)
-        if (stoneId != null && !consumeStone(p, stoneId)) {
+        // 강화석 소비
+        if (!consumeStone(p, stoneId)) {
             Msg.error(p, "강화석 부족: " + stoneId);
             return false;
         }
@@ -199,18 +204,27 @@ public final class EnchantSystem {
     private void updateLore(ItemStack item) {
         ItemMeta m = item.getItemMeta();
         if (m == null) return;
-        List<String> lore = new ArrayList<>();
+        // 기존 lore 보존 — 강화/룬 prefix 줄만 제거하고 나머지(등급·스탯 등) 유지.
+        // 이전 구현은 setLore(new ArrayList)로 통째 덮어써 CustomItem.render의
+        // 등급·스탯 lore가 강화 시 영구 소실됐음.
+        List<String> existing = m.hasLore() ? new ArrayList<>(m.getLore()) : new ArrayList<>();
+        existing.removeIf(line -> {
+            String stripped = ChatColor.stripColor(line);
+            return stripped != null
+                    && (stripped.startsWith("강화 +") || stripped.startsWith("장착 보너스 ")
+                        || stripped.startsWith("룬: "));
+        });
         int lv = levelOf(item);
         if (lv > 0) {
             String color = lv >= 10 ? "§6§l" : lv >= 7 ? "§5§l" : lv >= 4 ? "§a" : "§7";
-            lore.add(color + "강화 +" + lv);
-            lore.add("§7장착 보너스 §f+" + (lv * 3));
+            existing.add(color + "강화 +" + lv);
+            existing.add("§7장착 보너스 §f+" + (lv * 3));
         }
         String rune = runeOf(item);
         if (rune != null) {
-            lore.add("§b룬: §f" + rune);
+            existing.add("§b룬: §f" + rune);
         }
-        m.setLore(lore);
+        m.setLore(existing);
         item.setItemMeta(m);
     }
 

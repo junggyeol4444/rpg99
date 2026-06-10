@@ -135,11 +135,35 @@ public final class PetManager {
     public boolean summon(Player owner, String name) {
         Pet pp = byName(owner.getUniqueId(), name);
         if (pp == null) { Msg.error(owner, "해당 펫 없음"); return false; }
+        // 이미 소환된 펫 — 중복 스폰으로 orphan 몹이 생기던 버그 방지
+        if (pp.activeEntityId != null && Bukkit.getEntity(pp.activeEntityId) != null) {
+            Msg.warn(owner, "이미 소환된 펫이다.");
+            return false;
+        }
+        // 동시 활성 수 제한 — 기본 1마리, 절대자(총합 5000+)는 3마리
+        double total = RebornCore.get().api().getTotalStats(owner.getUniqueId());
+        int maxActive = total >= 5000
+                ? plugin.getConfig().getInt("pet.max-active-absolute", 3)
+                : plugin.getConfig().getInt("pet.max-active", 1);
+        int active = 0;
+        for (Pet other : petsOf(owner.getUniqueId())) {
+            if (other.activeEntityId != null && Bukkit.getEntity(other.activeEntityId) != null) active++;
+        }
+        if (active >= maxActive) {
+            Msg.error(owner, "동시 소환 한도 " + maxActive + "마리 — 먼저 /pet dismiss");
+            return false;
+        }
         try {
             var t = org.bukkit.entity.EntityType.valueOf(pp.mobId);
             var ent = owner.getWorld().spawnEntity(owner.getLocation(), t);
             ent.setCustomName(pp.name);
             ent.setCustomNameVisible(true);
+            // 길들임 — 주인을 공격하지 않도록
+            if (ent instanceof org.bukkit.entity.Tameable tame) {
+                tame.setTamed(true);
+                tame.setOwner(owner);
+            }
+            ent.setPersistent(true);
             pp.activeEntityId = ent.getUniqueId();
             Msg.send(owner, "&a펫 소환: " + pp.name);
             return true;
@@ -169,36 +193,47 @@ public final class PetManager {
         persist(pet);
     }
 
-    /** 펫 진화 — 특정 레벨 도달 시 mobId 변경. */
+    /** 펫 진화 — 특정 레벨 도달 시 mobId 변경. 다단계 체인(예: AXOLOTL 25→PUFFERFISH 60→GUARDIAN) 지원. */
     public void tryEvolve(Pet pet) {
         var evos = plugin.getConfig().getConfigurationSection("pet.evolutions");
         if (evos == null) return;
+        // 현재 mobId가 속한 진화 체인의 base 키 탐색 — 직접 키이거나, 어떤 체인의 to 값
+        // (1차 진화 후 mobId가 바뀌면 base 키와 안 맞아 2차 진화가 영원히 안 되던 버그 수정)
+        String base = null;
+        outer:
         for (String fromMob : evos.getKeys(false)) {
-            if (!pet.mobId.equalsIgnoreCase(fromMob)) continue;
-            var entries = evos.getMapList(fromMob);
-            for (var e : entries) {
-                int reqLevel = ((Number) e.getOrDefault("level", 999)).intValue();
-                if (pet.level >= reqLevel) {
-                    String toMob = String.valueOf(e.get("to"));
-                    pet.mobId = toMob;
-                    pet.bond += 20;
-                    Bukkit.broadcastMessage("§5§l[펫 진화] §f" + pet.name + " §7→ " + toMob);
-                    if (pet.activeEntityId != null) {
-                        var ent = Bukkit.getEntity(pet.activeEntityId);
-                        if (ent != null) {
-                            var loc = ent.getLocation();
-                            ent.remove();
-                            try {
-                                var t = org.bukkit.entity.EntityType.valueOf(toMob);
-                                var newEnt = ent.getWorld().spawnEntity(loc, t);
-                                newEnt.setCustomName(pet.name);
-                                newEnt.setCustomNameVisible(true);
-                                pet.activeEntityId = newEnt.getUniqueId();
-                            } catch (Throwable ignored) {}
-                        }
-                    }
-                    break;
-                }
+            if (pet.mobId.equalsIgnoreCase(fromMob)) { base = fromMob; break; }
+            for (var e : evos.getMapList(fromMob)) {
+                if (pet.mobId.equalsIgnoreCase(String.valueOf(e.get("to")))) { base = fromMob; break outer; }
+            }
+        }
+        if (base == null) return;
+        // 자격 되는 가장 높은 단계 선택
+        String targetMob = null;
+        int bestLevel = -1;
+        for (var e : evos.getMapList(base)) {
+            int reqLevel = ((Number) e.getOrDefault("level", 999)).intValue();
+            if (pet.level >= reqLevel && reqLevel > bestLevel) {
+                bestLevel = reqLevel;
+                targetMob = String.valueOf(e.get("to"));
+            }
+        }
+        if (targetMob == null || targetMob.equalsIgnoreCase(pet.mobId)) return;
+        pet.mobId = targetMob;
+        pet.bond = Math.min(100, pet.bond + 20);
+        Bukkit.broadcastMessage("§5§l[펫 진화] §f" + pet.name + " §7→ " + targetMob);
+        if (pet.activeEntityId != null) {
+            var ent = Bukkit.getEntity(pet.activeEntityId);
+            if (ent != null) {
+                var loc = ent.getLocation();
+                ent.remove();
+                try {
+                    var t = org.bukkit.entity.EntityType.valueOf(targetMob);
+                    var newEnt = ent.getWorld().spawnEntity(loc, t);
+                    newEnt.setCustomName(pet.name);
+                    newEnt.setCustomNameVisible(true);
+                    pet.activeEntityId = newEnt.getUniqueId();
+                } catch (Throwable ignored) {}
             }
         }
     }

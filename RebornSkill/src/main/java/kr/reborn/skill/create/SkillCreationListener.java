@@ -25,9 +25,9 @@ public final class SkillCreationListener implements Listener {
     public void onKill(EntityDeathEvent e) {
         Player killer = e.getEntity().getKiller();
         if (killer == null) return;
-        String key = killer.isSneaking()
-                ? "stealth_kill"
-                : "weapon_" + weaponCat(killer.getInventory().getItemInMainHand());
+        String cat = weaponCat(killer.getInventory().getItemInMainHand());
+        if (cat == null) return;  // 모르는 도구로는 패턴 누적 안 함
+        String key = killer.isSneaking() ? "stealth_kill" : "weapon_" + cat;
         plugin.creator().log(killer, key);
     }
 
@@ -54,8 +54,9 @@ public final class SkillCreationListener implements Listener {
         if (result == null) return;
         String n = result.getType().name();
         String cat;
-        if (n.endsWith("_SWORD") || n.endsWith("_AXE") || n.endsWith("_PICKAXE")
-                || n.endsWith("_SHOVEL") || n.endsWith("_HOE") || n.equals("BOW")) cat = "weapon";
+        // 무기 — HOE/PICKAXE/SHOVEL은 도구 (전투용 아님) 제외
+        if (n.endsWith("_SWORD") || n.endsWith("_AXE")
+                || n.equals("BOW") || n.equals("CROSSBOW") || n.equals("TRIDENT")) cat = "weapon";
         else if (n.endsWith("_HELMET") || n.endsWith("_CHESTPLATE")
                 || n.endsWith("_LEGGINGS") || n.endsWith("_BOOTS") || n.endsWith("_SHIELD")) cat = "armor";
         else if (n.endsWith("_POTION") || n.equals("POTION") || n.equals("SPLASH_POTION")) cat = "potion";
@@ -81,6 +82,7 @@ public final class SkillCreationListener implements Listener {
         if (n.endsWith("_AXE")) return "axe";
         if (n.equals("BOW") || n.equals("CROSSBOW")) return "bow";
         if (n.equals("TRIDENT")) return "trident";
-        return "sword";
+        // 미상 도구는 null — 이전엔 "sword"로 기본값을 줘 양동이로 때려도 검술이 창조됐음
+        return null;
     }
 }

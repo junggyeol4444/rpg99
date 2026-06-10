@@ -107,11 +107,16 @@ public final class NpcSimulator {
                 if (last != null && now - last < 86_400_000L) continue; // 하루 1회
                 candidates.add(n);
             }
-            // 1쌍만 시도 (사이클당)
+            // 한 사이클당 한 쌍만 시도
             if (candidates.size() < 2 || !Rand.chance(0.05)) return;
+            // 동일 NPC 자기 결혼 방지 — 이전엔 a==b면 silent return으로 사이클 낭비
             Object a = candidates.get(Rand.range(0, candidates.size() - 1));
-            Object b = candidates.get(Rand.range(0, candidates.size() - 1));
-            if (a == b) return;
+            Object b = null;
+            for (int tries = 0; tries < 5; tries++) {
+                Object cand = candidates.get(Rand.range(0, candidates.size() - 1));
+                if (cand != a) { b = cand; break; }
+            }
+            if (b == null) return;
             String aFaction = String.valueOf(a.getClass().getField("faction").get(a));
             String bFaction = String.valueOf(b.getClass().getField("faction").get(b));
             if (!aFaction.equals(bFaction)) return;
@@ -119,6 +124,21 @@ public final class NpcSimulator {
             String bId = String.valueOf(b.getClass().getField("id").get(b));
             String aName = String.valueOf(a.getClass().getField("displayName").get(a));
             String bName = String.valueOf(b.getClass().getField("displayName").get(b));
+
+            // SocialNetwork에 SPOUSE 관계 등록 — 이전엔 broadcast만 하고
+            // 실제 관계망에 반영 안 돼 자녀 PROTECT_FAMILY·복수 트리거가 전혀 작동 안 함
+            try {
+                Plugin npcPlugin = Bukkit.getPluginManager().getPlugin("RebornNPC");
+                if (npcPlugin != null) {
+                    Object registry = npcPlugin.getClass().getMethod("registry").invoke(npcPlugin);
+                    Object net = registry.getClass().getMethod("socialNetwork").invoke(registry);
+                    Class<?> rt = Class.forName("kr.reborn.npc.social.RelationshipType");
+                    Object spouse = rt.getMethod("valueOf", String.class).invoke(null, "SPOUSE");
+                    net.getClass().getMethod("setRelation", String.class, String.class, rt)
+                            .invoke(net, aId, bId, spouse);
+                }
+            } catch (Throwable ignored) {}
+
             Bukkit.broadcastMessage("§d§l[" + world + "] " + aName + " ❤ " + bName + " 결혼!");
             lastMarriageMs.put(aId, now);
             lastMarriageMs.put(bId, now);
@@ -143,15 +163,32 @@ public final class NpcSimulator {
                 String faction = String.valueOf(n.getClass().getField("faction").get(n));
                 Object location = n.getClass().getField("location").get(n);
 
-                // 실제 자녀 NPC 생성 — registry.spawn(id, name, world, loc, faction, job)
-                String childId = id + "_child_" + (now % 100000);
+                // 충돌 방지: ms + nanoTime hash — 같은 부모가 같은 ms에 두 번 생성하더라도 unique
+                String childId = id + "_child_" + now + "_" + (System.nanoTime() & 0xffff);
                 String childName = "§d" + name.replaceAll("§.", "") + "의 자녀";
                 if (location != null) {
                     try {
-                        registry.getClass().getMethod("spawn",
+                        Object child = registry.getClass().getMethod("spawn",
                                 String.class, String.class, WorldKey.class,
                                 Class.forName("org.bukkit.Location"), String.class, String.class)
                                 .invoke(registry, childId, childName, world, location, faction, "VILLAGER");
+                        // 부모-자녀 가족 등록 — 부모 사망 시 KILLED_MY_FAMILY 기억·
+                        // PROTECT_FAMILY 목표가 정상 트리거되도록
+                        if (child != null) {
+                            Object soul = child.getClass().getField("soul").get(child);
+                            if (soul != null) {
+                                java.util.Set fam = (java.util.Set) soul.getClass().getField("family").get(soul);
+                                fam.add(id);
+                            }
+                            // SocialNetwork에 KIN 관계
+                            try {
+                                Object net = registry.getClass().getMethod("socialNetwork").invoke(registry);
+                                Class<?> rt = Class.forName("kr.reborn.npc.social.RelationshipType");
+                                Object kin = rt.getMethod("valueOf", String.class).invoke(null, "KIN");
+                                net.getClass().getMethod("setRelation", String.class, String.class, rt)
+                                        .invoke(net, id, childId, kin);
+                            } catch (Throwable ignored) {}
+                        }
                     } catch (Throwable ignored) {}
                 }
 

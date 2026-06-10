@@ -1,6 +1,5 @@
 package kr.reborn.hiddenclass.listener;
 
-import kr.reborn.core.event.RebornWorldChangeEvent;
 import kr.reborn.hiddenclass.RebornHiddenClass;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -33,26 +32,21 @@ public final class AbilityListener implements Listener {
         }
     }
 
-    private long lastSnap;
+    /** 플레이어별 throttle — 이전엔 단일 lastSnap 필드라
+     *  한 명이 움직이면 모든 플레이어의 snapshot이 250ms 동안 차단됐음. */
+    private final java.util.Map<java.util.UUID, Long> lastSnap = new java.util.concurrent.ConcurrentHashMap<>();
     @EventHandler
     public void onMove(PlayerMoveEvent e) {
-        // throttle: 매 250ms 이내 1회
         long now = System.currentTimeMillis();
-        if (now - lastSnap < 250) return;
-        lastSnap = now;
+        java.util.UUID id = e.getPlayer().getUniqueId();
+        Long last = lastSnap.get(id);
+        if (last != null && now - last < 250) return;
+        lastSnap.put(id, now);
         plugin.abilities().snapshotRewind(e.getPlayer());
     }
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         plugin.abilities().snapshotRewind(e.getPlayer());
-    }
-
-    @EventHandler
-    public void onWorldChange(RebornWorldChangeEvent e) {
-        // 새 월드 진입 — 해당 월드 INITIAL 클래스 굴림 (환생과 유사한 효과)
-        try {
-            plugin.engine().rollInitial(e.getPlayer(), e.to());
-        } catch (Throwable ignored) {}
     }
 }

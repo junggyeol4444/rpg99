@@ -135,6 +135,7 @@ public final class SkillCreator {
         if (key.equals("craft_armor")) return new String[]{"&b철벽 자세", "PHYSICAL", "BUFF"};
         if (key.equals("craft_potion")) return new String[]{"&d정수 폭발", "ARCANE", "PROJECTILE"};
         // 무기 사냥 패턴
+        if (key.equals("weapon_sword")) return new String[]{"&f자생 검기", "PHYSICAL", "MELEE"};
         if (key.equals("weapon_bow")) return new String[]{"&a연사 궁술", "PHYSICAL", "PROJECTILE"};
         if (key.equals("weapon_axe")) return new String[]{"&c파쇄격", "PHYSICAL", "MELEE"};
         if (key.equals("weapon_trident")) return new String[]{"&b관통 일섬", "PHYSICAL", "MELEE"};

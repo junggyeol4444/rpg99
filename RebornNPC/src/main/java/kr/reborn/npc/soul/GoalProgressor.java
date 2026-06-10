@@ -105,7 +105,9 @@ public final class GoalProgressor {
                 break;
             case WEALTH_GAINED:
                 if (g.kind == GoalKind.GAIN_WEALTH) {
-                    double amount = Double.parseDouble(event.payload);
+                    double amount;
+                    try { amount = Double.parseDouble(event.payload); }
+                    catch (NumberFormatException ex) { return 0; }
                     return amount / 10000.0;  // 10000골드당 1%
                 }
                 break;

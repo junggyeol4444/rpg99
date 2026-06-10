@@ -232,21 +232,16 @@ public final class GoalGenerator {
     }
 
     private boolean hasClanRank(RebornNpc npc, String rank) {
-        // 1) NPC 자체 가문 데이터가 있으면 그것을 우선 — RebornClan ClanManager 리플렉션
-        try {
-            var cp = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornClan");
-            if (cp != null && !npc.faction.isEmpty()) {
-                Object clans = cp.getClass().getMethod("clans").invoke(cp);
-                // hasRankAtLeast(clanId, uuid_or_npcId_string, rank) 시그니처 시도
-                try {
-                    var m = clans.getClass().getMethod("hasRankAtLeast",
-                            String.class, String.class, String.class);
-                    Object res = m.invoke(clans, npc.faction, npc.id, rank);
-                    if (Boolean.TRUE.equals(res)) return true;
-                } catch (Throwable ignored) {}
-            }
-        } catch (Throwable ignored) {}
-        // 2) job 폴백 — 절대권력 직책은 항상 LEADER로 간주
+        // NPC 세력 내 leader 검증 — FactionManager에서 직접 조회.
+        // (이전엔 ClanManager에 없는 hasRankAtLeast(String,String,String) 시그니처를
+        //  리플렉션으로 호출해 항상 실패 → job 폴백만 동작.)
+        if (!npc.faction.isEmpty() && "LEADER".equals(rank)) {
+            try {
+                var fac = plugin.registry().factions().get(npc.faction);
+                if (fac != null && fac.isLeader(npc.id)) return true;
+            } catch (Throwable ignored) {}
+        }
+        // job 폴백 — 절대권력 직책은 항상 LEADER로 간주
         return "KING".equals(npc.job) || "EMPEROR".equals(npc.job)
                 || "DEMON_LORD".equals(npc.job) || "CULT_MASTER".equals(npc.job);
     }

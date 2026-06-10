@@ -54,7 +54,7 @@ public final class Roulette {
         WorldKey result = Rand.weighted(worlds, w -> 1.0 + luck * bias);
 
         d.worldKey(result);
-        d.visited().add(result);
+        d.visit(result);  // markDirty 자동 — 환생 룰렛 결과는 반드시 영속화
 
         applyInitialStats(d, result);
 

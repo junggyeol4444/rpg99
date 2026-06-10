@@ -48,7 +48,7 @@ public final class WorldTravelManager {
             RebornCore.get().scheduler().runEntityTask(p, () -> {
                 p.teleport(w.getSpawnLocation());
                 d.worldKey(to);
-                d.visited().add(to);
+                d.visit(to);  // markDirty 자동 호출 — 방문 기록 영속화 보장
                 p.sendTitle("§6" + to + " §f도착", "§7" + System.currentTimeMillis(), 5, 40, 10);
                 Bukkit.getPluginManager().callEvent(new RebornWorldChangeEvent(p, from, to));
             });

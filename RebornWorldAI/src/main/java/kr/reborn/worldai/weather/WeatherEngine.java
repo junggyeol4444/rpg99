@@ -115,10 +115,9 @@ public final class WeatherEngine {
                     try {
                         var cp = Bukkit.getPluginManager().getPlugin("RebornCurse");
                         if (cp != null) {
-                            cp.getClass().getMethod("effects").invoke(cp)
-                                    .getClass().getMethod("apply", Player.class, String.class)
-                                    .invoke(cp.getClass().getMethod("effects").invoke(cp),
-                                            p, "monk_oath_break");
+                            Object effects = cp.getClass().getMethod("effects").invoke(cp);
+                            effects.getClass().getMethod("apply", Player.class, String.class)
+                                    .invoke(effects, p, "monk_oath_break");
                         }
                     } catch (Throwable ignored) {}
                 }

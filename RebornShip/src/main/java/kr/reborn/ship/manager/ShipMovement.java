@@ -57,9 +57,14 @@ public final class ShipMovement {
 
         // 좌초 체크 (config: combat.min-water-depth)
         int minDepth = plugin.getConfig().getInt("combat.min-water-depth", 3);
-        // 배 가장 낮은 블록 아래에 minDepth 만큼 물이 있는지 (대표 1점 체크)
-        int[] firstNew = coordMap.values().iterator().next();
-        if (!hasWaterDepth(w, firstNew[0], firstNew[1] - 1, firstNew[2], minDepth)) {
+        // 배 가장 낮은 블록(선저) 아래에 minDepth 만큼 물이 있는지.
+        // (이전엔 iterator 첫 블록 = 돛대일 수도 있어 공중에서 물 찾다 항상 실패)
+        int[] lowest = null;
+        for (int[] pos : coordMap.values()) {
+            if (lowest == null || pos[1] < lowest[1]) lowest = pos;
+        }
+        if (lowest == null
+                || !hasWaterDepth(w, lowest[0], lowest[1] - 1, lowest[2], minDepth)) {
             return false;
         }
 
@@ -123,6 +128,9 @@ public final class ShipMovement {
             if (m != Material.AIR && m != Material.CAVE_AIR && m != Material.WATER) return false;
         }
 
+        // 회전 전 승객 수집 (translate와 동일 — 회전 시 승객이 배 밖에 남던 버그 방지)
+        var passengers = collectPassengers(ship);
+
         for (String key : ship.blocks.keySet()) {
             if (!newPositions.containsKey(key)) {
                 int[] xyz = parseKey(key);
@@ -136,6 +144,21 @@ public final class ShipMovement {
         ship.blocks.clear();
         ship.blocks.putAll(newPositions);
         ship.rotation = (ship.rotation + degrees) % 360;
+
+        // 승객도 헬름 축 기준 같은 각도로 회전 이동
+        for (Entity ent : passengers) {
+            var loc = ent.getLocation();
+            double dx = loc.getX() - (hx + 0.5), dz = loc.getZ() - (hz + 0.5);
+            double ndx = dx, ndz = dz;
+            for (int i = 0; i < times; i++) {
+                double t = ndx; ndx = -ndz; ndz = t;
+            }
+            var dest = loc.clone();
+            dest.setX(hx + 0.5 + ndx);
+            dest.setZ(hz + 0.5 + ndz);
+            dest.setYaw(loc.getYaw() + degrees);
+            ent.teleport(dest);
+        }
         return true;
     }
 

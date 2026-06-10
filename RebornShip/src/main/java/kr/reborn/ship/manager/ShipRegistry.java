@@ -28,8 +28,14 @@ public final class ShipRegistry {
         try {
             var data = kr.reborn.core.RebornCore.get().kv().loadAll(NS, null);
             for (var e : data.entrySet()) {
-                Ship s = decode(e.getValue());
+                Ship s = decode(e.getKey(), e.getValue());
                 if (s == null) continue;
+                // 침몰선은 복원하지 않고 KV에서 정리
+                if (s.state == Ship.State.SUNK) {
+                    try { kr.reborn.core.RebornCore.get().kv().remove(NS, null, e.getKey()); }
+                    catch (Throwable ignored) {}
+                    continue;
+                }
                 all.add(s);
                 byOwner.computeIfAbsent(s.owner, k -> new ArrayList<>()).add(s);
             }
@@ -60,10 +66,13 @@ public final class ShipRegistry {
                 + s.blockCount + "|" + s.state.name() + "|" + s.rotation + "|" + blocks;
     }
 
-    private Ship decode(String value) {
+    private Ship decode(String idStr, String value) {
         try {
             String[] parts = value.split("\\|", 13);
             if (parts.length < 13) return null;
+            UUID shipId;
+            try { shipId = UUID.fromString(idStr); }
+            catch (Throwable t) { shipId = UUID.randomUUID(); }
             UUID owner = UUID.fromString(parts[0]);
             String name = parts[1];
             int grade = Integer.parseInt(parts[2]);
@@ -75,7 +84,9 @@ public final class ShipRegistry {
                     Double.parseDouble(parts[6]), Double.parseDouble(parts[7]),
                     Double.parseDouble(parts[8]));
             int blockCount = Integer.parseInt(parts[9]);
-            Ship s = new Ship(owner, name, grade, hp, helm, blockCount);
+            // 저장된 id 그대로 복원 — 재시작 시 id 변경으로 KV 키가 매번 바뀌어
+            // 배가 중복 적재되던 버그 방지
+            Ship s = new Ship(shipId, owner, name, grade, hp, helm, blockCount);
             s.maxHp = maxHp;
             try { s.state = Ship.State.valueOf(parts[10]); } catch (Throwable ignored) {}
             s.rotation = Integer.parseInt(parts[11]);

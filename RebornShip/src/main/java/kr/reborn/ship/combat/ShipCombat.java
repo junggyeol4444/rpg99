@@ -82,7 +82,6 @@ public final class ShipCombat {
     }
 
     private void sinkShip(Ship s, Player attacker) {
-        s.state = Ship.State.SUNK;
         Bukkit.broadcastMessage("§3§l[해전] §f"
                 + (attacker != null ? attacker.getName() + " §c가 " : "")
                 + s.name + " 함선을 침몰시켰다!");
@@ -95,6 +94,9 @@ public final class ShipCombat {
                                 Math.max(1, s.grade * 2)));
             }
         } catch (Throwable ignored) {}
+        // 실제 블록 제거 — ShipMovement.sink가 5초 후 잔해를 물로 치움
+        // (이전엔 state만 SUNK로 바꿔서 선체가 영원히 떠 있었음)
+        try { plugin.movement().sink(s); } catch (Throwable ignored) {}
         // 해적왕 후예에게 보고 (RebornStat OceanGrowth hook)
         if (attacker != null) {
             try {
@@ -122,6 +124,13 @@ public final class ShipCombat {
                 Ship b = ships.get(j);
                 if (b.state == Ship.State.SUNK || b.helm == null) continue;
                 if (a.helm.getWorld() != b.helm.getWorld()) continue;
+                // 충각은 최소 한쪽이 항해·전투 중일 때만 — 정박(DOCKED)끼리
+                // 나란히 묶인 배가 매 2초 서로 갈리며 침몰하던 버그 방지
+                boolean aMoving = a.state == Ship.State.SAILING || a.state == Ship.State.COMBAT;
+                boolean bMoving = b.state == Ship.State.SAILING || b.state == Ship.State.COMBAT;
+                if (!aMoving && !bMoving) continue;
+                // 같은 소유자의 배끼리는 충각 없음 (선단 운용)
+                if (a.owner.equals(b.owner)) continue;
                 if (a.helm.distance(b.helm) < 8) {
                     // 충각
                     double dmg = Math.min(a.grade, b.grade) * 5;

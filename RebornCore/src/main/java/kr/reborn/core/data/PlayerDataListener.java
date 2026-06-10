@@ -29,6 +29,13 @@ public final class PlayerDataListener implements Listener {
 
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
+        // 세션 playtime 누적 — 이전엔 어디서도 playtime을 갱신 안 해
+        // HiddenClass의 PLAYTIME_MIN 조건이 영영 미달성 상태였음
+        PlayerData d = dm.get(e.getPlayer().getUniqueId());
+        if (d != null) {
+            long session = System.currentTimeMillis() - d.lastJoin();
+            if (session > 0) d.playtime(d.playtime() + session);
+        }
         dm.unload(e.getPlayer().getUniqueId());
     }
 }

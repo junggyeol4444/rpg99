@@ -23,7 +23,11 @@ public final class FirstJoinListener implements Listener {
     public void onJoin(PlayerJoinEvent e) {
         var p = e.getPlayer();
         PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
-        boolean fresh = d.firstJoin() == 0 || d.worldKey() == WorldKey.LOBBY && d.tier().isEmpty();
+        if (d == null) return;
+        // DataManager가 신규 행에도 firstJoin을 즉시 set하므로 firstJoin==0은
+        // 신뢰 불가 — 마커 기반으로 "진짜 첫 입장"을 1회만 판정
+        boolean initialized = d.getStatus("spawn_initialized") != null;
+        boolean fresh = !initialized && d.worldKey() == WorldKey.LOBBY && d.tier().isEmpty();
         if (!fresh) return;
 
         // 환생의 월드 텔레포트
@@ -42,6 +46,9 @@ public final class FirstJoinListener implements Listener {
         for (StatType t : StatType.COMMON_8) {
             if (d.getStat(t) <= 0) d.setStat(t, 1);
         }
-        d.firstJoin(System.currentTimeMillis());
+        if (d.firstJoin() == 0) d.firstJoin(System.currentTimeMillis());
+        // 영구 마커 — 룰렛 전 재접속 시 인벤토리가 매번 초기화되던 버그 방지
+        d.addStatus(new PlayerData.StatusEffect(
+                "spawn_initialized", "MARKER", Long.MAX_VALUE / 2, 1));
     }
 }

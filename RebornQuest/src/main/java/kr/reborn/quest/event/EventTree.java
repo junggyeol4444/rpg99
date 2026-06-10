@@ -44,7 +44,9 @@ public final class EventTree {
         if (key == null) return;
         String[] parts = key.split(":");
         EventTreeDef def = TREES.get(parts[0]);
+        if (def == null) { playerProgress.remove(p.getUniqueId()); return; }
         EventNode current = def.nodes.get(parts[1]);
+        if (current == null) { playerProgress.remove(p.getUniqueId()); return; }
         if (branch < 0 || branch >= current.choices.size()) return;
         String nextId = current.choices.get(branch).next;
         applyEffects(p, current.choices.get(branch).effects);
@@ -78,12 +80,38 @@ public final class EventTree {
                     } catch (Exception ignored) {}
                     break;
                 case "TITLE":
+                    // 실제 칭호 부여 (RebornTitle 리플렉션) — 이전엔 broadcast만 하고 미부여
+                    try {
+                        var tp = Bukkit.getPluginManager().getPlugin("RebornTitle");
+                        if (tp != null) {
+                            Object tm = tp.getClass().getMethod("titles").invoke(tp);
+                            tm.getClass().getMethod("grant", Player.class, String.class)
+                                    .invoke(tm, p, parts[1]);
+                        }
+                    } catch (Throwable ignored) {}
                     Bukkit.broadcastMessage("§6[칭호] §f" + p.getName() + " — " + parts[1]);
                     break;
                 case "CURSE":
+                    // 실제 저주 적용 (RebornCurse 리플렉션) — 이전엔 메시지만
+                    try {
+                        var cp = Bukkit.getPluginManager().getPlugin("RebornCurse");
+                        if (cp != null) {
+                            Object eff = cp.getClass().getMethod("effects").invoke(cp);
+                            eff.getClass().getMethod("apply", Player.class, String.class)
+                                    .invoke(eff, p, parts[1]);
+                        }
+                    } catch (Throwable ignored) {}
                     p.sendMessage("§4[저주 부여] §f" + parts[1]);
                     break;
                 case "BLESSING":
+                    try {
+                        var cp = Bukkit.getPluginManager().getPlugin("RebornCurse");
+                        if (cp != null) {
+                            Object eff = cp.getClass().getMethod("effects").invoke(cp);
+                            eff.getClass().getMethod("apply", Player.class, String.class)
+                                    .invoke(eff, p, parts[1]);
+                        }
+                    } catch (Throwable ignored) {}
                     p.sendMessage("§b[축복 부여] §f" + parts[1]);
                     break;
                 case "BROADCAST":

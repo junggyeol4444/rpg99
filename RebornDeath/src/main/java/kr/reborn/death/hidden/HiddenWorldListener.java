@@ -33,10 +33,11 @@ import java.util.UUID;
 public final class HiddenWorldListener implements Listener {
 
     private final RebornDeath plugin;
-    private final Set<UUID> inTimeRealm = new HashSet<>();
-    private final Set<UUID> inDream = new HashSet<>();
-    private final Set<UUID> inVoid = new HashSet<>();
-    private final Set<UUID> inGodRealm = new HashSet<>();
+    // ConcurrentHashMap.newKeySet — tick + move 리스너가 동시 수정. HashSet은 race·CME 위험.
+    private final Set<UUID> inTimeRealm = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private final Set<UUID> inDream = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private final Set<UUID> inVoid = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private final Set<UUID> inGodRealm = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     public HiddenWorldListener(RebornDeath p) {
         this.plugin = p;

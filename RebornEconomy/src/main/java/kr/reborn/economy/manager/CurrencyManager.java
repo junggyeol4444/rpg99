@@ -110,8 +110,9 @@ public final class CurrencyManager {
     /** 변경된 (uuid, currency) 항목만 KV에 저장. */
     public void flush() {
         if (dirty.isEmpty()) return;
+        // snapshot + remove 패턴 — clear()로는 snapshot 후 clear 사이에 추가된
+        // 새 dirty 항목이 영영 손실됨. removeAll로 처리된 것만 정확히 제거.
         var snapshot = new java.util.HashSet<>(dirty);
-        dirty.clear();
         for (String key : snapshot) {
             String[] parts = key.split("\\|", 2);
             if (parts.length != 2) continue;
@@ -122,5 +123,6 @@ public final class CurrencyManager {
                 kr.reborn.core.RebornCore.get().kv().putLong(NS, uuid, parts[1], bal);
             } catch (Throwable ignored) {}
         }
+        dirty.removeAll(snapshot);
     }
 }

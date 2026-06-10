@@ -72,7 +72,8 @@ public final class DuelManager {
         if (duels.containsKey(defender.getUniqueId())) {
             Msg.error(challenger, "상대가 이미 결투 중."); return false;
         }
-        int myHonor = honor.getOrDefault(challenger.getUniqueId(), 50);
+        // honorOf — KV lazy 로드 포함 (캐시만 보면 저장된 불명예를 우회 가능했음)
+        int myHonor = honorOf(challenger.getUniqueId());
         if (myHonor < -50) {
             Msg.error(challenger, "불명예 (명예 " + myHonor + ") — 결투 신청 불가.");
             return false;
@@ -188,6 +189,23 @@ public final class DuelManager {
             Duel d = entry.getValue();
             if (d.state == State.CHALLENGED && now - d.createdAt > 30_000L) {
                 cancel(d, "시간 만료");
+            } else if (d.state == State.ACTIVE) {
+                // 결투 중 로그아웃 — 탈주자 패배 처리 (이전엔 duels 엔트리가
+                // 영구 잔류해 양쪽 다 재시작까지 '이미 결투 중' 잠금)
+                boolean chOffline = Bukkit.getPlayer(d.challenger) == null;
+                boolean dfOffline = Bukkit.getPlayer(d.defender) == null;
+                if (chOffline && dfOffline) {
+                    duels.remove(d.challenger);
+                    duels.remove(d.defender);
+                } else if (chOffline) {
+                    d.winnerId = d.defender;
+                    endDuel(d, d.challenger);
+                    Bukkit.broadcastMessage("§7[결투] 도전자 탈주 — 부전승.");
+                } else if (dfOffline) {
+                    d.winnerId = d.challenger;
+                    endDuel(d, d.defender);
+                    Bukkit.broadcastMessage("§7[결투] 응전자 탈주 — 부전승.");
+                }
             }
         }
     }

@@ -45,6 +45,11 @@ public final class RebornGod extends JavaPlugin {
 
         // 신앙 → 신성 변환 1분마다
         RebornCore.get().scheduler().runTimer(faith::tick, 1200L, 1200L);
+        // 5분마다 교단·신 데이터 영속화 (서버 크래시 시 데이터 손실 방지)
+        RebornCore.get().scheduler().runTimerAsync(() -> {
+            if (religions != null) religions.saveAll();
+            if (gods != null) gods.saveAll();
+        }, 6000L, 6000L);
 
         getLogger().info("RebornGod 활성화 — NPC신 " + gods.npcAll().size()
                 + " 교단 " + religions.all().size());

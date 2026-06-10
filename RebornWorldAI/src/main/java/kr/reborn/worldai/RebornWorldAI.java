@@ -75,6 +75,14 @@ public final class RebornWorldAI extends JavaPlugin {
         long migTick = getConfig().getLong("migration-tick-interval", tick * 2);
         RebornCore.get().scheduler().runTimer(this::tickMigration, migTick, migTick);
 
+        // 5분마다 자동 영속화 — 크래시 시 세력·세계 상태 손실 방지
+        RebornCore.get().scheduler().runTimerAsync(() -> {
+            try { if (factions != null) factions.saveAll(); } catch (Throwable ignored) {}
+            for (WorldAI ai : ais.values()) {
+                try { ai.saveState(); } catch (Throwable ignored) {}
+            }
+        }, 6000L, 6000L);
+
         getLogger().info("RebornWorldAI 활성화 — " + ais.size() + " 세계 AI, "
                 + factions.all().values().stream().mapToInt(java.util.Map::size).sum()
                 + " 세력 추적, 시장·이주·재해·날씨 엔진 가동");

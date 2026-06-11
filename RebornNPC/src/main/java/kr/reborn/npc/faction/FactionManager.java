@@ -41,7 +41,8 @@ public final class FactionManager {
     private static final String NS = "RebornNPC.faction";
 
     private final RebornNPC plugin;
-    private final Map<String, Faction> factions = new HashMap<>();
+    /** 세력 맵 — tick + 외부 API 동시 호출 가능. tick 안에서 ArrayList 복사로 iterate. */
+    private final Map<String, Faction> factions = new java.util.concurrent.ConcurrentHashMap<>();
 
     public FactionManager(RebornNPC plugin) {
         this.plugin = plugin;

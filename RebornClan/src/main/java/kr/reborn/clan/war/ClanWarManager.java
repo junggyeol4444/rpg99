@@ -32,8 +32,8 @@ public final class ClanWarManager implements Listener {
     private static final double SPOIL_RATIO = 0.30;
 
     private final RebornClan plugin;
-    /** clanId → war (양쪽 모두 등록) */
-    private final Map<String, ClanWar> wars = new HashMap<>();
+    /** clanId → war (양쪽 모두 등록). tick + declareWar 동시 호출. */
+    private final Map<String, ClanWar> wars = new java.util.concurrent.ConcurrentHashMap<>();
 
     public ClanWarManager(RebornClan plugin) {
         this.plugin = plugin;

@@ -32,8 +32,8 @@ public final class DivineWarManager implements Listener {
     private static final double SPOIL_RATIO = 0.30;
 
     private final RebornGod plugin;
-    /** 활성 전쟁 — godId → war. (양 신 모두 등록) */
-    private final Map<String, DivineWar> wars = new HashMap<>();
+    /** 활성 전쟁 — godId → war. (양 신 모두 등록) tick + declareWar 동시 호출. */
+    private final Map<String, DivineWar> wars = new java.util.concurrent.ConcurrentHashMap<>();
 
     public DivineWarManager(RebornGod plugin) {
         this.plugin = plugin;

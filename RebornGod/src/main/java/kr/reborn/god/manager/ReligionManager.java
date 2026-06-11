@@ -23,7 +23,8 @@ public final class ReligionManager {
     private static final String NS = "RebornGod.religion";
 
     private final RebornGod plugin;
-    private final Map<String, Religion> religions = new HashMap<>();
+    /** 교단 맵 — FaithEngine tick + /god pray + create 동시 호출 가능. */
+    private final Map<String, Religion> religions = new java.util.concurrent.ConcurrentHashMap<>();
 
     public ReligionManager(RebornGod plugin) {
         this.plugin = plugin;

@@ -56,10 +56,21 @@ public final class FaithEngine {
         }
     }
 
-    /** 플레이어 기도 — 신앙 즉시 가산 + 작은 축복. */
+    /** 플레이어별 마지막 기도 시각 — 스팸 방지. */
+    private final java.util.Map<java.util.UUID, Long> lastPrayer = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final long PRAY_COOLDOWN_MS = 60_000L;  // 1분
+
+    /** 플레이어 기도 — 신앙 즉시 가산 + 작은 축복. 1분 쿨다운. */
     public boolean pray(org.bukkit.entity.Player p, String religionId) {
         Religion r = plugin.religions().get(religionId);
         if (r == null) return false;
+        long now = System.currentTimeMillis();
+        Long last = lastPrayer.get(p.getUniqueId());
+        if (last != null && now - last < PRAY_COOLDOWN_MS) {
+            // 쿨다운 — 이전엔 스팸으로 무한 신앙/신성 부여 가능했음
+            return false;
+        }
+        lastPrayer.put(p.getUniqueId(), now);
         // 신도 등록
         r.followers.add(p.getUniqueId());
         r.faith += 5;  // 한 번 기도 = +5 신앙

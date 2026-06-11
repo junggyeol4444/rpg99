@@ -103,7 +103,7 @@ public final class GodCommand implements CommandExecutor {
             case "pray":
                 if (a.length < 2) return true;
                 if (plugin.religions().pray(p, a[1])) Msg.send(p, "&a기도 — 신앙 +5");
-                else Msg.error(p, "교단 없음: " + a[1]);
+                else Msg.error(p, "기도 실패 — 교단 없음 또는 쿨다운 (1분).");
                 break;
 
             case "miracle": {

@@ -18,6 +18,10 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class PetitionCommand implements CommandExecutor {
     private final RebornStat plugin;
+    /** 원소별 마지막 청원 시각 — 청원 스팸 시 정령왕 호의 무한 누적 가능했음. */
+    private final java.util.Map<String, Long> last = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final long COOLDOWN_MS = 120_000L;  // 2분 — 원소별 독립
+
     public PetitionCommand(RebornStat p) { this.plugin = p; }
 
     @Override
@@ -45,6 +49,14 @@ public final class PetitionCommand implements CommandExecutor {
             Msg.error(p, "유효한 원소: FIRE, WATER, EARTH, WIND, LIGHT, DARK");
             return true;
         }
+        String key = p.getUniqueId() + ":" + element.name();
+        long now = System.currentTimeMillis();
+        Long lt = last.get(key);
+        if (lt != null && now - lt < COOLDOWN_MS) {
+            Msg.warn(p, "&7" + element + " 청원 쿨다운 " + ((COOLDOWN_MS - (now - lt)) / 1000) + "초 남음.");
+            return true;
+        }
+        last.put(key, now);
         spirit.petitionKing(p, element, 5.0);
         return true;
     }

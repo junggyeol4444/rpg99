@@ -18,6 +18,10 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class StabilizeCommand implements CommandExecutor {
     private final RebornStat plugin;
+    /** 1회 호출당 MENTAL +5가 스팸 가능했음. 5분 쿨다운으로 차단. */
+    private final java.util.Map<java.util.UUID, Long> last = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final long COOLDOWN_MS = 300_000L;
+
     public StabilizeCommand(RebornStat p) { this.plugin = p; }
 
     @Override
@@ -30,11 +34,18 @@ public final class StabilizeCommand implements CommandExecutor {
             Msg.error(p, "마기 안정화는 마계 거주자만 가능.");
             return true;
         }
+        long now = System.currentTimeMillis();
+        Long lt = last.get(p.getUniqueId());
+        if (lt != null && now - lt < COOLDOWN_MS) {
+            Msg.warn(p, "&7안정화 쿨다운 " + ((COOLDOWN_MS - (now - lt)) / 1000) + "초 남음.");
+            return true;
+        }
         GrowthStrategy strategy = plugin.growth().of(WorldKey.DEMON);
         if (!(strategy instanceof DemonGrowth demon)) {
             Msg.error(p, "마계 성장 strategy 없음.");
             return true;
         }
+        last.put(p.getUniqueId(), now);
         demon.stabilize(p);
         return true;
     }

@@ -18,6 +18,10 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class MoonRitualCommand implements CommandExecutor {
     private final RebornStat plugin;
+    /** 보름달 의식 쿨다운 — 풀문+밤 단 1회로 +5000 요기 (=5 꼬리) 가능했음. 10분 쿨다운. */
+    private final java.util.Map<java.util.UUID, Long> last = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final long COOLDOWN_MS = 600_000L;
+
     public MoonRitualCommand(RebornStat p) { this.plugin = p; }
 
     @Override
@@ -30,6 +34,12 @@ public final class MoonRitualCommand implements CommandExecutor {
             Msg.error(p, "보름달 의식은 요계 거주자만 가능.");
             return true;
         }
+        long now = System.currentTimeMillis();
+        Long lt = last.get(p.getUniqueId());
+        if (lt != null && now - lt < COOLDOWN_MS) {
+            Msg.warn(p, "&7보름달 의식 쿨다운 " + ((COOLDOWN_MS - (now - lt)) / 1000) + "초 남음.");
+            return true;
+        }
         // 밤(13000~23000) 외에는 의미 없음 — 알림만 표시
         long t = p.getWorld().getTime();
         if (t < 13000 || t > 23000) {
@@ -40,6 +50,7 @@ public final class MoonRitualCommand implements CommandExecutor {
             Msg.error(p, "요계 성장 strategy 없음.");
             return true;
         }
+        last.put(p.getUniqueId(), now);
         yokai.onMoonRitual(p);
         return true;
     }

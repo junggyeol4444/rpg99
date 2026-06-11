@@ -167,11 +167,17 @@ public final class TitleManager {
         }
         Title t = titles.get(id);
         if (t == null) return;
+        String prevCheck = active.get(p.getUniqueId());
+        if (id.equals(prevCheck)) {
+            // 같은 칭호 재장착 — applyEffects 또 호출하면 스탯 무한 누적.
+            Msg.warn(p, "이미 대표 칭호: " + t.name);
+            return;
+        }
         String prev = active.put(p.getUniqueId(), id);
         RebornCore.get().kv().put(NS, p.getUniqueId(), "active", id);
-        // 이전 칭호 효과 회수 — 이전엔 누락돼 칭호 교체 시마다 스탯이 누적됐음
-        // (A 장착 +50, B 장착 +50 → STR +100 영구. 무한 사이클 가능)
-        if (prev != null && !prev.equals(id)) {
+        // 이전 칭호 효과 회수 — 누락 시 칭호 교체 시마다 스탯 누적
+        // (A 장착 +50, B 장착 +50 → STR +100 영구. 무한 사이클 가능했음)
+        if (prev != null) {
             Title prevT = titles.get(prev);
             if (prevT != null) removeEffects(p, prevT);
         }

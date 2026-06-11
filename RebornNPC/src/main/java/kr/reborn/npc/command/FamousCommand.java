@@ -54,7 +54,11 @@ public final class FamousCommand implements CommandExecutor {
                 s.sendMessage("§7설명: §f" + fn.description);
             }
             case "top" -> {
-                int n = a.length >= 2 ? Integer.parseInt(a[1]) : 20;
+                int n = 20;
+                if (a.length >= 2) {
+                    try { n = Math.max(1, Math.min(100, Integer.parseInt(a[1]))); }
+                    catch (NumberFormatException e) { Msg.error(s, "숫자 필요."); return true; }
+                }
                 Msg.send(s, "&6=== 권력 순위 ===");
                 int i = 1;
                 for (FamousNpc fn : plugin.famous().topRank(n)) {

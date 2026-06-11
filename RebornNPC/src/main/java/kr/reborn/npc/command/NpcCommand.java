@@ -54,7 +54,8 @@ public final class NpcCommand implements CommandExecutor {
                 if (a.length < 4) return true;
                 RebornNpc t = plugin.registry().get(a[1]);
                 if (t == null) { Msg.error(s, "NPC 없음"); return true; }
-                t.stats.put(a[2], Double.parseDouble(a[3]));
+                try { t.stats.put(a[2], Double.parseDouble(a[3])); }
+                catch (NumberFormatException e) { Msg.error(s, "숫자 필요: " + a[3]); }
                 break;
             case "hermit":
                 if (a.length < 2) return true;

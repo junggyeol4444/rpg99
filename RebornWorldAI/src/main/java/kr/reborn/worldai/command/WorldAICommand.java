@@ -83,7 +83,11 @@ public final class WorldAICommand implements CommandExecutor {
             case "history" -> {
                 if (a.length < 2) return true;
                 WorldKey w = parseWorld(s, a[1]); if (w == null) return true;
-                int n = a.length >= 3 ? Integer.parseInt(a[2]) : 20;
+                int n = 20;
+                if (a.length >= 3) {
+                    try { n = Math.max(1, Math.min(200, Integer.parseInt(a[2]))); }
+                    catch (NumberFormatException e) { Msg.error(s, "숫자 필요: " + a[2]); return true; }
+                }
                 Msg.send(s, "&6=== " + w + " 최근 사건 (" + n + ") ===");
                 for (var e : plugin.history().recent(w, n)) {
                     s.sendMessage("§7• §f[" + e.kind + "] §7" + e.text);
@@ -114,7 +118,11 @@ public final class WorldAICommand implements CommandExecutor {
                 Msg.send(s, "&a날씨 강제 발생: " + a[2]);
             }
             case "log" -> {
-                int n = a.length > 1 ? Integer.parseInt(a[1]) : 10;
+                int n = 10;
+                if (a.length > 1) {
+                    try { n = Math.max(1, Math.min(200, Integer.parseInt(a[1]))); }
+                    catch (NumberFormatException e) { Msg.error(s, "숫자 필요: " + a[1]); return true; }
+                }
                 plugin.comm().recent(n).forEach(m ->
                         s.sendMessage("§7[" + m.from + "→" + m.to + "] " + m.type + ": " + m.payload));
             }

@@ -155,6 +155,8 @@ public final class Roulette {
     }
 
     private void rollChildStart(Player p, PlayerData d, WorldKey w) {
+        // 이미 자녀 시작 받은 경우 재호출되어도 스탯 누적 안 함.
+        if (d.childStart()) return;
         var c = plugin.getConfig();
         double base = c.getDouble("child-start.base-chance", 0.005);
         double max = c.getDouble("child-start.max-chance", 0.02);

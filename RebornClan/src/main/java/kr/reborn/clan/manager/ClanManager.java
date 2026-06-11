@@ -7,17 +7,23 @@ import kr.reborn.core.data.PlayerData;
 import kr.reborn.core.util.Msg;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class ClanManager {
 
     private static final String NS = "RebornClan.clan";
 
     private final RebornClan plugin;
-    private final Map<String, Clan> clans = new HashMap<>();
+    private final Map<String, Clan> clans = new ConcurrentHashMap<>();
+    /** clanId → 초대된 플레이어 UUID 셋. 초대 없으면 가입 차단. */
+    private final Map<String, Set<UUID>> invites = new ConcurrentHashMap<>();
+    /** 초대 만료 시각 (clanId + ":" + uuid → expireAt ms). 기본 5분. */
+    private final Map<String, Long> inviteExpiry = new ConcurrentHashMap<>();
+    private static final long INVITE_TTL_MS = 300_000L;
 
     public ClanManager(RebornClan p) {
         this.plugin = p;
@@ -123,8 +129,57 @@ public final class ClanManager {
         return null;
     }
 
+    /** 가문주/장로가 초대를 발행 — 5분 유효. */
+    public boolean invite(Player issuer, Player target) {
+        Clan c = ofPlayer(issuer.getUniqueId());
+        if (c == null) { Msg.error(issuer, "가문에 소속되어 있지 않습니다."); return false; }
+        if (!issuer.getUniqueId().equals(c.leader) && !c.elders.contains(issuer.getUniqueId())) {
+            Msg.error(issuer, "초대 권한 없음 (가문주/장로만).");
+            return false;
+        }
+        if (c.members.contains(target.getUniqueId())) {
+            Msg.error(issuer, target.getName() + "은(는) 이미 가문 소속.");
+            return false;
+        }
+        invites.computeIfAbsent(c.id, k -> ConcurrentHashMap.newKeySet()).add(target.getUniqueId());
+        inviteExpiry.put(c.id + ":" + target.getUniqueId(), System.currentTimeMillis() + INVITE_TTL_MS);
+        return true;
+    }
+
+    /** 초대 확인 — 만료된 항목은 자동 제거. */
+    private boolean hasValidInvite(String clanId, UUID player) {
+        Set<UUID> set = invites.get(clanId);
+        if (set == null || !set.contains(player)) return false;
+        Long exp = inviteExpiry.get(clanId + ":" + player);
+        if (exp == null || System.currentTimeMillis() > exp) {
+            set.remove(player);
+            inviteExpiry.remove(clanId + ":" + player);
+            return false;
+        }
+        return true;
+    }
+
     public boolean join(Clan c, Player p) {
+        // 초대 검증 — 무단 가입 차단
+        if (!hasValidInvite(c.id, p.getUniqueId())) {
+            Msg.error(p, "초대가 없거나 만료되었습니다.");
+            return false;
+        }
+        // 기존 가문 자동 탈퇴 (다중 가입 방지)
+        Clan prev = ofPlayer(p.getUniqueId());
+        if (prev != null) {
+            if (prev.id.equals(c.id)) {
+                Msg.warn(p, "이미 같은 가문 소속.");
+                return false;
+            }
+            prev.members.remove(p.getUniqueId());
+            prev.elders.remove(p.getUniqueId());
+        }
         c.members.add(p.getUniqueId());
+        // 초대 소비
+        Set<UUID> inv = invites.get(c.id);
+        if (inv != null) inv.remove(p.getUniqueId());
+        inviteExpiry.remove(c.id + ":" + p.getUniqueId());
         var pd = RebornCore.get().api().getPlayerData(p.getUniqueId());
         if (pd != null) pd.clanId(c.id);
         return true;

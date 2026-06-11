@@ -52,8 +52,9 @@ public final class ClanCommand implements CommandExecutor {
                 if (a.length < 2) return true;
                 Clan target = plugin.clans().get(a[1]);
                 if (target == null) { Msg.error(p, "가문 없음"); break; }
-                plugin.clans().join(target, p);
-                Msg.send(p, "&a가문 가입: " + target.name);
+                if (plugin.clans().join(target, p)) {
+                    Msg.send(p, "&a가문 가입: " + target.name);
+                }
                 break;
             case "leave":
                 plugin.clans().leave(p);
@@ -76,7 +77,13 @@ public final class ClanCommand implements CommandExecutor {
             case "invite":
                 if (a.length < 2) return true;
                 Player tg = Bukkit.getPlayerExact(a[1]);
-                if (tg != null) Msg.send(tg, "&d" + p.getName() + "이(가) 가문에 초대했다.");
+                if (tg == null) { Msg.error(p, "대상이 오프라인입니다."); break; }
+                if (plugin.clans().invite(p, tg)) {
+                    Clan myc = plugin.clans().ofPlayer(p.getUniqueId());
+                    Msg.send(p, "&a초대 발송: " + tg.getName() + " (5분 유효)");
+                    Msg.send(tg, "&d" + p.getName() + "이(가) §6" + (myc == null ? "?" : myc.name)
+                            + " §d가문에 초대했다. §7수락: /clan join " + (myc == null ? "?" : myc.id));
+                }
                 break;
             case "war":
                 if (a.length < 2) {

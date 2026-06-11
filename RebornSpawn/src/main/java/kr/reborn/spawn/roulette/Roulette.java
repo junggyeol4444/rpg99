@@ -21,6 +21,17 @@ public final class Roulette {
     public Roulette(RebornSpawn p) { this.plugin = p; }
 
     public void spin(Player p) {
+        // 중복 환생 차단 — 이미 세계가 결정된 플레이어는 룰렛 재돌 불가.
+        // (여신 NPC 클릭 스팸 시 child-start 누적 익스플로잇 차단)
+        // 다시 환생하려면 죽음→명계→윤회 정상 경로를 거쳐야 함.
+        var existingData = RebornCore.get().api().getPlayerData(p.getUniqueId());
+        if (existingData != null) {
+            WorldKey cur = existingData.worldKey();
+            if (cur != null && cur != WorldKey.LOBBY && cur != WorldKey.TUTORIAL) {
+                Msg.error(p, "이미 " + cur + " 세계의 영혼이다. 재환생은 죽음의 의식이 필요하다.");
+                return;
+            }
+        }
         var c = plugin.getConfig();
         List<String> raw = c.getStringList("roulette.worlds");
         List<WorldKey> worlds = new ArrayList<>();

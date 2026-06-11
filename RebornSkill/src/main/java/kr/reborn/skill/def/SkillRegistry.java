@@ -5,13 +5,14 @@ import kr.reborn.core.data.WorldKey;
 import kr.reborn.skill.RebornSkill;
 import org.bukkit.configuration.ConfigurationSection;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class SkillRegistry {
 
     private final RebornSkill plugin;
-    private final Map<String, SkillDef> defs = new HashMap<>();
+    /** 런타임 동적 등록 (스킬 창조 시스템) 가능 — 동시성 보장. */
+    private final Map<String, SkillDef> defs = new ConcurrentHashMap<>();
 
     public SkillRegistry(RebornSkill p) { this.plugin = p; }
 

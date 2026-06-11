@@ -19,12 +19,22 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class ArrayMeditateCommand implements CommandExecutor {
     private final RebornStat plugin;
+    /** 진법·도반 합동 쿨다운 — 5명 동료 시 +100% 즉시 보너스. 스팸 시 무한 누적. */
+    private final java.util.Map<java.util.UUID, Long> last = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final long COOLDOWN_MS = 180_000L;  // 3분
+
     public ArrayMeditateCommand(RebornStat p) { this.plugin = p; }
 
     @Override
     public boolean onCommand(@NotNull CommandSender s, @NotNull Command c,
                              @NotNull String l, @NotNull String[] a) {
         if (!(s instanceof Player p)) return true;
+        long now = System.currentTimeMillis();
+        Long lt = last.get(p.getUniqueId());
+        if (lt != null && now - lt < COOLDOWN_MS) {
+            Msg.warn(p, "&7합동 수련 쿨다운 " + ((COOLDOWN_MS - (now - lt)) / 1000) + "초 남음.");
+            return true;
+        }
         var d = RebornCore.get().api().getPlayerData(p.getUniqueId());
         if (d == null) return true;
         WorldKey w = d.worldKey();
@@ -43,8 +53,10 @@ public final class ArrayMeditateCommand implements CommandExecutor {
         }
         GrowthStrategy strategy = plugin.growth().of(w);
         if (w == WorldKey.MARTIAL && strategy instanceof MartialGrowth m) {
+            last.put(p.getUniqueId(), now);
             m.onArrayMeditate(p, companions);
         } else if (w == WorldKey.IMMORTAL && strategy instanceof ImmortalGrowth im) {
+            last.put(p.getUniqueId(), now);
             im.onDaoCompanionMeditate(p, companions);
         } else {
             Msg.error(p, "진법·도반 합동은 무협계·선계 거주자만 가능.");

@@ -40,3 +40,6 @@ commands:
 permissions:
   rebornstat.use:
     default: true
+  rebornstat.admin:
+    default: op
+    description: 기연 grant 등 관리 명령 권한

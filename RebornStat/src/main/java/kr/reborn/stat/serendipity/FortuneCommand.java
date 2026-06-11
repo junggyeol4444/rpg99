@@ -45,7 +45,11 @@ public final class FortuneCommand implements CommandExecutor {
                 }
                 if (n == 0) p.sendMessage("§7(아직 없음)");
                 break;
-            case "grant":  // 관리/테스트 — 즉시 지급
+            case "grant":  // 관리/테스트 — 즉시 지급 (admin only)
+                if (!p.hasPermission("rebornstat.admin") && !p.isOp()) {
+                    Msg.error(p, "관리 권한 필요 (rebornstat.admin).");
+                    return true;
+                }
                 if (a.length < 2 || d == null) return true;
                 Fortune f = reg.get(a[1]);
                 if (f == null) { Msg.error(p, "기연 없음: " + a[1]); return true; }

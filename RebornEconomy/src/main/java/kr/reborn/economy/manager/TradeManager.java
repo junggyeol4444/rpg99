@@ -9,9 +9,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 플레이어 간 거래 — 단순 구현.
@@ -35,8 +35,8 @@ public final class TradeManager {
         }
     }
 
-    /** 양쪽 키로 동일한 세션 가리킴. */
-    private final Map<UUID, Session> sessions = new HashMap<>();
+    /** 양쪽 키로 동일한 세션 가리킴. Folia 멀티스레드 대비 동시성 맵. */
+    private final Map<UUID, Session> sessions = new ConcurrentHashMap<>();
 
     public TradeManager(RebornEconomy plugin) {
         this.plugin = plugin;
@@ -140,7 +140,16 @@ public final class TradeManager {
         sessions.remove(s.b);
         Player a = Bukkit.getPlayer(s.a);
         Player b = Bukkit.getPlayer(s.b);
-        if (a == null || b == null) return;
+        if (a == null || b == null) {
+            // 한쪽이 오프라인 — 우편함으로 제안 아이템 반환 (분실 방지)
+            if (s.itemA != null && a != null) a.getInventory().addItem(s.itemA);
+            else if (s.itemA != null) plugin.mailbox().enqueue(new kr.reborn.economy.data.MailItem(
+                    java.util.UUID.randomUUID(), s.a, "거래 취소(상대 오프라인)", s.itemA, null, 0));
+            if (s.itemB != null && b != null) b.getInventory().addItem(s.itemB);
+            else if (s.itemB != null) plugin.mailbox().enqueue(new kr.reborn.economy.data.MailItem(
+                    java.util.UUID.randomUUID(), s.b, "거래 취소(상대 오프라인)", s.itemB, null, 0));
+            return;
+        }
 
         // 아포칼립스 = 물물교환만
         boolean apocBarter = plugin.getConfig().getBoolean("trade.apocalypse-barter-only", true);
@@ -150,17 +159,21 @@ public final class TradeManager {
             if (s.currencyA > 0 || s.currencyB > 0) {
                 Msg.error(a, "아포칼립스에서는 물물교환만 가능합니다.");
                 Msg.error(b, "아포칼립스에서는 물물교환만 가능합니다.");
+                returnItems(a, b, s);
                 return;
             }
         }
 
         // 화폐 차감 / 입금
         if (s.currencyA > 0 && !plugin.currencies().withdraw(s.a, s.currencyAId, s.currencyA)) {
-            Msg.error(a, "잔액 부족."); return;
+            Msg.error(a, "잔액 부족.");
+            returnItems(a, b, s);
+            return;
         }
         if (s.currencyB > 0 && !plugin.currencies().withdraw(s.b, s.currencyBId, s.currencyB)) {
             Msg.error(b, "잔액 부족.");
             if (s.currencyA > 0) plugin.currencies().deposit(s.a, s.currencyAId, s.currencyA);
+            returnItems(a, b, s);
             return;
         }
         if (s.currencyA > 0) plugin.currencies().deposit(s.b, s.currencyAId, s.currencyA);
@@ -171,6 +184,12 @@ public final class TradeManager {
         Bukkit.getPluginManager().callEvent(new RebornTradeCompleteEvent(a, b, s));
         Msg.send(a, "&a거래 완료.");
         Msg.send(b, "&a거래 완료.");
+    }
+
+    /** 거래 실패 시 제안 아이템 원주인에게 반환. */
+    private void returnItems(Player a, Player b, Session s) {
+        if (s.itemA != null && a != null) a.getInventory().addItem(s.itemA);
+        if (s.itemB != null && b != null) b.getInventory().addItem(s.itemB);
     }
 
     private void cancelSession(Session s) {

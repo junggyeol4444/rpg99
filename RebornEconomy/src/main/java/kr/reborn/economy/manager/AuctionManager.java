@@ -75,6 +75,16 @@ public final class AuctionManager {
 
     public boolean register(Player seller, ItemStack item, String currency,
                             long startPrice, long buyout, long durationHours) {
+        if (startPrice <= 0) { Msg.error(seller, "시작가는 양수여야 합니다."); return false; }
+        if (buyout < 0) { Msg.error(seller, "즉구가는 0 이상이어야 합니다."); return false; }
+        if (buyout > 0 && buyout < startPrice) {
+            Msg.error(seller, "즉구가는 시작가 이상이어야 합니다.");
+            return false;
+        }
+        if (durationHours <= 0 || durationHours > 24 * 7) {
+            Msg.error(seller, "경매 기간은 1~168시간(7일)이어야 합니다.");
+            return false;
+        }
         int max = plugin.getConfig().getInt("auction.max-listings-per-player", 10);
         int cur = playerListingCount.getOrDefault(seller.getUniqueId(), 0);
         if (cur >= max) {
@@ -131,8 +141,12 @@ public final class AuctionManager {
     }
 
     public void bid(Player p, AuctionListing l, long amount) {
+        if (amount <= 0) { Msg.error(p, "입찰가는 양수여야 합니다."); return; }
         if (l.isExpired() || !active.contains(l)) { Msg.error(p, "만료된 매물입니다."); return; }
-        if (amount <= l.currentBid) { Msg.error(p, "현재가보다 높아야 합니다."); return; }
+        if (amount <= l.currentBid || amount < l.startPrice) {
+            Msg.error(p, "현재가/시작가보다 높아야 합니다.");
+            return;
+        }
         if (!plugin.currencies().withdraw(p.getUniqueId(), l.currency, amount)) {
             Msg.error(p, "잔액 부족.");
             return;

@@ -34,23 +34,28 @@ public final class BankCommand implements CommandExecutor {
             }
             case "deposit" -> {
                 if (a.length < 3) { Msg.warn(p, "/bank deposit <cur> <amount>"); return true; }
-                plugin.bank().deposit(p, a[1].toUpperCase(), Long.parseLong(a[2]));
+                Long amt = parseLong(p, a[2]); if (amt == null) return true;
+                plugin.bank().deposit(p, a[1].toUpperCase(), amt);
             }
             case "withdraw" -> {
                 if (a.length < 3) { Msg.warn(p, "/bank withdraw <cur> <amount>"); return true; }
-                plugin.bank().withdraw(p, a[1].toUpperCase(), Long.parseLong(a[2]));
+                Long amt = parseLong(p, a[2]); if (amt == null) return true;
+                plugin.bank().withdraw(p, a[1].toUpperCase(), amt);
             }
             case "maturity" -> {
                 if (a.length < 3) { Msg.warn(p, "/bank maturity <cur> <7|30|90>"); return true; }
-                plugin.bank().setMaturity(p, a[1].toUpperCase(), Integer.parseInt(a[2]));
+                Integer days = parseInt(p, a[2]); if (days == null) return true;
+                plugin.bank().setMaturity(p, a[1].toUpperCase(), days);
             }
             case "loan" -> {
                 if (a.length < 3) { Msg.warn(p, "/bank loan <cur> <amount>"); return true; }
-                plugin.bank().takeLoan(p, a[1].toUpperCase(), Long.parseLong(a[2]));
+                Long amt = parseLong(p, a[2]); if (amt == null) return true;
+                plugin.bank().takeLoan(p, a[1].toUpperCase(), amt);
             }
             case "repay" -> {
                 if (a.length < 3) { Msg.warn(p, "/bank repay <cur> <amount>"); return true; }
-                plugin.bank().repay(p, a[1].toUpperCase(), Long.parseLong(a[2]));
+                Long amt = parseLong(p, a[2]); if (amt == null) return true;
+                plugin.bank().repay(p, a[1].toUpperCase(), amt);
             }
             case "status" -> {
                 var map = plugin.bank().accountsOf(p.getUniqueId());
@@ -67,5 +72,15 @@ public final class BankCommand implements CommandExecutor {
             default -> Msg.warn(p, "알 수 없는 하위 명령.");
         }
         return true;
+    }
+
+    private Long parseLong(Player p, String s) {
+        try { return Long.parseLong(s); }
+        catch (NumberFormatException e) { Msg.error(p, "숫자가 잘못되었습니다: " + s); return null; }
+    }
+
+    private Integer parseInt(Player p, String s) {
+        try { return Integer.parseInt(s); }
+        catch (NumberFormatException e) { Msg.error(p, "숫자가 잘못되었습니다: " + s); return null; }
     }
 }

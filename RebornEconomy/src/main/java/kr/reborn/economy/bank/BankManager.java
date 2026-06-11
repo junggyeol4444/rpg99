@@ -126,6 +126,7 @@ public final class BankManager {
     }
 
     public boolean withdraw(Player p, String currency, long amount) {
+        if (amount <= 0) { Msg.error(p, "양수만 가능."); return false; }
         BankAccount a = get(p.getUniqueId(), currency);
         if (a == null) { Msg.error(p, "계좌 없음."); return false; }
         if (a.deposit < amount) { Msg.error(p, "예금 부족."); return false; }
@@ -155,6 +156,7 @@ public final class BankManager {
     }
 
     public boolean takeLoan(Player p, String currency, long amount) {
+        if (amount <= 0) { Msg.error(p, "양수만 가능."); return false; }
         BankAccount a = open(p, currency);
         long maxLoan = Math.max(1000, (a.deposit + 1000) * 3L * a.credit / 100);
         if (amount > maxLoan) {
@@ -169,6 +171,7 @@ public final class BankManager {
     }
 
     public boolean repay(Player p, String currency, long amount) {
+        if (amount <= 0) { Msg.error(p, "양수만 가능."); return false; }
         BankAccount a = get(p.getUniqueId(), currency);
         if (a == null || a.loan == 0) { Msg.error(p, "대출 없음."); return false; }
         if (a.loan < amount) amount = a.loan;

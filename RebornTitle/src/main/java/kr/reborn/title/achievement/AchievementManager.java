@@ -157,10 +157,10 @@ public final class AchievementManager {
         if (def == null) return;
         // 이미 획득한 업적은 진척 누적 안 함 — earnedOf로 KV 로드 보장
         if (earnedOf(p.getUniqueId()).contains(achievementId)) return;
-        Set<String> set = earned.computeIfAbsent(p.getUniqueId(), k -> new HashSet<>());
+        Set<String> set = earned.computeIfAbsent(p.getUniqueId(), k -> ConcurrentHashMap.newKeySet());
         if (set.contains(achievementId)) return;
         ensureProgressLoaded(p.getUniqueId());
-        Map<String, Integer> map = progress.computeIfAbsent(p.getUniqueId(), k -> new HashMap<>());
+        Map<String, Integer> map = progress.computeIfAbsent(p.getUniqueId(), k -> new ConcurrentHashMap<>());
         int cur = map.merge(achievementId, delta, Integer::sum);
         if (cur >= def.requiredProgress) {
             grant(p, achievementId);
@@ -178,7 +178,7 @@ public final class AchievementManager {
         if (progressLoaded.add(p)) {
             try {
                 var all = kr.reborn.core.RebornCore.get().kv().loadAll(NS, p);
-                Map<String, Integer> m = new HashMap<>();
+                Map<String, Integer> m = new ConcurrentHashMap<>();
                 for (var e : all.entrySet()) {
                     if (e.getKey().startsWith("p.")) {
                         try { m.put(e.getKey().substring(2), Integer.parseInt(e.getValue())); }
@@ -195,7 +195,7 @@ public final class AchievementManager {
     public void grant(Player p, String achievementId) {
         Achievement def = defs.get(achievementId);
         if (def == null) return;
-        Set<String> set = earned.computeIfAbsent(p.getUniqueId(), k -> new HashSet<>());
+        Set<String> set = earned.computeIfAbsent(p.getUniqueId(), k -> ConcurrentHashMap.newKeySet());
         if (set.contains(achievementId)) return;
         set.add(achievementId);
         int newPts = totalPoints.merge(p.getUniqueId(), def.rarity.points, Integer::sum);
@@ -273,7 +273,8 @@ public final class AchievementManager {
         // DB 로드
         String earnedStr = kr.reborn.core.RebornCore.get().kv().get(NS, p, "earned");
         if (earnedStr == null || earnedStr.isEmpty()) return java.util.Collections.emptySet();
-        Set<String> loaded = new HashSet<>(java.util.Arrays.asList(earnedStr.split(",")));
+        Set<String> loaded = ConcurrentHashMap.newKeySet();
+        loaded.addAll(java.util.Arrays.asList(earnedStr.split(",")));
         earned.put(p, loaded);
         return loaded;
     }

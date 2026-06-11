@@ -18,9 +18,9 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 기연 발동 엔진. 채굴·사냥·탐험·운기 이벤트에서 세계별 기연을 굴려, 발동 시 영구 보상 지급.
@@ -31,7 +31,7 @@ public final class FortuneManager implements Listener {
     private final RebornStat plugin;
     private final FortuneRegistry registry;
     /** 플레이어별 마지막으로 기연을 굴린 청크 (탐험 트리거 과다 호출 방지). */
-    private final Map<UUID, Long> lastExploreChunk = new HashMap<>();
+    private final Map<UUID, Long> lastExploreChunk = new ConcurrentHashMap<>();
 
     public FortuneManager(RebornStat plugin, FortuneRegistry registry) {
         this.plugin = plugin;

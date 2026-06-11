@@ -67,6 +67,11 @@ public final class ManualCommand implements CommandExecutor {
                 p.sendMessage("§7설명: §7" + m.description);
             }
             case "discover" -> {
+                // 즉시 발견은 admin/테스트 전용 — 정상 입수는 발견 이벤트/도난/거래/우연.
+                if (!p.hasPermission("rebornskill.admin") && !p.isOp()) {
+                    Msg.error(p, "직접 발견은 관리 권한 필요. 비급은 모험·도난·거래로 입수.");
+                    return true;
+                }
                 if (a.length < 2) { Msg.warn(p, "/manual discover <id>"); return true; }
                 plugin.manuals().discover(p, a[1]);
             }

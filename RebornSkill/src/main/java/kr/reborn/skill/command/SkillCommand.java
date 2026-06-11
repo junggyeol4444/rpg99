@@ -55,6 +55,11 @@ public final class SkillCommand implements CommandExecutor {
                 plugin.caster().cast(p, a[1]);
                 break;
             case "learn":
+                // 직접 학습은 admin/테스트 전용 — 정상 학습 경로는 /manual research → 완료 시 자동 학습.
+                if (!p.hasPermission("rebornskill.admin") && !p.isOp()) {
+                    Msg.error(p, "직접 학습은 관리 권한 필요. 비급 연구로 학습하세요 (/manual research).");
+                    return true;
+                }
                 if (a.length < 2) return true;
                 if (plugin.registry().get(a[1]) == null) { Msg.error(p, "스킬 없음"); return true; }
                 plugin.store().learn(p.getUniqueId(), a[1]);

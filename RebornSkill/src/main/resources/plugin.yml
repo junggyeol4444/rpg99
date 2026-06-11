@@ -23,3 +23,6 @@ commands:
     usage: /school join <SCHOOL> | list
 permissions:
   rebornskill.use: { default: true }
+  rebornskill.admin:
+    default: op
+    description: /skill learn, /manual discover 등 즉시 학습/획득 관리 권한

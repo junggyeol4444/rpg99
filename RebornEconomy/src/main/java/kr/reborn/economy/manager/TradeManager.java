@@ -67,9 +67,17 @@ public final class TradeManager {
         sessions.remove(s.b);
         Player a = Bukkit.getPlayer(s.a);
         Player b = Bukkit.getPlayer(s.b);
-        // 제안한 아이템 복귀
-        if (a != null && s.itemA != null) a.getInventory().addItem(s.itemA);
-        if (b != null && s.itemB != null) b.getInventory().addItem(s.itemB);
+        // 제안한 아이템 복귀 — 오프라인이면 우편함
+        if (s.itemA != null) {
+            if (a != null) a.getInventory().addItem(s.itemA);
+            else plugin.mailbox().enqueue(new kr.reborn.economy.data.MailItem(
+                    UUID.randomUUID(), s.a, "거래 취소 반환", s.itemA, null, 0));
+        }
+        if (s.itemB != null) {
+            if (b != null) b.getInventory().addItem(s.itemB);
+            else plugin.mailbox().enqueue(new kr.reborn.economy.data.MailItem(
+                    UUID.randomUUID(), s.b, "거래 취소 반환", s.itemB, null, 0));
+        }
         if (a != null) Msg.warn(a, "거래 취소됨.");
         if (b != null) Msg.warn(b, "거래 취소됨.");
     }

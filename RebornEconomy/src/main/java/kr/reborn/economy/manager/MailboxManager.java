@@ -7,12 +7,12 @@ import kr.reborn.economy.data.MailItem;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /** 우편함 — 경매 낙찰물·시스템 보상. */
 public final class MailboxManager {
@@ -33,7 +33,7 @@ public final class MailboxManager {
     private void ensureLoaded(UUID owner) {
         if (loaded.add(owner)) {
             var all = kr.reborn.core.RebornCore.get().kv().loadAll(NS, owner);
-            List<MailItem> list = new ArrayList<>();
+            List<MailItem> list = new CopyOnWriteArrayList<>();
             for (var e : all.entrySet()) {
                 try {
                     // value: subject|currencyId|currencyAmount|sentAt|<itemBase64>
@@ -68,7 +68,7 @@ public final class MailboxManager {
 
     public void enqueue(MailItem item) {
         ensureLoaded(item.owner);
-        mailbox.computeIfAbsent(item.owner, k -> new ArrayList<>()).add(item);
+        mailbox.computeIfAbsent(item.owner, k -> new CopyOnWriteArrayList<>()).add(item);
         persist(item);
     }
 
@@ -79,7 +79,7 @@ public final class MailboxManager {
 
     public void open(Player p) {
         var b = plugin.gui().builder("&6우편함", 6);
-        List<MailItem> items = mailbox.computeIfAbsent(p.getUniqueId(), k -> new ArrayList<>());
+        List<MailItem> items = mailbox.computeIfAbsent(p.getUniqueId(), k -> new CopyOnWriteArrayList<>());
         int slot = 0;
         for (MailItem m : items) {
             if (slot >= 45) break;

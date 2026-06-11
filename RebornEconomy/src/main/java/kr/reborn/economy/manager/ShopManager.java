@@ -138,26 +138,34 @@ public final class ShopManager {
     }
 
     private void buy(Player p, String shopId, ShopItem it) {
-        if (it.stock == 0) { Msg.error(p, "품절되었습니다."); return; }
-        long finalPrice = scaledBuy(p, it);
-        if (!plugin.currencies().withdraw(p.getUniqueId(), it.currency, finalPrice)) {
-            Msg.error(p, "화폐가 부족합니다.");
-            return;
+        // 재고 체크+감소를 원자화 — Folia 멀티스레드 환경에서 두 명이 마지막 1개를 동시에 사는 race 방지.
+        synchronized (it) {
+            if (it.stock == 0) { Msg.error(p, "품절되었습니다."); return; }
+            long finalPrice = scaledBuy(p, it);
+            if (!plugin.currencies().withdraw(p.getUniqueId(), it.currency, finalPrice)) {
+                Msg.error(p, "화폐가 부족합니다.");
+                return;
+            }
+            if (it.stock > 0) it.stock--;
+            p.getInventory().addItem(new ItemStack(it.material, 1));
+            Bukkit.getPluginManager().callEvent(new RebornShopBuyEvent(p, shopId, it.id, 1, finalPrice));
+            Msg.send(p, "&a구매 완료: " + it.id + " &7(" + finalPrice + " "
+                    + it.currency + (finalPrice != it.buy ? " §6(시세 적용)" : "") + ")");
         }
-        if (it.stock > 0) it.stock--;
-        p.getInventory().addItem(new ItemStack(it.material, 1));
-        Bukkit.getPluginManager().callEvent(new RebornShopBuyEvent(p, shopId, it.id, 1, finalPrice));
-        Msg.send(p, "&a구매 완료: " + it.id + " &7(" + finalPrice + " "
-                + it.currency + (finalPrice != it.buy ? " §6(시세 적용)" : "") + ")");
     }
 
     private void sell(Player p, String shopId, ShopItem it) {
-        if (!p.getInventory().contains(it.material)) {
+        long finalSell = scaledSell(p, it);
+        if (finalSell <= 0) {
+            Msg.error(p, "이 아이템은 판매할 수 없습니다 (가격 0).");
+            return;
+        }
+        // removeItem이 원자적으로 보유 수량을 보고 처리 — leftover 비어있으면 1개 제거 성공.
+        var leftover = p.getInventory().removeItem(new ItemStack(it.material, 1));
+        if (!leftover.isEmpty()) {
             Msg.error(p, "판매할 아이템이 없습니다.");
             return;
         }
-        p.getInventory().removeItem(new ItemStack(it.material, 1));
-        long finalSell = scaledSell(p, it);
         plugin.currencies().deposit(p.getUniqueId(), it.currency, finalSell);
         Msg.send(p, "&a판매 완료: " + it.id + " (+" + finalSell + " " + it.currency
                 + (finalSell != it.sell ? " §6(시세 적용)" : "") + ")");

@@ -38,7 +38,11 @@ public final class RaceManager {
         Race chosen = weightedPick(candidates);
         // 환생 반복 호출로 종족 보너스가 누적되던 결함 방지 — 직전 종족 효과 회수
         Race prev = raceOf(p.getUniqueId());
-        if (prev != null && prev != chosen) removeBonuses(p, prev);
+        if (prev == chosen) {
+            // 같은 종족 재배정 멱등 처리 — applyBonuses 또 호출하면 스탯 누적.
+            return chosen;
+        }
+        if (prev != null) removeBonuses(p, prev);
         playerRace.put(p.getUniqueId(), chosen);
         applyBonuses(p, chosen);
         persist(p.getUniqueId(), chosen);
@@ -49,7 +53,12 @@ public final class RaceManager {
     /** 명시적 종족 설정 (관리자 명령 또는 특수 이벤트). */
     public void setRace(Player p, Race r) {
         Race prev = raceOf(p.getUniqueId());
-        if (prev != null && prev != r) removeBonuses(p, prev);
+        if (prev == r) {
+            // 같은 종족 재설정 멱등 처리.
+            Msg.warn(p, "이미 " + r.koreanName + " 종족.");
+            return;
+        }
+        if (prev != null) removeBonuses(p, prev);
         playerRace.put(p.getUniqueId(), r);
         applyBonuses(p, r);
         persist(p.getUniqueId(), r);

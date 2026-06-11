@@ -48,12 +48,31 @@ public final class TerritoryManager implements Listener {
         Chunk c = p.getLocation().getChunk();
         Territory existing = at(c);
         if (existing != null) { Msg.error(p, "이미 점령된 영토."); return false; }
+        // 개인 한도 — 가문 없으면 5, 가문 있으면 가문주 50/장로 20/일반 10
+        int maxOwn = maxOwnedFor(p);
+        int owned = 0;
+        for (Territory te : claims.values()) {
+            if (te.owner.equals(p.getUniqueId())) owned++;
+        }
+        if (owned >= maxOwn) {
+            Msg.error(p, "개인 영토 한도 도달 (" + owned + "/" + maxOwn + "). /territory unclaim 으로 정리하세요.");
+            return false;
+        }
         Territory t = new Territory(c.getWorld().getName(), c.getX(), c.getZ(), p.getUniqueId());
         var clan = plugin.clans().ofPlayer(p.getUniqueId());
         if (clan != null) t.clanId = clan.id;
         claims.put(t.key(), t);
-        Msg.send(p, "&a영토 점령: " + c.getX() + "," + c.getZ());
+        Msg.send(p, "&a영토 점령: " + c.getX() + "," + c.getZ()
+                + " &7(" + (owned + 1) + "/" + maxOwn + ")");
         return true;
+    }
+
+    private int maxOwnedFor(Player p) {
+        var clan = plugin.clans().ofPlayer(p.getUniqueId());
+        if (clan == null) return 5;
+        if (p.getUniqueId().equals(clan.leader)) return 50;
+        if (clan.elders.contains(p.getUniqueId())) return 20;
+        return 10;
     }
 
     public boolean unclaim(Player p) {

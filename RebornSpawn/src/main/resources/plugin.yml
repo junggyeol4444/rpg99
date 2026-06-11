@@ -10,8 +10,8 @@ softdepend: [RebornNPC, RebornClan]
 load: POSTWORLD
 commands:
   reroll:
-    description: 환생 룰렛 (여신 NPC 대체용 디버그)
-    permission: rebornspawn.use
+    description: 환생 룰렛 (여신 NPC 대체용 디버그 — admin/test 전용)
+    permission: rebornspawn.admin
   gym:
     description: 신들의 헬스장 운동 마무리
     permission: rebornspawn.use

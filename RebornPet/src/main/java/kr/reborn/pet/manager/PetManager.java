@@ -241,11 +241,12 @@ public final class PetManager {
     public boolean feed(Player owner, String petName, org.bukkit.Material food) {
         Pet pp = byName(owner.getUniqueId(), petName);
         if (pp == null) { Msg.error(owner, "해당 펫 없음"); return false; }
-        if (!owner.getInventory().contains(food)) {
+        // contains+removeItem race 제거 — removeItem이 원자적으로 보유량 보고 처리.
+        var leftover = owner.getInventory().removeItem(new org.bukkit.inventory.ItemStack(food, 1));
+        if (!leftover.isEmpty()) {
             Msg.error(owner, "먹이 부족: " + food);
             return false;
         }
-        owner.getInventory().removeItem(new org.bukkit.inventory.ItemStack(food, 1));
         int bondGain = 5;
         long xpGain = 50;
         var pref = plugin.getConfig().getString("pet.preferred-food." + pp.mobId);

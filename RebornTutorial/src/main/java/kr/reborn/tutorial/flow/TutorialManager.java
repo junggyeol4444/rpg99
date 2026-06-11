@@ -118,8 +118,22 @@ public final class TutorialManager implements Listener {
         Player p = Bukkit.getPlayer(id);
         if (s == null || !s.awaitingChoice || p == null) return;
         if ("underworld".equalsIgnoreCase(choice)) {
-            World uw = Bukkit.getWorld("underworld");
-            if (uw != null) p.teleport(uw.getSpawnLocation());
+            // 직접 teleport이 아닌 UnderworldManager 정상 경로 — arrivalTime 기록되어야 reincarnate 가능.
+            // (이전엔 단순 텔레포트만 해서 명계 체류 시간 추적 안 됨 → /underworld reincarnate 영구 불가.)
+            try {
+                var dp = Bukkit.getPluginManager().getPlugin("RebornDeath");
+                if (dp != null) {
+                    Object uwm = dp.getClass().getMethod("underworld").invoke(dp);
+                    uwm.getClass().getMethod("sendToUnderworld", Player.class).invoke(uwm, p);
+                } else {
+                    // fallback — RebornDeath 없으면 직접 텔레포트
+                    World uw = Bukkit.getWorld("underworld");
+                    if (uw != null) p.teleport(uw.getSpawnLocation());
+                }
+            } catch (Throwable t) {
+                World uw = Bukkit.getWorld("underworld");
+                if (uw != null) p.teleport(uw.getSpawnLocation());
+            }
             Msg.send(p, "&5명계로 끌려갔다. 이곳에서 새 삶이 시작된다.");
         } else {
             World lobby = Bukkit.getWorld("lobby");

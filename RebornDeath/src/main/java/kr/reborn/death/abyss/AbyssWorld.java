@@ -28,6 +28,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class AbyssWorld implements Listener {
 
+    private static final String NS = "RebornDeath.abyss";
+
     private final RebornDeath plugin;
     /** 심연 체류 중인 플레이어 — tick + 이동 이벤트 동시 접근, ConcurrentHashSet. */
     private final Set<UUID> insideAbyss = ConcurrentHashMap.newKeySet();
@@ -41,14 +43,45 @@ public final class AbyssWorld implements Listener {
         RebornCore.get().scheduler().runTimer(this::tickAbyssResidents, 1200L, 1200L);
     }
 
-    /** 플레이어 join 시 — 심연 월드에 있으면 자동으로 insideAbyss에 등록. */
+    /** 플레이어 join 시 — 심연 월드에 있으면 자동으로 insideAbyss에 등록 + KV에서 페널티 복원. */
     @EventHandler
     public void onJoin(org.bukkit.event.player.PlayerJoinEvent e) {
         Player p = e.getPlayer();
         if (isAbyss(p.getWorld())) {
             insideAbyss.add(p.getUniqueId());
-            // 진입 페널티는 다시 적용 안 함 (이미 첫 진입 시 적용됨)
+            // 재시작 후 페널티가 휘발되면 exit 시 스탯 복원 불가 → KV에서 복원.
+            loadPenaltyFromKV(p.getUniqueId());
         }
+    }
+
+    /** 진입 시 KV에 페널티 저장 — 재시작 후에도 exit 정확 환원 가능. */
+    private void persistPenalty(UUID id, java.util.EnumMap<StatType, Double> penalty) {
+        try {
+            StringBuilder sb = new StringBuilder();
+            for (var e : penalty.entrySet()) {
+                if (sb.length() > 0) sb.append(',');
+                sb.append(e.getKey().name()).append(':').append(e.getValue());
+            }
+            RebornCore.get().kv().put(NS, id, "penalty", sb.toString());
+        } catch (Throwable ignored) {}
+    }
+
+    private void loadPenaltyFromKV(UUID id) {
+        try {
+            String enc = RebornCore.get().kv().get(NS, id, "penalty");
+            if (enc == null || enc.isEmpty()) return;
+            java.util.EnumMap<StatType, Double> map = new java.util.EnumMap<>(StatType.class);
+            for (String pair : enc.split(",")) {
+                int colon = pair.indexOf(':');
+                if (colon <= 0) continue;
+                try {
+                    StatType t = StatType.valueOf(pair.substring(0, colon));
+                    double v = Double.parseDouble(pair.substring(colon + 1));
+                    map.put(t, v);
+                } catch (Throwable ignored) {}
+            }
+            if (!map.isEmpty()) appliedPenalty.put(id, map);
+        } catch (Throwable ignored) {}
     }
 
     @EventHandler
@@ -88,6 +121,7 @@ public final class AbyssWorld implements Listener {
             penalty.put(t, cut);
         }
         appliedPenalty.put(p.getUniqueId(), penalty);
+        persistPenalty(p.getUniqueId(), penalty);  // 재시작 후에도 복원 가능
         // 심연 내성 초기 100 부여
         if (d.getStat(StatType.ABYSS_RESISTANCE) <= 0) {
             d.setStat(StatType.ABYSS_RESISTANCE, 100);
@@ -109,6 +143,7 @@ public final class AbyssWorld implements Listener {
                 d.setStat(e.getKey(), d.getStat(e.getKey()) + e.getValue());
             }
         }
+        try { RebornCore.get().kv().remove(NS, p.getUniqueId(), "penalty"); } catch (Throwable ignored) {}
         Msg.send(p, "&7심연을 벗어났다. 스탯 복원.");
     }
 

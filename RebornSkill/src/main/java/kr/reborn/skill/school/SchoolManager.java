@@ -35,19 +35,37 @@ public final class SchoolManager {
 
     private final RebornSkill plugin;
     private final Map<UUID, MartialSchool> schools = new ConcurrentHashMap<>();
+    /** 학파 변경 쿨다운 — 학파는 인생 선택, 분 단위로 바꿀 만한 게 아님. */
+    private final Map<UUID, Long> lastChange = new ConcurrentHashMap<>();
+    /** 24시간 = 1일. 첫 가입은 즉시, 이후 변경만 적용. */
+    private static final long CHANGE_COOLDOWN_MS = 24L * 3600_000L;
 
     public SchoolManager(RebornSkill plugin) { this.plugin = plugin; }
 
     private void persist(UUID p, MartialSchool ms) {
-        try { RebornCore.get().kv().put(NS, p, "school", ms.name()); }
-        catch (Throwable ignored) {}
+        try {
+            RebornCore.get().kv().put(NS, p, "school", ms.name());
+            Long lt = lastChange.get(p);
+            if (lt != null) RebornCore.get().kv().putLong(NS, p, "changedAt", lt);
+        } catch (Throwable ignored) {}
     }
 
     public boolean setSchool(Player p, MartialSchool newSchool) {
-        MartialSchool old = schools.get(p.getUniqueId());
+        // of() 사용 — KV에서 lazy 로드하면서 lastChange도 함께 복원.
+        MartialSchool old = of(p.getUniqueId());
         if (old == newSchool) {
             Msg.warn(p, "이미 " + newSchool.koreanName + " 학파.");
             return false;
+        }
+        // 이전 가입자 — 변경엔 쿨다운 (첫 가입은 즉시).
+        if (old != null) {
+            Long lt = lastChange.get(p.getUniqueId());
+            long now = System.currentTimeMillis();
+            if (lt != null && now - lt < CHANGE_COOLDOWN_MS) {
+                long h = (CHANGE_COOLDOWN_MS - (now - lt)) / 3600_000L;
+                Msg.error(p, "학파 변경 쿨다운 " + Math.max(1, h) + "시간 남음.");
+                return false;
+            }
         }
         // 이전 학파 보너스 회수
         if (old != null) {
@@ -62,6 +80,7 @@ public final class SchoolManager {
                     e.getKey(), e.getValue(), "school-join:" + newSchool);
         }
         schools.put(p.getUniqueId(), newSchool);
+        lastChange.put(p.getUniqueId(), System.currentTimeMillis());
         persist(p.getUniqueId(), newSchool);
         Bukkit.broadcastMessage(newSchool.colorCode + "&l[학파 가입] §f"
                 + p.getName() + " §7→ §6" + newSchool.koreanName);
@@ -98,6 +117,8 @@ public final class SchoolManager {
             try {
                 ms = MartialSchool.valueOf(stored);
                 schools.put(p, ms);
+                long changedAt = RebornCore.get().kv().getLong(NS, p, "changedAt", 0);
+                if (changedAt > 0) lastChange.put(p, changedAt);
                 return ms;
             } catch (IllegalArgumentException ignored) {}
         }

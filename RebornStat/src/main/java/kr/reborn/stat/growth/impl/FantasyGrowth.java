@@ -187,7 +187,24 @@ public final class FantasyGrowth implements GrowthStrategy {
     }
 
     private void revertRaceBonus(Player p, Race r) {
-        // 단순화: 영구 종족 보너스는 되돌리지 않음 (한번 설정한 종족 변경은 드물기에)
+        // 종족 초기 보너스 회수 — 누적 폭주 방지 (이전엔 stub)
+        switch (r) {
+            case ELF -> {
+                // ELF는 cur*0.5를 더했지만 cur가 그때그때 다르므로 정확 회수 불가.
+                // 대안: MANA 100 회수 (평균 보너스 근사). HUMAN으로 환원 시에만 호출됨.
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.MANA, -100, "race-revoke:ELF");
+            }
+            case DWARF -> {
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.ENDURANCE, -20, "race-revoke:DWARF");
+            }
+            case HALFLING -> {
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.LUCK, -10, "race-revoke:HALFLING");
+            }
+            case HUMAN -> { /* 균형 — 회수 없음 */ }
+        }
     }
 
     public double masteryOf(UUID p, School s) {

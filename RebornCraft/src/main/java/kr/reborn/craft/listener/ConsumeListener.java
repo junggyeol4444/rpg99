@@ -13,15 +13,15 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class ConsumeListener implements Listener {
 
     private final RebornCraft plugin;
-    /** uuid_itemId → 마지막 사용 시각 ms */
-    private final Map<String, Long> cooldowns = new HashMap<>();
+    /** uuid_itemId → 마지막 사용 시각 ms — 멀티 플레이어 동시 사용 race 방지. */
+    private final Map<String, Long> cooldowns = new ConcurrentHashMap<>();
 
     public ConsumeListener(RebornCraft plugin) { this.plugin = plugin; }
 

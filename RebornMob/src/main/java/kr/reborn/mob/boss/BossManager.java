@@ -11,15 +11,16 @@ import org.bukkit.boss.BossBar;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class BossManager {
 
     private final RebornMob plugin;
-    private final Map<UUID, BossInstance> active = new HashMap<>();
+    /** 활성 보스 인스턴스 — tickAll(스케줄러) + 데미지 이벤트 동시 접근. */
+    private final Map<UUID, BossInstance> active = new ConcurrentHashMap<>();
     private final PatternEngine patternEngine = new PatternEngine();
 
     public BossManager(RebornMob p) {

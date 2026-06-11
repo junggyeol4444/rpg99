@@ -18,6 +18,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 스킬 창조 시스템 (기획서 6장).
@@ -33,10 +34,10 @@ public final class SkillCreator {
 
     private final RebornSkill plugin;
     /** 플레이어별 행동 패턴 누적 — KV 영속화 (lazy load). */
-    private final Map<UUID, Map<String, Integer>> patternCount = new HashMap<>();
-    private final java.util.Set<UUID> loaded = new java.util.HashSet<>();
-    /** 이미 창조된 패턴 → 스킬 id (영구·공유). */
-    private final Map<String, String> createdByPattern = new HashMap<>();
+    private final Map<UUID, Map<String, Integer>> patternCount = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = ConcurrentHashMap.newKeySet();
+    /** 이미 창조된 패턴 → 스킬 id (영구·공유). 서버 전체 공유 자원이라 동시성 필수. */
+    private final Map<String, String> createdByPattern = new ConcurrentHashMap<>();
 
     public SkillCreator(RebornSkill p) { this.plugin = p; }
 

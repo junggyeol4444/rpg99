@@ -9,9 +9,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 신 인스턴스 관리자.
@@ -24,8 +24,8 @@ public final class GodManager {
     private static final String NS = "RebornGod.playerGod";
 
     private final RebornGod plugin;
-    private final Map<UUID, God> playerGods = new HashMap<>();
-    private final Map<String, God> npcGods = new HashMap<>();
+    private final Map<UUID, God> playerGods = new ConcurrentHashMap<>();
+    private final Map<String, God> npcGods = new ConcurrentHashMap<>();
 
     public GodManager(RebornGod p) {
         this.plugin = p;

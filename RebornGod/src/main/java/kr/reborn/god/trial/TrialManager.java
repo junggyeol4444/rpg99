@@ -13,10 +13,10 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 시련 관리자 — 진행중인 시련 추적, 단계별 성공/실패 판정, 등극 처리.
@@ -39,7 +39,7 @@ public final class TrialManager implements Listener {
     private static final int ASCEND_TOTAL_STAT = 5000;
 
     private final RebornGod plugin;
-    private final Map<UUID, AscensionTrial> active = new HashMap<>();
+    private final Map<UUID, AscensionTrial> active = new ConcurrentHashMap<>();
     /** 수수께끼 (질문/정답 배열). 미정해진 정답엔 lowercase 매칭. */
     private final List<String[]> riddles = List.of(
             new String[]{ "&7태초에 있었으나 끝에는 없는 것은?", "시간" },

@@ -8,9 +8,9 @@ import kr.reborn.core.util.Msg;
 import kr.reborn.pet.RebornPet;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 정령계 핵심 계약 시스템 + 일반 계약.
@@ -21,8 +21,8 @@ public final class ContractManager {
     private static final String NS = "RebornPet.contract";
 
     private final RebornPet plugin;
-    private final Map<UUID, Contract> contracts = new HashMap<>();
-    private final java.util.Set<UUID> loaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private final Map<UUID, Contract> contracts = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = ConcurrentHashMap.newKeySet();
 
     public ContractManager(RebornPet p) { this.plugin = p; }
 

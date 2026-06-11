@@ -10,14 +10,17 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class ShipRegistry {
 
     private static final String NS = "RebornShip.ship";
 
     private final RebornShip plugin;
-    private final Map<UUID, List<Ship>> byOwner = new HashMap<>();
-    private final List<Ship> all = new ArrayList<>();
+    /** ownerByMap + 전체 리스트 — 이동/생성/해체가 동시에 호출될 수 있어 동시성 보장. */
+    private final Map<UUID, List<Ship>> byOwner = new ConcurrentHashMap<>();
+    private final List<Ship> all = new CopyOnWriteArrayList<>();
 
     public ShipRegistry(RebornShip p) {
         this.plugin = p;
@@ -37,7 +40,7 @@ public final class ShipRegistry {
                     continue;
                 }
                 all.add(s);
-                byOwner.computeIfAbsent(s.owner, k -> new ArrayList<>()).add(s);
+                byOwner.computeIfAbsent(s.owner, k -> new CopyOnWriteArrayList<>()).add(s);
             }
         } catch (Throwable ignored) {}
     }
@@ -131,7 +134,7 @@ public final class ShipRegistry {
             s.blocks.put(Ship.key(b.getX(), b.getY(), b.getZ()), b.getBlockData());
         }
         all.add(s);
-        byOwner.computeIfAbsent(owner.getUniqueId(), x -> new ArrayList<>()).add(s);
+        byOwner.computeIfAbsent(owner.getUniqueId(), x -> new CopyOnWriteArrayList<>()).add(s);
         persist(s);
         Msg.send(owner, "&6배 등록: " + name + " (등급 " + grade + ", 블록 " + connected.size() + ")");
         return s;

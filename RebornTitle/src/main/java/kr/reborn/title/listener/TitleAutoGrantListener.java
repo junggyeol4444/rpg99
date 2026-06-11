@@ -10,9 +10,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 다른 플러그인의 이벤트를 받아 칭호 자동 부여.
@@ -28,9 +28,9 @@ import java.util.UUID;
 public final class TitleAutoGrantListener implements Listener {
 
     private final RebornTitle plugin;
-    private final Map<UUID, Integer> deathCount = new HashMap<>();
-    /** 절대자 칭호 1회 부여 추적 */
-    private final java.util.Set<UUID> absoluteTitled = new java.util.HashSet<>();
+    private final Map<UUID, Integer> deathCount = new ConcurrentHashMap<>();
+    /** 절대자 칭호 1회 부여 추적 — tick + 이벤트 동시 접근. */
+    private final java.util.Set<UUID> absoluteTitled = ConcurrentHashMap.newKeySet();
 
     public TitleAutoGrantListener(RebornTitle plugin) {
         this.plugin = plugin;

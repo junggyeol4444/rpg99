@@ -80,7 +80,7 @@ public final class TutorialManager implements Listener {
         if (name.startsWith("tutorial")) start(p.getUniqueId());
     }
 
-    private final Map<UUID, Long> trainCooldown = new HashMap<>();
+    private final Map<UUID, Long> trainCooldown = new ConcurrentHashMap<>();
 
     /** 기획서 4장 — 튜토리얼 사망 시 선택지(심부름꾼/명계). NPC에게는 죽지 않으므로 환경/이탈 사망만. */
     @EventHandler

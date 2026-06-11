@@ -9,17 +9,28 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class TimeChamber {
 
+    /** 화이트리스트 — chamberId가 이 셋에 없고 config ratios에도 없으면 진입 거부. */
+    private static final Set<String> KNOWN_CHAMBERS = Set.of(
+            "dragon_chamber",
+            "dragon_chamber_aurelius",
+            "dragon_chamber_ignifer",
+            "dragon_chamber_nocterna",
+            "dragon_chamber_cerylis",
+            "dragon_chamber_silvarex"
+    );
+
     private final RebornTime plugin;
-    private final Map<UUID, Long> lastExit = new HashMap<>();
-    private final Map<UUID, Long> entryAt = new HashMap<>();
+    private final Map<UUID, Long> lastExit = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> entryAt = new ConcurrentHashMap<>();
     /** uuid → 진입한 chamber 종류 (적용할 스탯 결정) */
-    private final Map<UUID, String> entryChamber = new HashMap<>();
+    private final Map<UUID, String> entryChamber = new ConcurrentHashMap<>();
 
     public TimeChamber(RebornTime p) {
         this.plugin = p;
@@ -28,10 +39,18 @@ public final class TimeChamber {
     }
 
     public boolean enter(Player p, String chamberId) {
+        if (chamberId == null || chamberId.isEmpty()) {
+            Msg.error(p, "방 ID 필요."); return false;
+        }
+        // 화이트리스트 — 임의 월드 이름 통과 차단 (spawn 등을 챔버로 위장하던 익스플로잇)
+        if (!KNOWN_CHAMBERS.contains(chamberId)
+                && !plugin.getConfig().contains("time-chamber.ratios." + chamberId)) {
+            Msg.error(p, "등록되지 않은 시간의 방: " + chamberId);
+            return false;
+        }
         PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
         // 기획서 5-12: 드래곤 가문 시간의 방은 강화된 진입 조건
-        boolean isDragonFamilyChamber = chamberId != null
-                && chamberId.startsWith("dragon_chamber_");
+        boolean isDragonFamilyChamber = chamberId.startsWith("dragon_chamber_");
         if (isDragonFamilyChamber) {
             // 중룡 이상(총합 200+) + 용력 500+ 또는 드래곤 로드 가문 허가(PlayerData.status 마커)
             int reqDragonPower = plugin.getConfig().getInt("time-chamber.enter-dragon-power", 500);

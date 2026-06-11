@@ -39,7 +39,11 @@ public final class BountyCommand implements CommandExecutor {
                 plugin.bounty().place(p, tgt.getUniqueId(), amount, currency);
             }
             case "top" -> {
-                int n = a.length >= 2 ? Integer.parseInt(a[1]) : 10;
+                int n = 10;
+                if (a.length >= 2) {
+                    try { n = Math.max(1, Math.min(100, Integer.parseInt(a[1]))); }
+                    catch (NumberFormatException e) { Msg.error(p, "숫자 필요."); return true; }
+                }
                 Msg.send(p, "&6=== 현상금 순위 ===");
                 int i = 1;
                 for (var e : plugin.bounty().top(n)) {

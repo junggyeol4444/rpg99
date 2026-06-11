@@ -107,6 +107,10 @@ public final class ShipCommand implements CommandExecutor {
         Ship s = pickByName(p, a, 2);
         if (s == null) return;
         int n = a.length > 2 ? safeInt(a[2], 1) : 1;
+        // 거리 가드 — 1칸=block translate 한 번. n=1M 같은 값 던지면 서버 lag/crash 위험.
+        // 한 명령당 최대 64칸 (게임플레이상 자연스러움). 더 가려면 명령 반복.
+        if (n < 1) { Msg.error(p, "이동 칸수는 1 이상."); return; }
+        if (n > 64) { Msg.warn(p, "한 명령당 최대 64칸 — 64로 제한."); n = 64; }
         // 플레이어 시선 방향 기준
         int dx = 0, dz = 0;
         float yaw = p.getLocation().getYaw();

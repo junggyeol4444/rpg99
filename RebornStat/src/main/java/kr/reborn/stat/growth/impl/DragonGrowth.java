@@ -62,16 +62,19 @@ public final class DragonGrowth implements GrowthStrategy {
         ageUp(p, d, (int) (quality * 5));
     }
 
-    /** 외부 호출 — 보물 획득. */
+    /** 외부 호출 — 보물 획득. 음수 값은 무시 (소실은 호출자가 직접 hoard 차감). */
     public void onHoardItem(Player p, long goldValue) {
+        if (goldValue <= 0) return;
         ensureLoaded(p.getUniqueId());
         long cur = hoard.merge(p.getUniqueId(), goldValue, Long::sum);
         RebornCore.get().kv().putLong(NS, p.getUniqueId(), "hoard", cur);
-        // 100마다 +50 용력
-        if (cur / 100 > (cur - goldValue) / 100) {
+        // 100마다 +50 용력 — 한 번에 큰 보물 획득 시에도 넘은 임계치 만큼 누적.
+        long thresholdsCrossed = (cur / 100) - ((cur - goldValue) / 100);
+        if (thresholdsCrossed > 0) {
+            double bonus = 50 * thresholdsCrossed;
             RebornCore.get().api().addStat(p.getUniqueId(),
-                    StatType.DRAGON_POWER, 50, "hoard-100");
-            Msg.send(p, "&6보물 축적 — 용력 +50 (총 " + cur + " gold)");
+                    StatType.DRAGON_POWER, bonus, "hoard-100");
+            Msg.send(p, "&6보물 축적 — 용력 +" + (int) bonus + " (총 " + cur + " gold)");
         }
     }
 

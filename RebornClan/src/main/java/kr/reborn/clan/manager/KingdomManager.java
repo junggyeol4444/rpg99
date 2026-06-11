@@ -75,6 +75,16 @@ public final class KingdomManager {
     public boolean create(Player king, String id, String name) {
         var clan = plugin.clans().ofPlayer(king.getUniqueId());
         if (clan == null) { Msg.error(king, "가문이 없다."); return false; }
+        // 가문주만 왕국 창설 — 일반 멤버가 가문을 왕국 산하로 끌어들이는 행위 차단.
+        if (!king.getUniqueId().equals(clan.leader)) {
+            Msg.error(king, "가문주만 왕국을 창설할 수 있다.");
+            return false;
+        }
+        // 이미 다른 왕국 소속 가문이면 차단 (두 왕국 동시 소속 방지)
+        if (clan.kingdomId != null && !clan.kingdomId.isEmpty()) {
+            Msg.error(king, "가문이 이미 " + clan.kingdomId + " 왕국 소속.");
+            return false;
+        }
         int reqLv = plugin.getConfig().getInt("kingdom.required-clan-level", 7);
         if (clan.level < reqLv) { Msg.error(king, "가문 Lv " + reqLv + " 이상 필요."); return false; }
         if (kingdoms.containsKey(id)) { Msg.error(king, "이미 존재하는 왕국 ID."); return false; }

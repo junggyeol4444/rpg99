@@ -23,7 +23,8 @@ public final class MarriageManager implements Listener {
 
     private final RebornClan plugin;
     private final Map<UUID, Marriage> marriages = new ConcurrentHashMap<>();
-    private final Map<UUID, UUID> proposals = new HashMap<>();
+    /** target → proposer. Folia 동시성 위해 ConcurrentHashMap. */
+    private final Map<UUID, UUID> proposals = new ConcurrentHashMap<>();
     /** uuid → 현재 적용 중인 부부 보너스 (스탯별 양). 다음 tick에 정확히 차감 후 재적용. */
     private final Map<UUID, java.util.EnumMap<StatType, Double>> lastCoupleBonus = new ConcurrentHashMap<>();
     /** 이번 tick에서 buff 받은 uuid set — tick 종료 후 미수신 자에게서 회수. */
@@ -53,6 +54,11 @@ public final class MarriageManager implements Listener {
     public void accept(Player b) {
         UUID aId = proposals.remove(b.getUniqueId());
         if (aId == null) { Msg.warn(b, "청혼이 없다."); return; }
+        // 청혼 발급 후 양쪽 중 누군가 다른 결혼을 했을 가능성 차단.
+        if (marriages.containsKey(b.getUniqueId()) || marriages.containsKey(aId)) {
+            Msg.error(b, "한쪽이 이미 결혼한 상태 — 청혼 만료.");
+            return;
+        }
         Marriage m = new Marriage(aId, b.getUniqueId(), "", System.currentTimeMillis());
         marriages.put(aId, m);
         marriages.put(b.getUniqueId(), m);
@@ -63,6 +69,15 @@ public final class MarriageManager implements Listener {
     }
 
     public void marryNpc(Player p, String npcId) {
+        // 중복 결혼 차단 — 이미 결혼한 상태면 거부 (Marriage 객체가 덮어쓰기로 분실되던 결함).
+        if (marriages.containsKey(p.getUniqueId())) {
+            Msg.error(p, "이미 결혼한 상태. 먼저 /divorce 하세요.");
+            return;
+        }
+        if (npcId == null || npcId.isEmpty()) {
+            Msg.error(p, "NPC ID 필요.");
+            return;
+        }
         Marriage m = new Marriage(p.getUniqueId(), UUID.randomUUID(), npcId, System.currentTimeMillis());
         marriages.put(p.getUniqueId(), m);
         Msg.send(p, "&6NPC와 결혼: " + npcId);

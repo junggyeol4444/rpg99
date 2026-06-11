@@ -148,6 +148,11 @@ public final class InsuranceManager {
         }
     }
 
+    /** 마지막 지급 시각 — 자살 grinding으로 보험금 무한 수령 차단. */
+    private final java.util.Map<UUID, Long> lastPayoutAt = new java.util.concurrent.ConcurrentHashMap<>();
+    /** 보험금 지급 쿨다운 (ms) — 1시간. 정상 사망 빈도에서는 영향 없음. */
+    private static final long PAYOUT_COOLDOWN_MS = 3600_000L;
+
     /** 사망 시 자동 지급 (DeathListener에서 호출). */
     public boolean payoutOnDeath(Player p) {
         Policy pol = policies.get(p.getUniqueId());
@@ -156,6 +161,14 @@ public final class InsuranceManager {
             Msg.warn(p, "보험 미납 — 보장 미적용.");
             return false;
         }
+        long now = System.currentTimeMillis();
+        Long last = lastPayoutAt.get(p.getUniqueId());
+        if (last != null && now - last < PAYOUT_COOLDOWN_MS) {
+            long left = (PAYOUT_COOLDOWN_MS - (now - last)) / 60_000L;
+            Msg.warn(p, "&7보험 지급 쿨다운 " + Math.max(1, left) + "분 — 자주 사망 시 지급 제한.");
+            return false;
+        }
+        lastPayoutAt.put(p.getUniqueId(), now);
         pol.payouts++;
         persist(pol);
         plugin.currencies().deposit(p.getUniqueId(), "GOLD_COIN", pol.grade.coverage);

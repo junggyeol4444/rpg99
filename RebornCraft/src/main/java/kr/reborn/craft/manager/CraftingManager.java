@@ -14,14 +14,15 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class CraftingManager {
 
     private final RebornCraft plugin;
-    private final Set<UUID> casting = new HashSet<>();
+    /** 제작 중 플레이어 — 다중 플레이어 동시 이벤트 안전. */
+    private final Set<UUID> casting = ConcurrentHashMap.newKeySet();
 
     public CraftingManager(RebornCraft plugin) { this.plugin = plugin; }
 
@@ -79,19 +80,30 @@ public final class CraftingManager {
         double rate = Math.min(0.99, r.successRate + Math.min(0.3, exp / 50000.0));
         if (Rand.chance(rate)) {
             CustomItem out = plugin.items().get(r.resultItemId);
-            if (out != null) p.getInventory().addItem(plugin.items().render(out));
+            if (out != null) addOrDrop(p, plugin.items().render(out));
             plugin.proficiency().grantExp(p, r.profession, r.expGain);
             Bukkit.getPluginManager().callEvent(new RebornCraftSuccessEvent(p, r));
             Msg.send(p, "&a제작 성공!");
             // 상위 등급 확률 — 보너스 1개 추가 (상위 변형 id 명명 컨벤션 없으므로 동일 아이템 +1)
             if (Rand.chance(r.higherGradeChance) && out != null) {
                 Msg.send(p, "&6&l[행운] 상위 등급 결과 — 추가 1개!");
-                p.getInventory().addItem(plugin.items().render(out));
+                addOrDrop(p, plugin.items().render(out));
             }
         } else {
             plugin.proficiency().grantExp(p, r.profession, r.expGain / 4);
             Bukkit.getPluginManager().callEvent(new RebornCraftFailEvent(p, r));
             Msg.error(p, "제작 실패. 부산물을 회수했다.");
+        }
+    }
+
+    /** 인벤이 가득 차서 addItem 실패하면 발 밑에 드롭 — 결과물 분실 방지. */
+    private void addOrDrop(Player p, ItemStack item) {
+        var leftover = p.getInventory().addItem(item);
+        if (!leftover.isEmpty()) {
+            for (ItemStack it : leftover.values()) {
+                p.getWorld().dropItemNaturally(p.getLocation(), it);
+            }
+            Msg.warn(p, "&7인벤 가득 — 발 밑에 떨궈 두었다.");
         }
     }
 }

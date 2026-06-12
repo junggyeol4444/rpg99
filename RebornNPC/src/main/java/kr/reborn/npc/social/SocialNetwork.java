@@ -1,28 +1,31 @@
 package kr.reborn.npc.social;
 
 import java.util.ArrayDeque;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 전체 NPC 관계 그래프. 방향성 있음 (A→B가 MENTOR이면 B→A는 STUDENT).
  *
  * 명시적 관계만 저장 (가족·스승·주군·연인·동맹 등). 감정 수치는 Soul/Memory가 담당.
  * 소문 전파 경로 계산(친구의 친구...), 영향력 있는 NPC 탐색에 사용.
+ *
+ * NpcRegistry tick + onDeath + 사회 행동 이벤트가 동시에 edges를 수정하므로
+ * 내·외부 모두 ConcurrentHashMap으로 변경 (CME 방지).
  */
 public final class SocialNetwork {
 
     /** npcId → (상대 npcId → 관계 타입) */
-    private final Map<String, Map<String, RelationshipType>> edges = new HashMap<>();
+    private final Map<String, Map<String, RelationshipType>> edges = new ConcurrentHashMap<>();
 
     public void setRelation(String a, String b, RelationshipType type) {
-        edges.computeIfAbsent(a, k -> new HashMap<>()).put(b, type);
+        edges.computeIfAbsent(a, k -> new ConcurrentHashMap<>()).put(b, type);
         // 비대칭 역방향 자동 설정
         RelationshipType inverse = inverseOf(type);
-        edges.computeIfAbsent(b, k -> new HashMap<>()).put(a, inverse);
+        edges.computeIfAbsent(b, k -> new ConcurrentHashMap<>()).put(a, inverse);
     }
 
     public RelationshipType getRelation(String a, String b) {

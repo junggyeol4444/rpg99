@@ -94,9 +94,30 @@ public final class MailboxManager {
     public void claim(Player p, MailItem m) {
         ensureLoaded(p.getUniqueId());
         List<MailItem> list = mailbox.get(p.getUniqueId());
-        if (list == null || !list.remove(m)) return;
+        if (list == null || !list.contains(m)) return;
+        // 인벤토리 가득 시 수령 거부 — 메일에서 제거 후 아이템 분실 차단.
+        if (m.item != null) {
+            int free = 0;
+            for (var slot : p.getInventory().getStorageContents()) {
+                if (slot == null || slot.getType().isAir()) free++;
+            }
+            if (free == 0) {
+                Msg.error(p, "인벤토리 가득 — 슬롯을 비운 후 수령하세요.");
+                return;
+            }
+        }
+        if (!list.remove(m)) return;  // 사이에 다른 곳에서 제거됐으면 abort
         kr.reborn.core.RebornCore.get().kv().remove(NS, p.getUniqueId(), m.id.toString());
-        if (m.item != null) p.getInventory().addItem(m.item);
+        if (m.item != null) {
+            var leftover = p.getInventory().addItem(m.item);
+            // 안전망: 여전히 leftover 있으면 메일 재등록 (인벤이 위 검사 후 빨리 차는 케이스).
+            if (!leftover.isEmpty()) {
+                for (org.bukkit.inventory.ItemStack it : leftover.values()) {
+                    p.getWorld().dropItemNaturally(p.getLocation(), it);
+                }
+                Msg.warn(p, "&7일부만 인벤에 들어감 — 나머지는 발 밑에 떨궜다.");
+            }
+        }
         if (m.currencyId != null && m.currencyAmount > 0) {
             plugin.currencies().deposit(p.getUniqueId(), m.currencyId, m.currencyAmount);
         }

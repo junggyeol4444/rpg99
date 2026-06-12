@@ -189,9 +189,16 @@ public final class SpecialtyManager {
         if (Rand.chance(rate)) {
             // 성공
             for (var e : r.ingredients.entrySet()) removeItem(p, e.getKey(), e.getValue());
-            // 결과물 지급
+            // 결과물 지급 — 인벤 가득이면 발 밑에 떨궈 분실 차단.
             if (r.resultMaterial != null) {
-                p.getInventory().addItem(new ItemStack(r.resultMaterial, r.resultAmount));
+                ItemStack result = new ItemStack(r.resultMaterial, r.resultAmount);
+                var leftover = p.getInventory().addItem(result);
+                if (!leftover.isEmpty()) {
+                    for (ItemStack it : leftover.values()) {
+                        p.getWorld().dropItemNaturally(p.getLocation(), it);
+                    }
+                    Msg.warn(p, "&7인벤 가득 — 발 밑에 떨궈 두었다.");
+                }
             }
             addProf(p, r.type, 2 + r.difficultyTier);
             Msg.send(p, "&a[" + r.type.koreanName + "] §6" + r.name + " §a제작 성공!");

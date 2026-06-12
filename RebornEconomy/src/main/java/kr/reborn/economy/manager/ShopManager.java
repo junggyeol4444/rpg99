@@ -147,7 +147,14 @@ public final class ShopManager {
                 return;
             }
             if (it.stock > 0) it.stock--;
-            p.getInventory().addItem(new ItemStack(it.material, 1));
+            // 화폐 차감 후 인벤 가득이면 결과물 분실 차단 — 발 밑에 떨군다.
+            var leftover = p.getInventory().addItem(new ItemStack(it.material, 1));
+            if (!leftover.isEmpty()) {
+                for (ItemStack lo : leftover.values()) {
+                    p.getWorld().dropItemNaturally(p.getLocation(), lo);
+                }
+                Msg.warn(p, "&7인벤 가득 — 발 밑에 떨궈 두었다.");
+            }
             Bukkit.getPluginManager().callEvent(new RebornShopBuyEvent(p, shopId, it.id, 1, finalPrice));
             Msg.send(p, "&a구매 완료: " + it.id + " &7(" + finalPrice + " "
                     + it.currency + (finalPrice != it.buy ? " §6(시세 적용)" : "") + ")");

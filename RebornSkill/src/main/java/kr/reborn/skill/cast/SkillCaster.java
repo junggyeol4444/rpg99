@@ -33,6 +33,20 @@ public final class SkillCaster {
         if (!plugin.store().has(p.getUniqueId(), skillId)) {
             Msg.error(p, "이 스킬을 보유하고 있지 않다."); return;
         }
+        // 학파 제한 (기획서 5-5: 정파↔마교 상극, 정파↔사파 상극)
+        if (def.requiredSchool != null) {
+            var mine = plugin.schools().of(p.getUniqueId());
+            if (mine == null) {
+                Msg.error(p, "&c이 비급은 §f" + def.requiredSchool.koreanName
+                        + " §c학파만 시전. 먼저 /school join.");
+                return;
+            }
+            if (!mine.canUse(def.requiredSchool)) {
+                Msg.error(p, "&c" + mine.koreanName + " 학파는 §f"
+                        + def.requiredSchool.koreanName + " §c비급을 시전할 수 없다.");
+                return;
+            }
+        }
         long now = System.currentTimeMillis();
         long cdEnd = cooldowns.computeIfAbsent(p.getUniqueId(), x -> new HashMap<>())
                 .getOrDefault(skillId, 0L);

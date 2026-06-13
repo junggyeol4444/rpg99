@@ -3,6 +3,7 @@ package kr.reborn.skill.def;
 import kr.reborn.core.data.StatType;
 import kr.reborn.core.data.WorldKey;
 import kr.reborn.skill.RebornSkill;
+import kr.reborn.skill.school.MartialSchool;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.Map;
@@ -47,6 +48,13 @@ public final class SkillRegistry {
             // type: 명시값이 있으면 사용, 없으면 기존 필드에서 자동 추론
             kr.reborn.skill.effect.SkillType type = kr.reborn.skill.effect.SkillType.infer(
                     s.getString("type", null), damage, radius, category, id, name);
+            // 학파 제한: config의 school 필드 (ORTHODOX/UNORTHODOX/DEMON_CULT/IMPERIAL/HERMIT)
+            MartialSchool requiredSchool = null;
+            String schoolStr = s.getString("school", null);
+            if (schoolStr != null) {
+                try { requiredSchool = MartialSchool.valueOf(schoolStr.toUpperCase()); }
+                catch (Throwable ignored) {}
+            }
             defs.put(id, new SkillDef(
                     id, name, w, category,
                     ct, ca,
@@ -54,7 +62,8 @@ public final class SkillRegistry {
                     s.getDouble("cast-seconds", 0),
                     damage, element,
                     s.getString("learn", "AUTO"),
-                    type, radius, range, projSpeed, duration, summon
+                    type, radius, range, projSpeed, duration, summon,
+                    requiredSchool
             ));
         }
     }

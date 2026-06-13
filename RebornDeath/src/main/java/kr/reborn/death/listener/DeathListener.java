@@ -52,6 +52,8 @@ public final class DeathListener implements Listener {
         if (killer != null) {
             plugin.crime().onPvpKill(killer, p);
             plugin.bounty().onKilled(killer, p.getUniqueId());
+            // 천계 거주자가 살인 = 죄목 (기획서 5-3: 살생 금기). HeavenGrowth.onSinAccrued.
+            notifyHeavenSin(killer, 25.0);
         }
         // 보험금 자동 지급 (RebornEconomy 리플렉션)
         try {
@@ -63,6 +65,22 @@ public final class DeathListener implements Listener {
                             .invoke(ins, p);
                 }
             }
+        } catch (Throwable ignored) {}
+    }
+
+    /** 천계 거주자의 살인 = 죄목 누적. HeavenGrowth.onSinAccrued 리플렉션 호출. */
+    private void notifyHeavenSin(Player killer, double weight) {
+        try {
+            PlayerData kd = RebornCore.get().api().getPlayerData(killer.getUniqueId());
+            if (kd == null || kd.worldKey() != WorldKey.HEAVEN) return;
+            var sp = Bukkit.getPluginManager().getPlugin("RebornStat");
+            if (sp == null) return;
+            Object growth = sp.getClass().getMethod("growth").invoke(sp);
+            Object strategy = growth.getClass().getMethod("of", WorldKey.class)
+                    .invoke(growth, WorldKey.HEAVEN);
+            if (strategy == null) return;
+            strategy.getClass().getMethod("onSinAccrued", Player.class, double.class)
+                    .invoke(strategy, killer, weight);
         } catch (Throwable ignored) {}
     }
 

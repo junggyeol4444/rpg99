@@ -27,6 +27,10 @@ public final class NpcInteractListener implements Listener {
         e.setCancelled(true);
         Bukkit.getPluginManager().callEvent(new RebornNPCInteractEvent(e.getPlayer(), npc.id));
 
+        // 학파 반응 — 무협계 NPC는 플레이어 학파에 따라 호감도 가감 (기획서 5-5).
+        // 일회성 (상호작용 당) 가감으로 누적되지만 폭주 방지를 위해 작게.
+        applySchoolReaction(npc, e.getPlayer());
+
         // 호감도 + 호기심
         npc.relations.addPlayer(e.getPlayer().getUniqueId(), 0.5);
         npc.emotion.add(Emotion.Kind.CURIOSITY, 1.0);
@@ -172,5 +176,44 @@ public final class NpcInteractListener implements Listener {
         plugin.registry().socialNetwork().removeAllOf(npc.id);
         plugin.registry().factions().onNpcDeath(npc);
         Bukkit.broadcastMessage("§7§o[NPC 사망] §r" + npc.displayName + "이(가) 쓰러졌다.");
+    }
+
+    /**
+     * 무협계 NPC가 플레이어 학파를 인식하고 호감도 반응.
+     * 정파 NPC + 마교 플레이어 = 호감도 -3, 같은 학파 = +2.
+     * 짧은 호감도 변화로 누적 폭주 방지.
+     */
+    private void applySchoolReaction(RebornNpc npc, org.bukkit.entity.Player p) {
+        // 무협계 NPC만 학파 인식 (마계/천계는 별도 시스템)
+        if (npc.world != kr.reborn.core.data.WorldKey.MARTIAL) return;
+        // NPC의 학파는 faction 필드로 매핑 (예: "school:ORTHODOX")
+        if (npc.faction == null || !npc.faction.startsWith("school:")) return;
+        String npcSchool = npc.faction.substring(7);
+        try {
+            var sp = Bukkit.getPluginManager().getPlugin("RebornSkill");
+            if (sp == null) return;
+            Object schools = sp.getClass().getMethod("schools").invoke(sp);
+            if (schools == null) return;
+            Object playerSchool = schools.getClass().getMethod("of", java.util.UUID.class)
+                    .invoke(schools, p.getUniqueId());
+            if (playerSchool == null) return;
+            String playerSchoolName = playerSchool.toString();
+            if (npcSchool.equals(playerSchoolName)) {
+                npc.relations.addPlayer(p.getUniqueId(), 2);
+                npc.emotion.add(Emotion.Kind.TRUST, 3);
+            } else if (isRival(npcSchool, playerSchoolName)) {
+                npc.relations.addPlayer(p.getUniqueId(), -3);
+                npc.emotion.add(Emotion.Kind.ANGER, 5);
+                kr.reborn.core.util.Msg.warn(p, "&7" + npc.displayName + "이(가) 너를 적대시한다.");
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    private boolean isRival(String a, String b) {
+        if ("ORTHODOX".equals(a) && "DEMON_CULT".equals(b)) return true;
+        if ("DEMON_CULT".equals(a) && "ORTHODOX".equals(b)) return true;
+        if ("ORTHODOX".equals(a) && "UNORTHODOX".equals(b)) return true;
+        if ("UNORTHODOX".equals(a) && "ORTHODOX".equals(b)) return true;
+        return false;
     }
 }

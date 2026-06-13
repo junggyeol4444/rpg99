@@ -44,6 +44,8 @@ public final class RebornClan extends JavaPlugin {
         getServer().getPluginManager().registerEvents(wars, this);
         getServer().getPluginManager().registerEvents(inheritance, this);
         getServer().getPluginManager().registerEvents(
+                new kr.reborn.clan.inheritance.LineageEffectListener(this), this);
+        getServer().getPluginManager().registerEvents(
                 new kr.reborn.clan.listener.ClanWorldImpactListener(this), this);
 
         // 5분마다 자동 영속화 — Calendar 분기 축제로 +1000된 treasury가

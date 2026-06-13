@@ -69,6 +69,11 @@ public class RebornNpc {
     /** 일과 스케줄 (시작 시간 → 목적지 키워드). 비어있으면 기본 일과 사용. */
     public final Map<Integer, String> schedule = new HashMap<>();
 
+    /** 자율 의뢰 — NPC가 자기 욕구·기억으로 만든 퀘스트 ID (없으면 null). */
+    public String pendingQuestOffer;
+    /** 자율 의뢰가 등록된 시각 — 만료 처리용. */
+    public long pendingQuestOfferAt;
+
     public RebornNpc(String id, String displayName, WorldKey world, Location location) {
         this.id = id; this.displayName = displayName; this.world = world; this.location = location;
         this.soul = new Soul(Personality.random());  // 기본 무작위. job 설정 시 fromJob으로 교체.

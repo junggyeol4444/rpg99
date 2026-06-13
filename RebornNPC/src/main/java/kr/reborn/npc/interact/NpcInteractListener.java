@@ -31,6 +31,15 @@ public final class NpcInteractListener implements Listener {
         // 일회성 (상호작용 당) 가감으로 누적되지만 폭주 방지를 위해 작게.
         applySchoolReaction(npc, e.getPlayer());
 
+        // 자율 의뢰 — NPC가 자신의 욕구로 만든 퀘스트를 안내 (기획서 7장 ①)
+        String pendingQuest = plugin.registry().questOffers().pendingOfferOf(npc);
+        if (pendingQuest != null) {
+            kr.reborn.core.util.Msg.send(e.getPlayer(),
+                    "&6&l[의뢰] §f" + npc.displayName + "이(가) 도움을 청한다.");
+            kr.reborn.core.util.Msg.send(e.getPlayer(),
+                    "&7수락: §a/quest accept " + pendingQuest);
+        }
+
         // 호감도 + 호기심
         npc.relations.addPlayer(e.getPlayer().getUniqueId(), 0.5);
         npc.emotion.add(Emotion.Kind.CURIOSITY, 1.0);

@@ -35,6 +35,7 @@ public final class NpcRegistry {
     private final kr.reborn.npc.social.GossipManager gossip;
     private final kr.reborn.npc.faction.FactionManager factionManager;
     private final kr.reborn.npc.world.WorldImpact worldImpact;
+    private final kr.reborn.npc.quest.NpcQuestOfferEngine questOffers;
 
     public NpcRegistry(RebornNPC plugin) {
         this.plugin = plugin;
@@ -43,6 +44,7 @@ public final class NpcRegistry {
         this.gossip = new kr.reborn.npc.social.GossipManager(plugin);
         this.factionManager = new kr.reborn.npc.faction.FactionManager(plugin);
         this.worldImpact = new kr.reborn.npc.world.WorldImpact(plugin);
+        this.questOffers = new kr.reborn.npc.quest.NpcQuestOfferEngine(plugin);
         var s = plugin.getConfig().getConfigurationSection("emotion-decay-rate");
         for (Emotion.Kind k : Emotion.Kind.values()) {
             decayRates.put(k, s == null ? 0.5 : s.getDouble(k.name().toLowerCase(), 0.5));
@@ -111,6 +113,7 @@ public final class NpcRegistry {
 
     public kr.reborn.npc.soul.GoalGenerator goalGenerator() { return goalGenerator; }
     public kr.reborn.npc.soul.GoalProgressor goalProgressor() { return goalProgressor; }
+    public kr.reborn.npc.quest.NpcQuestOfferEngine questOffers() { return questOffers; }
     public kr.reborn.npc.social.SocialNetwork socialNetwork() { return socialNetwork; }
     public kr.reborn.npc.social.GossipManager gossip() { return gossip; }
     public kr.reborn.npc.faction.FactionManager factions() { return factionManager; }
@@ -131,6 +134,8 @@ public final class NpcRegistry {
             // 목표 — 자연 진행 + 새 목표 검토
             goalProgressor.tick(n);
             goalGenerator.considerNewGoal(n);
+            // 자율 의뢰 — 욕구 기반 퀘스트 생성 검토
+            questOffers.considerOffer(n);
             // 완료된 목표는 archive로 이동
             n.goals.removeIf(g -> {
                 if (g.isFulfilled() || g.abandoned) {

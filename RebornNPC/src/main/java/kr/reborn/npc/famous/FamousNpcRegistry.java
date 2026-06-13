@@ -179,6 +179,28 @@ public final class FamousNpcRegistry {
         add("megacorp_gamma_ceo", "&6메가코프 감마 회장", WorldKey.CYBERPUNK,
                 "CEO", "megacorp_gamma", "회장", 8, null,
                 "사이버 임플란트 전문 기업의 회장.");
+        // 기획서 5-11: 7대 메가코프 (AKRO/JINTECH/HEXACORP/ARCANEWORKS/FROSTLINE/DRAGON_NEXUS/SOLARIS)
+        add("megacorp_akro_ceo", "&b&l[AKRO] 인체 강화 회장", WorldKey.CYBERPUNK,
+                "CEO", "megacorp_akro", "회장", 9, null,
+                "네오서울 지배. 강화인체·사이버네틱스 기술 선두.");
+        add("megacorp_jintech_ceo", "&d&l[JINTECH] AI 회장", WorldKey.CYBERPUNK,
+                "CEO", "megacorp_jintech", "회장", 9, null,
+                "노바도쿄 지배. AI·자율 로봇 연구의 정점.");
+        add("megacorp_hexacorp_ceo", "&8&l[HEXACORP] 데이터 회장", WorldKey.CYBERPUNK,
+                "CEO", "megacorp_hexacorp", "회장", 9, null,
+                "아이언뉴욕 지배. 금융·데이터 독점.");
+        add("megacorp_arcaneworks_ceo", "&7&l[ARCANEWORKS] 군수 회장", WorldKey.CYBERPUNK,
+                "CEO", "megacorp_arcaneworks", "회장", 9, null,
+                "크롬런던 지배. 군사 무기·방어 시스템 제조 특화.");
+        add("megacorp_frostline_ceo", "&9&l[FROSTLINE] 극지 회장", WorldKey.CYBERPUNK,
+                "CEO", "megacorp_frostline", "회장", 9, null,
+                "쉐도우모스크바 지배. 군사 사이보그·극한 환경 기술.");
+        add("megacorp_dragon_nexus_ceo", "&c&l[DRAGON NEXUS] 제조 회장", WorldKey.CYBERPUNK,
+                "CEO", "megacorp_dragon_nexus", "회장", 9, null,
+                "네온상하이 지배. 대량생산·부품 공급 독점.");
+        add("megacorp_solaris_ceo", "&e&l[SOLARIS] 에너지 회장", WorldKey.CYBERPUNK,
+                "CEO", "megacorp_solaris", "회장", 9, null,
+                "하이퍼 라고스 지배. 태양광 발전·에너지 독점.");
         add("netbreaker_legend", "&dNetBreaker 전설", WorldKey.CYBERPUNK,
                 "HACKER", "netbreakers", "전설", 9, "cyber_master_hack",
                 "익명의 전설적 해커. 모든 기업이 추격 중.");
@@ -199,6 +221,19 @@ public final class FamousNpcRegistry {
         add("ancient_dragon_black", "&8&l흑룡 노크투르나", WorldKey.DRAGON,
                 "ELDER_DRAGON", "elder_drakes", "고룡", 9, null,
                 "악의 고룡. 어둠 속에 거주.");
+        // 기획서 5-12: 5대 드래곤 로드 가문 가주 (Aurelius/Ignifer/Nocterna/Cerylis/Silvarex)
+        add("dragon_lord_ignifer", "&c&l[가주] 이그니페르 (적룡 가문)", WorldKey.DRAGON,
+                "DRAGON_LORD", "house_ignifer", "가주", 10, "fire_breath",
+                "이그니페르 가문 가주. 용암 화산 지대 '영원의 화염' 지배. 8500년.");
+        add("dragon_lord_nocterna", "&8&l[가주] 녹테르나 (흑룡 가문)", WorldKey.DRAGON,
+                "DRAGON_LORD", "house_nocterna", "가주", 10, "acid_breath",
+                "녹테르나 가문 가주. 구름 해 아래 '심연의 둥지' 지배. 7000년.");
+        add("dragon_lord_cerylis", "&9&l[가주] 세릴리스 (청룡 가문)", WorldKey.DRAGON,
+                "DRAGON_LORD", "house_cerylis", "가주", 10, "lightning_breath",
+                "세릴리스 가문 가주. '뇌전의 바다' 지배. 6500년.");
+        add("dragon_lord_silvarex", "&2&l[가주] 실바렉스 (녹룡 가문)", WorldKey.DRAGON,
+                "DRAGON_LORD", "house_silvarex", "가주", 10, "poison_breath",
+                "실바렉스 가문 가주. '용수림' 지배. 외교 우선. 6000년.");
 
         // ── 해양 ──
         add("sea_king", "&3&l[해왕] 트리톤", WorldKey.OCEAN,
@@ -213,6 +248,22 @@ public final class FamousNpcRegistry {
         add("kraken_lord", "&5&l크라켄의 군주", WorldKey.OCEAN,
                 "BOSS", "deep_dwellers", "심해의 군주", 9, null,
                 "심해에 숨은 거대 생물. 가끔 해적선을 공격.");
+        // 기획서 5-13: 7대 해양 제국
+        add("ocean_aquarion_emperor", "&b&l[황제] 아쿠아리온", WorldKey.OCEAN,
+                "EMPEROR", "aquarion_empire", "황제", 10, null,
+                "아쿠아리온 제국 군주. 정규 해군 최강. 해양 질서의 수호자.");
+        add("ocean_coral_council", "&a&l[의장] 산호 평의회", WorldKey.OCEAN,
+                "COUNCIL", "coral_union", "의장", 8, null,
+                "코럴 연합 중심. 무역·조선의 정점. 모든 세력과 교역.");
+        add("ocean_kraken_priest", "&5&l[대사제] 크라켄 신전국", WorldKey.OCEAN,
+                "PRIEST_KING", "kraken_theocracy", "대사제", 9, null,
+                "크라켄을 신으로 모시는 신정 국가. 심해 탐사 최고.");
+        add("ocean_storm_admiral", "&8&l[제독] 폭풍 제국", WorldKey.OCEAN,
+                "ADMIRAL", "storm_empire", "제독", 9, null,
+                "거대 군함 함대. 폭풍 해역 본거지. 해전 전투력 최강.");
+        add("ocean_ghost_captain", "&7&l[유령 선장] 망자의 해류국", WorldKey.OCEAN,
+                "GHOST_CAPTAIN", "ghost_fleet", "유령 선장", 9, null,
+                "언데드 선원과 유령선. 저주받은 함대.");
 
         // ── 정령 4 원소왕 ──
         add("elemental_king_fire", "&c&l[원소왕] 이프리나", WorldKey.SPIRIT,

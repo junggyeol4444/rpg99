@@ -76,15 +76,15 @@ skills:
   # ============================================================
   # 무협 비급 70종 (5장 5-5) — 1~35
   # ============================================================
-  cheonma_singong:      { name: "&5🜏 천마신공", world: MARTIAL, category: MARTIAL, min-tier-stats: 4500, cost: { type: INNER_KI, amount: 200 }, damage: "inner_ki * 5 + strength * 2", element: DARK, learn: ACHIEVEMENT }
-  guyang_jingyung:      { name: "&e☀ 구양진경", world: MARTIAL, category: MARTIAL, min-tier-stats: 2500, cost: { type: INNER_KI, amount: 150 }, damage: "inner_ki * 4", element: FIRE, learn: BOOK }
+  cheonma_singong:      { name: "&5🜏 천마신공", world: MARTIAL, category: MARTIAL, school: DEMON_CULT, min-tier-stats: 4500, cost: { type: INNER_KI, amount: 200 }, damage: "inner_ki * 5 + strength * 2", element: DARK, learn: ACHIEVEMENT }
+  guyang_jingyung:      { name: "&e☀ 구양진경", world: MARTIAL, category: MARTIAL, school: ORTHODOX, min-tier-stats: 2500, cost: { type: INNER_KI, amount: 150 }, damage: "inner_ki * 4", element: FIRE, learn: BOOK }
   dokgo_gugeom:         { name: "&f9 독고구검", world: MARTIAL, category: MARTIAL, min-tier-stats: 4500, cost: { type: INNER_KI, amount: 180 }, damage: "inner_ki * 4 + agility * 3", learn: ACHIEVEMENT }
   heupseong_daebeop:    { name: "&4☠ 흡성대법", world: MARTIAL, category: MARTIAL, min-tier-stats: 1500, cost: { type: INNER_KI, amount: 80 }, damage: "inner_ki * 2", element: DARK, learn: BOOK }
   yeokeun_seisukyeong:  { name: "&6❖ 역근세수경", world: MARTIAL, category: MARTIAL, min-tier-stats: 1200, cost: { type: INNER_KI, amount: 60 }, damage: "strength * 4", learn: NPC }
   taeguk_hwonwon:       { name: "&b☯ 태극혼원공", world: MARTIAL, category: MARTIAL, min-tier-stats: 1200, cost: { type: INNER_KI, amount: 100 }, damage: "inner_ki * 3 + agility * 2", learn: NPC }
   bingjam_dokgyeong:    { name: "&3❅ 빙잠독경", world: MARTIAL, category: MARTIAL, min-tier-stats: 1500, cost: { type: INNER_KI, amount: 90 }, damage: "inner_ki * 3 + intelligence * 1", element: POISON, learn: BOOK }
   cheongi_birok:        { name: "&5✦ 천기비록", world: MARTIAL, category: TAO, min-tier-stats: 1500, cost: { type: TAO_POWER, amount: 120 }, learn: BOOK }
-  hyeolma_daebeop:      { name: "&4🩸 혈마대법", world: MARTIAL, category: MARTIAL, min-tier-stats: 2500, cost: { type: INNER_KI, amount: 150 }, damage: "inner_ki * 4", element: DARK, learn: BOOK }
+  hyeolma_daebeop:      { name: "&4🩸 혈마대법", world: MARTIAL, category: MARTIAL, school: DEMON_CULT, min-tier-stats: 2500, cost: { type: INNER_KI, amount: 150 }, damage: "inner_ki * 4", element: DARK, learn: BOOK }
   bicheon_singong:      { name: "&f☁ 비천신공", world: MARTIAL, category: MARTIAL, min-tier-stats: 1200, cost: { type: INNER_KI, amount: 50 }, learn: ACHIEVEMENT }
   bukmyeong_singong:    { name: "&1❄ 북명신공", world: MARTIAL, category: MARTIAL, min-tier-stats: 1500, cost: { type: INNER_KI, amount: 70 }, damage: "inner_ki * 3", element: ICE, learn: BOOK }
   geongon_daenai:       { name: "&6♻ 건곤대나이", world: MARTIAL, category: MARTIAL, min-tier-stats: 1200, cost: { type: INNER_KI, amount: 100 }, damage: "inner_ki * 2", learn: BOOK }
@@ -92,20 +92,20 @@ skills:
   tanji_sintong:        { name: "&e☞ 탄지신통", world: MARTIAL, category: MARTIAL, min-tier-stats: 200, cost: { type: INNER_KI, amount: 20 }, damage: "inner_ki * 2", learn: BOOK }
   amyeon_sohonjang:     { name: "&8💔 암연소혼장", world: MARTIAL, category: MARTIAL, min-tier-stats: 700, cost: { type: INNER_KI, amount: 70 }, damage: "inner_ki * 2 + mental * 2", learn: ACHIEVEMENT }
   oknyeo_simgyeong:     { name: "&d✿ 옥녀심경", world: MARTIAL, category: MARTIAL, min-tier-stats: 500, cost: { type: INNER_KI, amount: 40 }, damage: "inner_ki * 2", learn: BOOK }
-  guhum_baekgoljo:      { name: "&7☠ 구음백골조", world: MARTIAL, category: MARTIAL, min-tier-stats: 700, cost: { type: INNER_KI, amount: 60 }, damage: "inner_ki * 3", element: DARK, learn: BOOK }
+  guhum_baekgoljo:      { name: "&7☠ 구음백골조", world: MARTIAL, category: MARTIAL, school: UNORTHODOX, min-tier-stats: 700, cost: { type: INNER_KI, amount: 60 }, damage: "inner_ki * 3", element: DARK, learn: BOOK }
   igieogeomsul:         { name: "&b🗡 이기어검술", world: MARTIAL, category: MARTIAL, min-tier-stats: 1200, cost: { type: INNER_KI, amount: 100 }, damage: "inner_ki * 4", learn: ACHIEVEMENT }
   taeeul_noebeop:       { name: "&3⚡ 태을뇌법", world: MARTIAL, category: TAO, min-tier-stats: 1500, cost: { type: TAO_POWER, amount: 100 }, damage: "tao_power * 4", element: LIGHTNING, learn: NPC }
   cheonjam_gong:        { name: "&a🐛 천잠공", world: MARTIAL, category: MARTIAL, min-tier-stats: 1200, cost: { type: INNER_KI, amount: 80 }, learn: NPC }
   guhum_jingyung:       { name: "&7☯ 구음진경", world: MARTIAL, category: MARTIAL, min-tier-stats: 2500, cost: { type: INNER_KI, amount: 150 }, damage: "inner_ki * 4", element: ICE, learn: BOOK }
-  gyuhwa_bojeon:        { name: "&d✿ 규화보전", world: MARTIAL, category: MARTIAL, min-tier-stats: 1500, cost: { type: INNER_KI, amount: 80 }, damage: "agility * 5 + inner_ki * 2", learn: ACHIEVEMENT }
+  gyuhwa_bojeon:        { name: "&d✿ 규화보전", world: MARTIAL, category: MARTIAL, school: UNORTHODOX, min-tier-stats: 1500, cost: { type: INNER_KI, amount: 80 }, damage: "agility * 5 + inner_ki * 2", learn: ACHIEVEMENT }
   tagubongbeop:         { name: "&e🦮 타구봉법", world: MARTIAL, category: MARTIAL, min-tier-stats: 700, cost: { type: INNER_KI, amount: 50 }, damage: "inner_ki * 2 + agility * 2", learn: NPC }
   hangyong_18jang:      { name: "&6🐉 항룡십팔장", world: MARTIAL, category: MARTIAL, min-tier-stats: 1200, cost: { type: INNER_KI, amount: 100 }, damage: "inner_ki * 5", learn: NPC }
   ilyangji:             { name: "&e☞ 일양지", world: MARTIAL, category: MARTIAL, min-tier-stats: 300, cost: { type: INNER_KI, amount: 30 }, damage: "inner_ki * 2", element: FIRE, learn: NPC }
   hwasan_geombeop:      { name: "&c⚔ 화산검법", world: MARTIAL, category: MARTIAL, min-tier-stats: 500, cost: { type: INNER_KI, amount: 50 }, damage: "inner_ki * 3 + agility * 1", learn: NPC }
-  byeoksa_geombeop:     { name: "&5⚔ 벽사검법", world: MARTIAL, category: MARTIAL, min-tier-stats: 1500, cost: { type: INNER_KI, amount: 70 }, damage: "agility * 6", learn: ACHIEVEMENT }
+  byeoksa_geombeop:     { name: "&5⚔ 벽사검법", world: MARTIAL, category: MARTIAL, school: UNORTHODOX, min-tier-stats: 1500, cost: { type: INNER_KI, amount: 70 }, damage: "agility * 6", learn: ACHIEVEMENT }
   eumyang_mugeuk_gong:  { name: "&f☯ 음양무극공", world: MARTIAL, category: MARTIAL, min-tier-stats: 2500, cost: { type: INNER_KI, amount: 150 }, damage: "inner_ki * 4", learn: BOOK }
   manryu_gyijong:       { name: "&6❉ 만류귀종", world: MARTIAL, category: MARTIAL, min-tier-stats: 4500, cost: { type: INNER_KI, amount: 200 }, damage: "inner_ki * 5", learn: ACHIEVEMENT }
-  cheonma_talhonsoo:    { name: "&5✋ 천마탈혼수", world: MARTIAL, category: MARTIAL, min-tier-stats: 2500, cost: { type: INNER_KI, amount: 120 }, damage: "inner_ki * 3 + mental * 2", learn: BOOK }
+  cheonma_talhonsoo:    { name: "&5✋ 천마탈혼수", world: MARTIAL, category: MARTIAL, school: DEMON_CULT, min-tier-stats: 2500, cost: { type: INNER_KI, amount: 120 }, damage: "inner_ki * 3 + mental * 2", learn: BOOK }
   surasingong:          { name: "&4🩸 수라마공", world: MARTIAL, category: MARTIAL, min-tier-stats: 2500, cost: { type: INNER_KI, amount: 130 }, damage: "inner_ki * 4", element: DARK, learn: ACHIEVEMENT }
   seonyeo_sanhwasu:     { name: "&d🌸 선녀산화수", world: MARTIAL, category: MARTIAL, min-tier-stats: 300, cost: { type: INNER_KI, amount: 40 }, damage: "agility * 3 + inner_ki * 1", learn: BOOK }
   cheolposam:           { name: "&7🛡 철포삼", world: MARTIAL, category: MARTIAL, min-tier-stats: 700, cost: { type: INNER_KI, amount: 60 }, learn: NPC }
@@ -117,7 +117,7 @@ skills:
   # ============================================================
   geumjongjo:           { name: "&e🛡 금종조", world: MARTIAL, category: MARTIAL, min-tier-stats: 1200, cost: { type: INNER_KI, amount: 80 }, learn: NPC }
   yeoraesinjang:        { name: "&6✋ 여래신장", world: MARTIAL, category: MARTIAL, min-tier-stats: 1200, cost: { type: INNER_KI, amount: 150 }, damage: "inner_ki * 8", learn: NPC }
-  sorim_72jeolgi:       { name: "&e卍 소림72절기", world: MARTIAL, category: MARTIAL, min-tier-stats: 700, cost: { type: INNER_KI, amount: 50 }, damage: "inner_ki * 3", learn: NPC }
+  sorim_72jeolgi:       { name: "&e卍 소림72절기", world: MARTIAL, category: MARTIAL, school: ORTHODOX, min-tier-stats: 700, cost: { type: INNER_KI, amount: 50 }, damage: "inner_ki * 3", learn: NPC }
   cheonsu_gwaneumjang:  { name: "&d🙌 천수관음장", world: MARTIAL, category: MARTIAL, min-tier-stats: 300, cost: { type: INNER_KI, amount: 40 }, damage: "agility * 2 + inner_ki * 1", learn: NPC }
   tagyeok_36ro_bongbeop: { name: "&7🥢 타격삼십육로봉법", world: MARTIAL, category: MARTIAL, min-tier-stats: 500, cost: { type: INNER_KI, amount: 40 }, damage: "inner_ki * 2 + strength * 1", learn: NPC }
   mi_in_gwon:           { name: "&d💃 미인권", world: MARTIAL, category: MARTIAL, min-tier-stats: 300, cost: { type: INNER_KI, amount: 30 }, damage: "agility * 2 + inner_ki * 2", learn: NPC }
@@ -129,11 +129,11 @@ skills:
   cheonsan_yukyangjang: { name: "&e☀ 천산육양장", world: MARTIAL, category: MARTIAL, min-tier-stats: 1200, cost: { type: INNER_KI, amount: 100 }, damage: "inner_ki * 5", element: FIRE, learn: NPC }
   cheonsan_jeolmaesu:   { name: "&d✋ 천산절매수", world: MARTIAL, category: MARTIAL, min-tier-stats: 1200, cost: { type: INNER_KI, amount: 90 }, damage: "inner_ki * 4", learn: NPC }
   saengsaengbu:         { name: "&3❅ 생사부", world: MARTIAL, category: MARTIAL, min-tier-stats: 1200, cost: { type: INNER_KI, amount: 110 }, learn: BOOK }
-  hwagong_daebeop:      { name: "&0✘ 화공대법", world: MARTIAL, category: MARTIAL, min-tier-stats: 1500, cost: { type: INNER_KI, amount: 130 }, learn: BOOK }
+  hwagong_daebeop:      { name: "&0✘ 화공대법", world: MARTIAL, category: MARTIAL, school: DEMON_CULT, min-tier-stats: 1500, cost: { type: INNER_KI, amount: 130 }, learn: BOOK }
   sinjo_dobeop:         { name: "&f☀ 신조도법", world: MARTIAL, category: TAO, min-tier-stats: 700, cost: { type: TAO_POWER, amount: 60 }, damage: "tao_power * 3", element: HOLY, learn: NPC }
   taehyeon_gyeong:      { name: "&6☯ 태현경", world: MARTIAL, category: MARTIAL, min-tier-stats: 2500, cost: { type: INNER_KI, amount: 150 }, learn: ACHIEVEMENT }
-  guyang_singong:       { name: "&e☀ 구양신공", world: MARTIAL, category: MARTIAL, min-tier-stats: 4500, cost: { type: INNER_KI, amount: 250 }, damage: "inner_ki * 6", element: FIRE, learn: ACHIEVEMENT }
-  cheonma_bi:           { name: "&5🎵 천마비", world: MARTIAL, category: MARTIAL, min-tier-stats: 1500, cost: { type: INNER_KI, amount: 110 }, damage: "inner_ki * 3 + mental * 2", learn: BOOK }
+  guyang_singong:       { name: "&e☀ 구양신공", world: MARTIAL, category: MARTIAL, school: ORTHODOX, min-tier-stats: 4500, cost: { type: INNER_KI, amount: 250 }, damage: "inner_ki * 6", element: FIRE, learn: ACHIEVEMENT }
+  cheonma_bi:           { name: "&5🎵 천마비", world: MARTIAL, category: MARTIAL, school: DEMON_CULT, min-tier-stats: 1500, cost: { type: INNER_KI, amount: 110 }, damage: "inner_ki * 3 + mental * 2", learn: BOOK }
   ihwa_jeommok:         { name: "&b♻ 이화접목", world: MARTIAL, category: MARTIAL, min-tier-stats: 1200, cost: { type: INNER_KI, amount: 100 }, learn: BOOK }
   baekbo_singwon:       { name: "&6👊 백보신권", world: MARTIAL, category: MARTIAL, min-tier-stats: 1200, cost: { type: INNER_KI, amount: 120 }, damage: "inner_ki * 6", learn: BOOK }
   hyeoldosul:           { name: "&e👁 혈도술", world: MARTIAL, category: MARTIAL, min-tier-stats: 1500, cost: { type: INNER_KI, amount: 80 }, learn: NPC }

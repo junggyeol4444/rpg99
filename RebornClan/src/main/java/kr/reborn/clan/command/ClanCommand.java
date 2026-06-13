@@ -66,6 +66,19 @@ public final class ClanCommand implements CommandExecutor {
                 Msg.send(p, "&6가문: " + mine.name + " (Lv " + mine.level + ")");
                 Msg.send(p, "&7인원: " + mine.members.size() + "  보고: " + mine.treasury);
                 break;
+            case "lineage": {
+                var pd = kr.reborn.core.RebornCore.get().api().getPlayerData(p.getUniqueId());
+                if (pd == null) { Msg.warn(p, "데이터 없음"); break; }
+                String ln = pd.lineage();
+                if (ln == null || ln.isEmpty()) {
+                    Msg.send(p, "&7혈통 없음 — 평범한 출신.");
+                    break;
+                }
+                Msg.send(p, "&6&l[혈통] §f" + ln);
+                String effect = lineageEffectDesc(ln);
+                if (effect != null) Msg.send(p, "&7효과: " + effect);
+                break;
+            }
             case "list":
                 Msg.send(p, "&6전체 가문:");
                 plugin.clans().all().forEach(cn -> p.sendMessage("§e" + cn.id + " §7- " + cn.name + " (Lv " + cn.level + ")"));
@@ -117,5 +130,19 @@ public final class ClanCommand implements CommandExecutor {
                 break;
         }
         return true;
+    }
+
+    private String lineageEffectDesc(String lineage) {
+        return switch (lineage) {
+            case "ROYAL" -> "&6왕족 — 카리스마 +30";
+            case "ELF" -> "&a엘프 — 마나 +200, 매력 +20";
+            case "DEMON_LORD" -> "&5마왕 — 마기 +500, 근력 +20";
+            case "DEMON_NOBLE" -> "&5악마 귀족 — 마기 +200, 카리스마 +15";
+            case "KITSUNE" -> "&d구미호 — 요기 +300, 매력 +40";
+            case "GOLD_DRAGON" -> "&6드래곤 — 용력 +50, 브레스 자동 학습";
+            case "SPIRIT" -> "&b정령 — 정령력 +200";
+            case "MARTIAL_PURE" -> "&3무가 명문 — 내공 +300, 정신 +10";
+            default -> null;
+        };
     }
 }

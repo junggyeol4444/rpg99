@@ -16,15 +16,27 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class TimeChamber {
 
-    /** 화이트리스트 — chamberId가 이 셋에 없고 config ratios에도 없으면 진입 거부. */
-    private static final Set<String> KNOWN_CHAMBERS = Set.of(
-            "dragon_chamber",
-            "dragon_chamber_aurelius",
-            "dragon_chamber_ignifer",
-            "dragon_chamber_nocterna",
-            "dragon_chamber_cerylis",
-            "dragon_chamber_silvarex"
-    );
+    /** 화이트리스트 — chamberId가 이 셋에 없고 config ratios에도 없으면 진입 거부.
+     *  드래곤 5가문 + caveheaven_1~36 (선계 36동천) + bless_1~72 (72복지)를 모두 인정.
+     */
+    private static final Set<String> KNOWN_CHAMBERS;
+    static {
+        java.util.HashSet<String> s = new java.util.HashSet<>();
+        s.add("dragon_chamber");
+        s.add("dragon_chamber_aurelius");
+        s.add("dragon_chamber_ignifer");
+        s.add("dragon_chamber_nocterna");
+        s.add("dragon_chamber_cerylis");
+        s.add("dragon_chamber_silvarex");
+        // 36동천
+        for (int i = 1; i <= 36; i++) s.add("caveheaven_" + i);
+        // 72복지
+        for (int i = 1; i <= 72; i++) s.add("bless_" + i);
+        KNOWN_CHAMBERS = java.util.Collections.unmodifiableSet(s);
+    }
+
+    /** 선계 36동천·72복지 진척도 KV 네임스페이스. */
+    private static final String CAVE_NS = "RebornTime.cavehaven";
 
     private final RebornTime plugin;
     private final Map<UUID, Long> lastExit = new ConcurrentHashMap<>();
@@ -106,9 +118,43 @@ public final class TimeChamber {
         applyExitBonus(p, chamber, internalYears);
         d.dragonAge(d.dragonAge() + internalYears);
         lastExit.put(p.getUniqueId(), System.currentTimeMillis());
+        // 36동천·72복지 진척도 KV 기록 — 진입한 동천/복지 개수 추적
+        if (chamber != null && (chamber.startsWith("caveheaven_") || chamber.startsWith("bless_"))) {
+            try {
+                long visitCount = RebornCore.get().kv().getLong(
+                        CAVE_NS, p.getUniqueId(), chamber + ".visits", 0) + 1;
+                RebornCore.get().kv().putLong(CAVE_NS, p.getUniqueId(),
+                        chamber + ".visits", visitCount);
+                long totalYears = RebornCore.get().kv().getLong(
+                        CAVE_NS, p.getUniqueId(), chamber + ".years", 0) + internalYears;
+                RebornCore.get().kv().putLong(CAVE_NS, p.getUniqueId(),
+                        chamber + ".years", totalYears);
+                // 첫 방문 broadcast
+                if (visitCount == 1 && chamber.startsWith("caveheaven_")) {
+                    Bukkit.broadcastMessage("§5§l[36동천] §f" + p.getName()
+                            + " §7이(가) §6" + chamber + " §7최초 진입.");
+                }
+            } catch (Throwable ignored) {}
+        }
         World w = Bukkit.getWorld(exitWorldOf(chamber));
         if (w != null) p.teleport(w.getSpawnLocation());
         Msg.send(p, "&5" + chamberLabel(chamber) + " 퇴장 — 내부 " + internalYears + "년 경과.");
+    }
+
+    /** 36동천·72복지 진척 조회용 외부 API. */
+    public int discoveredCaveheavens(UUID id) {
+        int count = 0;
+        for (int i = 1; i <= 36; i++) {
+            if (RebornCore.get().kv().getLong(CAVE_NS, id, "caveheaven_" + i + ".visits", 0) > 0) count++;
+        }
+        return count;
+    }
+    public int discoveredBlessedLands(UUID id) {
+        int count = 0;
+        for (int i = 1; i <= 72; i++) {
+            if (RebornCore.get().kv().getLong(CAVE_NS, id, "bless_" + i + ".visits", 0) > 0) count++;
+        }
+        return count;
     }
 
     /** 매 1분 = 내부 (ratio)분 = 스탯 미세 +. + 내부 100년 cap 강제 퇴장. */

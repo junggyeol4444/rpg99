@@ -451,6 +451,242 @@ public final class EventTree {
         apoc.nodes.put("betray", new EventNode("배신자",
             List.of("정착지가 약탈당했다 — 약탈단의 일원으로 살아간다."), List.of()));
         TREES.put("apoc_settlement", apoc);
+
+        // ============================================================
+        // 마계 신마전쟁 — 천계 vs 마계 전면전 (마계 시점)
+        // ============================================================
+        EventTreeDef sinmaWar = new EventTreeDef("demon_world_invasion", "summons");
+        sinmaWar.nodes.put("summons", new EventNode("마왕의 소집",
+            List.of("7대 마왕이 동시에 외친다. 천계가 토벌 선언했다.",
+                    "지원군이 필요하다. 너는 어느 진영에 설 것인가?"),
+            List.of(
+                new EventChoice("루시페르 군에 합류 (교만)", "lucifer_path", List.of("STAT:DEMON_KI=200")),
+                new EventChoice("사탄 군에 합류 (분노)", "satan_path", List.of("STAT:STRENGTH=30")),
+                new EventChoice("중립 — 마몬과 거래", "mammon_path", List.of("STAT:CHARISMA=20")))));
+        sinmaWar.nodes.put("lucifer_path", new EventNode("교만의 군단",
+            List.of("타락 천사 군단 선봉으로 무간지대 진격."),
+            List.of(
+                new EventChoice("천계 본진 공격", "ending_assault", List.of("STAT:DEMON_KI=500", "TITLE:천계 도전자")),
+                new EventChoice("배신 — 천계 측에 정보", "ending_traitor", List.of("CURSE:마계 추방자")))));
+        sinmaWar.nodes.put("satan_path", new EventNode("분노의 전장",
+            List.of("끝없는 살육. 살의가 곧 힘."),
+            List.of(
+                new EventChoice("학살자가 된다", "ending_carnage", List.of("STAT:STRENGTH=80", "STAT:DEMON_KI=400", "CURSE:살육광")),
+                new EventChoice("전선 이탈", "", List.of()))));
+        sinmaWar.nodes.put("mammon_path", new EventNode("탐욕의 거래",
+            List.of("양측 모두에게 무기를 팔며 부를 축적."),
+            List.of(
+                new EventChoice("양측 거래 성공", "ending_merchant", List.of("STAT:CHARISMA=50", "TITLE:차원 상인")))));
+        sinmaWar.nodes.put("ending_assault", new EventNode("천계 침공",
+            List.of("무간지대에서 격전 — 너의 이름이 양 세계에 알려진다."), List.of()));
+        sinmaWar.nodes.put("ending_traitor", new EventNode("배신자",
+            List.of("천계가 너를 받아들였으나, 마계는 영원한 적이 됐다."), List.of()));
+        sinmaWar.nodes.put("ending_carnage", new EventNode("학살의 화신",
+            List.of("너의 살의가 살의를 부른다. 영원한 분노 속에 산다."), List.of()));
+        sinmaWar.nodes.put("ending_merchant", new EventNode("차원 상인",
+            List.of("양 진영 모두 너에게 빚을 졌다. 부와 영향력이 너의 무기."), List.of()));
+        TREES.put("demon_world_invasion", sinmaWar);
+
+        // ============================================================
+        // 천계 신마대전 — 천계 시점의 신마전쟁
+        // ============================================================
+        EventTreeDef heavenWar = new EventTreeDef("heaven_divine_war", "muster");
+        heavenWar.nodes.put("muster", new EventNode("천사 군단 소집",
+            List.of("4대천사 미카엘이 호출한다. 마계의 도전을 받는다.",
+                    "너의 위치는?"),
+            List.of(
+                new EventChoice("선봉대 (전투)", "vanguard", List.of("STAT:STRENGTH=20", "STAT:HEAVEN_KI=200")),
+                new EventChoice("정화단 (치유)", "purify", List.of("STAT:DIVINITY=10", "STAT:MENTAL=20")),
+                new EventChoice("정보국 (간첩)", "spy", List.of("STAT:INTELLIGENCE=20", "STAT:LUCK=10")))));
+        heavenWar.nodes.put("vanguard", new EventNode("최전선",
+            List.of("발록 군단과 격돌. 살아남는 자만이 명예를 안는다."),
+            List.of(
+                new EventChoice("발록 처치 시도", "ending_balrog", List.of("STAT:HEAVEN_KI=500", "TITLE:발록 도살자")),
+                new EventChoice("후퇴", "", List.of("STAT:MENTAL=-10")))));
+        heavenWar.nodes.put("purify", new EventNode("성지 정화",
+            List.of("타락한 천사의 영혼을 정화. 시간이 약."),
+            List.of(
+                new EventChoice("정화 완성", "ending_pure", List.of("STAT:DIVINITY=50", "TITLE:정화의 손길")))));
+        heavenWar.nodes.put("spy", new EventNode("마계 잠입",
+            List.of("적의 본진에 침투. 정보를 가져온다."),
+            List.of(
+                new EventChoice("정보 회수", "ending_spy", List.of("STAT:INTELLIGENCE=40", "TITLE:천사 간첩")),
+                new EventChoice("배신 — 마계에 잔류", "ending_fall", List.of("CURSE:타락 천사")))));
+        heavenWar.nodes.put("ending_balrog", new EventNode("발록 도살자",
+            List.of("너의 이름이 천사 군단의 노래에 새겨진다."), List.of()));
+        heavenWar.nodes.put("ending_pure", new EventNode("정화의 사도",
+            List.of("천사들 사이 존경의 대상. 정화의 손길."), List.of()));
+        heavenWar.nodes.put("ending_spy", new EventNode("천사 간첩",
+            List.of("그림자 속 영웅. 천계 정보국 핵심."), List.of()));
+        heavenWar.nodes.put("ending_fall", new EventNode("타락",
+            List.of("천계가 너를 추방했다. 너는 이제 타락 천사다."), List.of()));
+        TREES.put("heaven_divine_war", heavenWar);
+
+        // ============================================================
+        // 무협 천마 강림 — 천마가 부활하여 무림 전체 위협
+        // ============================================================
+        EventTreeDef tianmo = new EventTreeDef("demon_descent", "omen");
+        tianmo.nodes.put("omen", new EventNode("불길한 징조",
+            List.of("천하 곳곳에서 검은 안개. 천마의 잔영이 부활을 예고한다.",
+                    "너의 입장은?"),
+            List.of(
+                new EventChoice("정파 연합에 합류", "right_ally", List.of("STAT:INNER_KI=100", "STAT:MENTAL=20")),
+                new EventChoice("천마 측 — 마교 교주에 도전", "left_ally", List.of("STAT:DEMON_KI=200")),
+                new EventChoice("관망 — 중립", "neutral", List.of("STAT:INTELLIGENCE=20")))));
+        tianmo.nodes.put("right_ally", new EventNode("정파 연합",
+            List.of("소림·무당·화산 연합군. 너는 그 일원."),
+            List.of(
+                new EventChoice("최전선 출진", "ending_hero", List.of("STAT:INNER_KI=500", "TITLE:정파 영웅")),
+                new EventChoice("후방 지원", "", List.of("STAT:CHARISMA=20")))));
+        tianmo.nodes.put("left_ally", new EventNode("천마 측",
+            List.of("천마의 힘은 인간을 초월. 너 또한 그 길을 갈 것인가?"),
+            List.of(
+                new EventChoice("천마신공 수련", "ending_demon", List.of("STAT:DEMON_KI=800", "STAT:INNER_KI=400", "TITLE:천마 후계자")),
+                new EventChoice("천마에 배신 — 정파로", "ending_betray", List.of("TITLE:이중첩자")))));
+        tianmo.nodes.put("neutral", new EventNode("관망자",
+            List.of("힘의 균형을 본다. 누구 편이 될지 결정하지 않았다."),
+            List.of(
+                new EventChoice("기회를 노린다", "ending_opportunist", List.of("STAT:LUCK=30", "TITLE:기회주의자")))));
+        tianmo.nodes.put("ending_hero", new EventNode("정파 영웅",
+            List.of("천마와 결전. 영광이 너의 것."), List.of()));
+        tianmo.nodes.put("ending_demon", new EventNode("천마 후계자",
+            List.of("너 안의 천마가 깨어났다. 무림이 너를 두려워한다."), List.of()));
+        tianmo.nodes.put("ending_betray", new EventNode("이중첩자",
+            List.of("양측 정보를 손에 쥐고 살아남았다."), List.of()));
+        tianmo.nodes.put("ending_opportunist", new EventNode("기회주의자",
+            List.of("결전 후 보물을 손에 넣었다."), List.of()));
+        TREES.put("demon_descent", tianmo);
+
+        // ============================================================
+        // 선계 천겁 이변 — 천겁뇌해가 비정상 확장
+        // ============================================================
+        EventTreeDef cheonGeop = new EventTreeDef("heavenly_chaos", "warning");
+        cheonGeop.nodes.put("warning", new EventNode("천겁 이변",
+            List.of("천겁뇌해가 36동천 영역을 침식한다. 태허선궁이 행동을 요구한다."),
+            List.of(
+                new EventChoice("뇌전 흡수 시도 (위험)", "absorb", List.of("STAT:LUCK=10")),
+                new EventChoice("동천 방어 (안전)", "defend", List.of("STAT:MENTAL=20")),
+                new EventChoice("도망 — 다른 세계로", "flee", List.of("STAT:AGILITY=20")))));
+        cheonGeop.nodes.put("absorb", new EventNode("뇌전 흡수",
+            List.of("천겁뇌해의 뇌전을 직접 흡수. 생존 시 보상은 거대."),
+            List.of(
+                new EventChoice("계속 흡수", "ending_lightning", List.of("STAT:IMMORTAL_KI=1000", "TITLE:뇌전의 선인")),
+                new EventChoice("중단 — 안전 우선", "", List.of("STAT:MENTAL=-30")))));
+        cheonGeop.nodes.put("defend", new EventNode("동천 방어",
+            List.of("36동천 중 일부가 너의 방어로 보존됐다."),
+            List.of(
+                new EventChoice("계속 방어", "ending_guardian", List.of("STAT:ENDURANCE=50", "TITLE:36동천 수호자")))));
+        cheonGeop.nodes.put("flee", new EventNode("도망자",
+            List.of("선계를 떠나 다른 차원으로 피신."),
+            List.of(
+                new EventChoice("적응", "ending_exile", List.of("STAT:AGILITY=30", "CURSE:선계 추방")))));
+        cheonGeop.nodes.put("ending_lightning", new EventNode("뇌전의 선인",
+            List.of("너의 몸에 뇌전이 깃들었다. 한 발자국이 천둥."), List.of()));
+        cheonGeop.nodes.put("ending_guardian", new EventNode("36동천 수호자",
+            List.of("태허선궁이 너를 인정. 선계의 보루."), List.of()));
+        cheonGeop.nodes.put("ending_exile", new EventNode("선계 추방자",
+            List.of("선계 문이 닫혔다. 너는 이제 떠도는 자."), List.of()));
+        TREES.put("heavenly_chaos", cheonGeop);
+
+        // ============================================================
+        // 지구 미궁 100층 정복
+        // ============================================================
+        EventTreeDef labyrinth = new EventTreeDef("maze_100_conquest", "summons");
+        labyrinth.nodes.put("summons", new EventNode("100층 도전",
+            List.of("미궁 100층의 문이 모든 헌터에게 열렸다.",
+                    "각성한 자만이 도전 가능."),
+            List.of(
+                new EventChoice("단독 도전 (위험)", "solo", List.of("STAT:LUCK=10")),
+                new EventChoice("길드 레이드 합류", "raid", List.of("STAT:CHARISMA=20")),
+                new EventChoice("정보만 분석", "analyze", List.of("STAT:INTELLIGENCE=30")))));
+        labyrinth.nodes.put("solo", new EventNode("단독 도전",
+            List.of("100층 보스 — 미궁의 핵심."),
+            List.of(
+                new EventChoice("핵심 격파", "ending_solo_clear", List.of("STAT:LEVEL=10", "TITLE:단독 정복자")),
+                new EventChoice("후퇴", "", List.of("STAT:MENTAL=-20")))));
+        labyrinth.nodes.put("raid", new EventNode("길드 레이드",
+            List.of("S랭크 길드와 100명 동시 도전."),
+            List.of(
+                new EventChoice("MVP 등극", "ending_raid_mvp", List.of("STAT:LEVEL=8", "STAT:CHARISMA=30", "TITLE:레이드 MVP")),
+                new EventChoice("팀워크 우선", "ending_raid_team", List.of("STAT:LEVEL=5", "STAT:CHARISMA=20")))));
+        labyrinth.nodes.put("analyze", new EventNode("분석가",
+            List.of("미궁 구조를 해독. 모든 헌터 협회의 자료가 너의 손에."),
+            List.of(
+                new EventChoice("정보 판매", "ending_analyst", List.of("STAT:INTELLIGENCE=50", "TITLE:미궁 학자")))));
+        labyrinth.nodes.put("ending_solo_clear", new EventNode("단독 정복자",
+            List.of("미궁의 의지가 너를 인정. 세계가 바뀐다."), List.of()));
+        labyrinth.nodes.put("ending_raid_mvp", new EventNode("레이드 MVP",
+            List.of("100층 정복의 영웅. 모든 길드가 너를 원한다."), List.of()));
+        labyrinth.nodes.put("ending_raid_team", new EventNode("팀의 일원",
+            List.of("정복은 함께. 보상도 함께."), List.of()));
+        labyrinth.nodes.put("ending_analyst", new EventNode("미궁 학자",
+            List.of("이제 모든 헌터가 너를 찾는다."), List.of()));
+        TREES.put("maze_100_conquest", labyrinth);
+
+        // ============================================================
+        // 마도공학 마도 폭주
+        // ============================================================
+        EventTreeDef mado = new EventTreeDef("mado_runaway", "siren");
+        mado.nodes.put("siren", new EventNode("마도 사이렌",
+            List.of("7대 도시 중 한 곳에서 마도 에너지 폭주.",
+                    "너의 대응은?"),
+            List.of(
+                new EventChoice("진압 — 폭주 봉인", "suppress", List.of("STAT:INTELLIGENCE=30")),
+                new EventChoice("흡수 — 위험하지만 큰 보상", "absorb", List.of("STAT:LUCK=20")),
+                new EventChoice("연구 — 데이터 수집", "research", List.of("STAT:MAGITECH_ENERGY=100")))));
+        mado.nodes.put("suppress", new EventNode("폭주 진압",
+            List.of("도시 한 구역이 너의 손에 살아남았다."),
+            List.of(
+                new EventChoice("성공", "ending_savior", List.of("STAT:MAGITECH_ENERGY=300", "TITLE:도시 수호자")))));
+        mado.nodes.put("absorb", new EventNode("에너지 흡수",
+            List.of("폭주 에너지가 너의 몸을 갉아먹는다."),
+            List.of(
+                new EventChoice("계속 흡수", "ending_overload", List.of("STAT:MAGITECH_ENERGY=800", "CURSE:과부하 체질")),
+                new EventChoice("중단", "", List.of()))));
+        mado.nodes.put("research", new EventNode("연구자",
+            List.of("폭주 데이터 수집. 학계의 영웅."),
+            List.of(
+                new EventChoice("논문 발표", "ending_researcher", List.of("STAT:INTELLIGENCE=50", "TITLE:마도 학자")))));
+        mado.nodes.put("ending_savior", new EventNode("도시 수호자",
+            List.of("도시민이 너를 영웅으로 기린다."), List.of()));
+        mado.nodes.put("ending_overload", new EventNode("과부하의 화신",
+            List.of("너의 몸이 마도 에너지로 가득. 일상이 위험하다."), List.of()));
+        mado.nodes.put("ending_researcher", new EventNode("마도 학자",
+            List.of("학계의 정점. 모든 연구소가 너를 환영."), List.of()));
+        TREES.put("mado_runaway", mado);
+
+        // ============================================================
+        // 드래곤 용왕 부활
+        // ============================================================
+        EventTreeDef dragonRevival = new EventTreeDef("dragon_revival", "awakening");
+        dragonRevival.nodes.put("awakening", new EventNode("용왕 부활의 징조",
+            List.of("고대 용왕 아우렐리스 0세의 잠이 깨어난다.",
+                    "5대 가문이 동시에 호출. 너의 진영은?"),
+            List.of(
+                new EventChoice("용왕에 충성", "loyalty", List.of("STAT:DRAGON_POWER=200")),
+                new EventChoice("이그니페르 가문 — 반란", "rebellion", List.of("STAT:STRENGTH=30")),
+                new EventChoice("녹테르나 — 그림자 속에서", "shadow", List.of("STAT:INTELLIGENCE=30")))));
+        dragonRevival.nodes.put("loyalty", new EventNode("충성의 길",
+            List.of("용왕의 부활 의식에 동참. 너의 충성이 보상받는다."),
+            List.of(
+                new EventChoice("의식 호위", "ending_loyal", List.of("STAT:DRAGON_POWER=600", "TITLE:용왕 호위")),
+                new EventChoice("후방 지원", "", List.of()))));
+        dragonRevival.nodes.put("rebellion", new EventNode("반란",
+            List.of("이그니페르가 용왕에 도전. 천명을 빼앗으려 한다."),
+            List.of(
+                new EventChoice("전면 공격", "ending_rebel", List.of("STAT:STRENGTH=80", "STAT:DRAGON_POWER=500", "CURSE:반역자")),
+                new EventChoice("배신 — 용왕 측에", "", List.of()))));
+        dragonRevival.nodes.put("shadow", new EventNode("그림자",
+            List.of("녹테르나 가문은 정보로 승부."),
+            List.of(
+                new EventChoice("간첩 활동", "ending_spy", List.of("STAT:INTELLIGENCE=60", "STAT:LUCK=30", "TITLE:용계 간첩")))));
+        dragonRevival.nodes.put("ending_loyal", new EventNode("용왕 호위",
+            List.of("용왕이 너를 그의 곁에 둔다. 천명 다음의 위치."), List.of()));
+        dragonRevival.nodes.put("ending_rebel", new EventNode("반역자",
+            List.of("용왕이 처형 영장을 발행했다. 도망쳐야 한다."), List.of()));
+        dragonRevival.nodes.put("ending_spy", new EventNode("용계 간첩",
+            List.of("모든 가문의 정보가 너의 손에. 진정한 권력자."), List.of()));
+        TREES.put("dragon_revival", dragonRevival);
     }
 
     public static final class EventTreeDef {

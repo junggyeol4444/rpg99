@@ -173,4 +173,103 @@ public final class OceanGrowth implements GrowthStrategy {
 
     public int stageOf(UUID p) { ensureLoaded(p); return Math.max(0, stage.getOrDefault(p, 0)); }
     public int pearlsOf(UUID p) { ensureLoaded(p); return pearls.getOrDefault(p, 0); }
+
+    // ───────────────────────── 7대 해양 제국 평판 ─────────────────────────
+    /**
+     * 기획서 5-13: 7대 해양 제국.
+     * 각 제국 평판(-1000~+1000) — 단계별 효과:
+     *   +500↑ Citizen — 항구 무료, 전용 거래
+     *   +100↑ Allied — 항구 50% 할인
+     *   -200↓ Hostile — 해당 영해 진입 시 공격
+     *   -500↓ Enemy — 현상수배, 함대 추격
+     */
+    public static final String[] EMPIRES = {
+            "AQUARION",          // 아쿠아리온 — 정규 해군 / 질서 수호
+            "CORAL_UNION",       // 코럴 연합 — 무역
+            "KRAKEN_THEOCRACY",  // 크라켄 신전국 — 심해 종교
+            "PEARL_ABYSS",       // 인어 왕국 펄 아비스
+            "FREE_SEA",          // 자유해 — 해적
+            "STORM_EMPIRE",      // 폭풍 제국 — 군사
+            "GHOST_FLEET"        // 망자의 해류 — 언데드
+    };
+
+    /** 정의·자유 진영 vs 해적·언데드 — 한쪽 우호 시 다른 쪽 감소. */
+    private static final Map<String, String> EMPIRE_RIVALS = Map.of(
+            "AQUARION", "FREE_SEA",          // 해군 vs 해적
+            "FREE_SEA", "AQUARION",
+            "CORAL_UNION", "STORM_EMPIRE",   // 무역 vs 군사
+            "STORM_EMPIRE", "CORAL_UNION",
+            "KRAKEN_THEOCRACY", "PEARL_ABYSS", // 신정 vs 인어 (심해 vs 인어계)
+            "PEARL_ABYSS", "KRAKEN_THEOCRACY",
+            "GHOST_FLEET", "AQUARION"        // 언데드는 해군 영원의 적
+    );
+
+    private static final String EMPIRE_NS = "RebornStat.ocean.empire";
+
+    public int empireReputation(UUID p, String empireId) {
+        return RebornCore.get().kv().getInt(EMPIRE_NS, p, empireId, 0);
+    }
+
+    public void gainEmpireFavor(Player p, String empireId, int delta) {
+        if (!isEmpire(empireId)) return;
+        int cur = empireReputation(p.getUniqueId(), empireId);
+        int next = Math.max(-1000, Math.min(1000, cur + delta));
+        RebornCore.get().kv().putInt(EMPIRE_NS, p.getUniqueId(), empireId, next);
+        if (delta > 0) {
+            String rival = EMPIRE_RIVALS.get(empireId);
+            if (rival != null) {
+                int rivalCur = empireReputation(p.getUniqueId(), rival);
+                int rivalNext = Math.max(-1000, rivalCur - (delta / 2));
+                RebornCore.get().kv().putInt(EMPIRE_NS, p.getUniqueId(), rival, rivalNext);
+            }
+        }
+        notifyEmpireStatus(p, empireId, cur, next);
+    }
+
+    private void notifyEmpireStatus(Player p, String empireId, int prev, int cur) {
+        int prevTier = empireTier(prev);
+        int curTier = empireTier(cur);
+        if (prevTier == curTier) return;
+        String[] labels = {"적", "적대", "냉랭", "중립", "동맹", "시민"};
+        String label = labels[Math.max(0, Math.min(labels.length - 1, curTier))];
+        Msg.send(p, "&3[" + empireId + "] §f관계: §6" + label + " §7(" + cur + ")");
+        if (curTier >= 4) {
+            Bukkit.broadcastMessage("§3§l[" + empireId + "] §f" + p.getName()
+                    + " §7가 §6" + label + " §7관계 도달.");
+        }
+    }
+
+    public int empireTier(int rep) {
+        if (rep <= -500) return 0;
+        if (rep <= -200) return 1;
+        if (rep < 100) return 2;
+        if (rep < 300) return 3;
+        if (rep < 500) return 4;
+        return 5;
+    }
+
+    public boolean isEmpire(String id) {
+        if (id == null) return false;
+        for (String c : EMPIRES) if (c.equals(id)) return true;
+        return false;
+    }
+
+    /** 해상 임무 보상 — 종류별 평판. */
+    public void onEmpireMission(Player p, String empireId, String missionType) {
+        int amount = switch (missionType) {
+            case "escort"   -> 20;   // 호송
+            case "naval"    -> 60;   // 해전 참가
+            case "explore"  -> 35;   // 신항로 발견
+            case "pirate"   -> 100;  // 해적 처치 (대형 임무)
+            case "betray"   -> -150; // 배신
+            default         -> 10;
+        };
+        gainEmpireFavor(p, empireId, amount);
+    }
+
+    public Map<String, Integer> allEmpireReputations(UUID p) {
+        Map<String, Integer> out = new java.util.LinkedHashMap<>();
+        for (String c : EMPIRES) out.put(c, empireReputation(p, c));
+        return out;
+    }
 }

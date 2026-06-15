@@ -37,6 +37,12 @@ commands:
   element:
     description: 정령계 주 속성 선택 (4대 + 12소원소; 빛/어둠은 시험 필요)
     usage: /element [FIRE|WATER|EARTH|WIND|LIGHT|DARK|LIGHTNING|ICE|POISON|METAL|CRYSTAL|LAVA|MIST|SAND|WOOD|SOUND]
+  corp:
+    description: 7대 메가코프 평판 (사이버펑크)
+    usage: /corp [join <CORP> | mission <CORP> <minor|major|legend|betray>]
+  empire:
+    description: 7대 해양 제국 평판 (해양)
+    usage: /empire [join <EMPIRE> | mission <EMPIRE> <escort|naval|explore|pirate|betray>]
 permissions:
   rebornstat.use:
     default: true

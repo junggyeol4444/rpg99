@@ -232,4 +232,102 @@ public final class CyberpunkGrowth implements GrowthStrategy {
         ensureLoaded(p);
         return implants.getOrDefault(p, java.util.Collections.emptyMap());
     }
+
+    // ───────────────────────── 7대 메가코프 평판 시스템 ─────────────────────────
+    /**
+     * 기획서 5-11: 7대 메가코프 (AKRO/JINTECH/HEXACORP/ARCANEWORKS/FROSTLINE/DRAGON_NEXUS/SOLARIS).
+     * 각 코프와의 평판(-1000 ~ +1000):
+     *   +500↑  Ally — 코프 상점 할인 30%, 전용 임플란트 접근
+     *   +100↑  Friendly — 코프 상점 접근
+     *   -200↓  Hostile — 코프 영역 진입 시 경비 발동
+     *   -500↓  Enemy — 현상수배, 코프 전투 병기 추격
+     *
+     * 적대적 코프에 우호하면 — 라이벌 코프 평판 자동 감소.
+     */
+    public static final String[] CORPS = {
+            "AKRO", "JINTECH", "HEXACORP", "ARCANEWORKS",
+            "FROSTLINE", "DRAGON_NEXUS", "SOLARIS"
+    };
+
+    /** 코프별 라이벌 — 한쪽 우호 시 다른 쪽 감소. */
+    private static final Map<String, String> CORP_RIVALS = Map.of(
+            "AKRO", "JINTECH",            // 인체 vs AI
+            "JINTECH", "AKRO",
+            "HEXACORP", "ARCANEWORKS",     // 데이터 vs 군수
+            "ARCANEWORKS", "HEXACORP",
+            "FROSTLINE", "SOLARIS",        // 극지 vs 태양광
+            "SOLARIS", "FROSTLINE",
+            "DRAGON_NEXUS", "AKRO"         // 제조 vs 인체개조 (자체 부품)
+    );
+
+    private static final String CORP_NS = "RebornStat.cyberpunk.corp";
+
+    public int corpReputation(UUID p, String corpId) {
+        return RebornCore.get().kv().getInt(CORP_NS, p, corpId, 0);
+    }
+
+    public void gainCorpFavor(Player p, String corpId, int delta) {
+        if (!isCorp(corpId)) return;
+        int cur = corpReputation(p.getUniqueId(), corpId);
+        int next = Math.max(-1000, Math.min(1000, cur + delta));
+        RebornCore.get().kv().putInt(CORP_NS, p.getUniqueId(), corpId, next);
+        // 라이벌 코프 평판 감소 (delta가 양수일 때만)
+        if (delta > 0) {
+            String rival = CORP_RIVALS.get(corpId);
+            if (rival != null) {
+                int rivalCur = corpReputation(p.getUniqueId(), rival);
+                int rivalNext = Math.max(-1000, rivalCur - (delta / 2));
+                RebornCore.get().kv().putInt(CORP_NS, p.getUniqueId(), rival, rivalNext);
+            }
+        }
+        // 단계 변경 알림
+        notifyStatusChange(p, corpId, cur, next);
+    }
+
+    private void notifyStatusChange(Player p, String corpId, int prev, int cur) {
+        int prevTier = corpTier(prev);
+        int curTier = corpTier(cur);
+        if (prevTier == curTier) return;
+        String[] labels = {"적", "적대", "냉랭", "중립", "우호", "동맹"};
+        String label = labels[Math.max(0, Math.min(labels.length - 1, curTier))];
+        Msg.send(p, "&b[" + corpId + "] §f관계: §6" + label + " §7(" + cur + ")");
+        if (curTier >= 4) {
+            Bukkit.broadcastMessage("§b§l[" + corpId + "] §f" + p.getName()
+                    + " §7가 §6" + label + " §7관계 도달.");
+        }
+    }
+
+    /** 평판 → 단계 (0=적, 5=동맹). */
+    public int corpTier(int rep) {
+        if (rep <= -500) return 0;
+        if (rep <= -200) return 1;
+        if (rep < 100) return 2;
+        if (rep < 300) return 3;
+        if (rep < 500) return 4;
+        return 5;
+    }
+
+    public boolean isCorp(String id) {
+        if (id == null) return false;
+        for (String c : CORPS) if (c.equals(id)) return true;
+        return false;
+    }
+
+    /** 코프 임무 완료 시 적용. type별 평판 가산. */
+    public void onCorpMission(Player p, String corpId, String missionType) {
+        int amount = switch (missionType) {
+            case "minor"  -> 25;
+            case "major"  -> 75;
+            case "legend" -> 200;
+            case "betray" -> -150;
+            default       -> 10;
+        };
+        gainCorpFavor(p, corpId, amount);
+    }
+
+    public Map<String, Integer> allCorpReputations(UUID p) {
+        Map<String, Integer> out = new java.util.LinkedHashMap<>();
+        for (String c : CORPS) out.put(c, corpReputation(p, c));
+        return out;
+    }
 }

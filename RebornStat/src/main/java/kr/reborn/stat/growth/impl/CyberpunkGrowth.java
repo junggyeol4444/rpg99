@@ -114,14 +114,32 @@ public final class CyberpunkGrowth implements GrowthStrategy {
     public void onMonsterKill(Player p, PlayerData d, double mobLevel) {
         RebornCore.get().api().addStat(p.getUniqueId(), StatType.STRENGTH, 0.3, "kill");
         // 사이버 골렘 처치 시 임플란트 부품 드롭 (외부 mob plugin이 인벤 처리)
+        // 소속 코프를 위한 전투 — 후원 코프 평판 미세 누적 (tier 변경 시에만 알림).
+        String patron = patronCorp(p.getUniqueId());
+        if (patron != null) gainCorpFavor(p, patron, 1);
     }
 
     @Override
     public void onQuestComplete(Player p, PlayerData d, double weight) {
+        double adaptation = 2 * weight;
+        double intel = 1.5 * weight;
+        // 후원 코프 동맹 단계면 개조 지원 — 적응도 보너스 (기획서 5-11 동맹 효과).
+        String patron = patronCorp(p.getUniqueId());
+        if (patron != null) {
+            int tier = corpTier(corpReputation(p.getUniqueId(), patron));
+            if (tier >= 4) {
+                adaptation *= 1.20;  // 코프 후원: 개조 비용 지원
+                if (Rand.chance(0.25)) {
+                    Msg.send(p, "&b[" + patron + "] §7코프 후원 — 개조 적응 가속.");
+                }
+            }
+            // 코프 의뢰 수행 — 평판 누적 (라이벌 코프는 자동 감소).
+            gainCorpFavor(p, patron, (int) Math.round(8 * weight));
+        }
         RebornCore.get().api().addStat(p.getUniqueId(),
-                StatType.CYBER_ADAPTATION, 2 * weight, "augment");
+                StatType.CYBER_ADAPTATION, adaptation, "augment");
         RebornCore.get().api().addStat(p.getUniqueId(),
-                StatType.INTELLIGENCE, 1.5 * weight, "hack");
+                StatType.INTELLIGENCE, intel, "hack");
     }
 
     @Override
@@ -329,5 +347,19 @@ public final class CyberpunkGrowth implements GrowthStrategy {
         Map<String, Integer> out = new java.util.LinkedHashMap<>();
         for (String c : CORPS) out.put(c, corpReputation(p, c));
         return out;
+    }
+
+    /**
+     * 후원 코프 — 평판이 가장 높은(>0) 코프. /corp join 또는 의뢰로 형성.
+     * 후원 코프가 있어야 전투·의뢰가 평판을 누적하고 동맹 단계 후원을 받는다.
+     */
+    public String patronCorp(UUID p) {
+        String best = null;
+        int bestRep = 0;
+        for (String c : CORPS) {
+            int rep = corpReputation(p, c);
+            if (rep > bestRep) { bestRep = rep; best = c; }
+        }
+        return best;
     }
 }

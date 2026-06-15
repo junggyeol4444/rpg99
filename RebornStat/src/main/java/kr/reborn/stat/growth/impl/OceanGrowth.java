@@ -64,13 +64,29 @@ public final class OceanGrowth implements GrowthStrategy {
         if (!atSea(p)) return;
         RebornCore.get().api().addStat(p.getUniqueId(),
                 StatType.OCEAN_POWER, 1.0, "sea-kill");
+        // 소속 제국을 위한 해상 전투 — 후원 제국 평판 미세 누적.
+        String patron = patronEmpire(p.getUniqueId());
+        if (patron != null) gainEmpireFavor(p, patron, 1);
         checkStage(p);
     }
 
     @Override
     public void onQuestComplete(Player p, PlayerData d, double weight) {
+        double power = 5 * weight;
+        // 후원 제국 동맹 단계면 항해 지원 — 해양력 보너스 (기획서 5-13 동맹 효과).
+        String patron = patronEmpire(p.getUniqueId());
+        if (patron != null) {
+            int tier = empireTier(empireReputation(p.getUniqueId(), patron));
+            if (tier >= 4) {
+                power *= 1.20;  // 제국 후원: 보급·항로 지원
+                if (Rand.chance(0.25)) {
+                    Msg.send(p, "&3[" + patron + "] §7제국 후원 — 항해 보급 지원.");
+                }
+            }
+            gainEmpireFavor(p, patron, (int) Math.round(8 * weight));
+        }
         RebornCore.get().api().addStat(p.getUniqueId(),
-                StatType.OCEAN_POWER, 5 * weight, "voyage");
+                StatType.OCEAN_POWER, power, "voyage");
         checkStage(p);
     }
 
@@ -138,6 +154,9 @@ public final class OceanGrowth implements GrowthStrategy {
                 StatType.OCEAN_POWER, 100, "ship-capture");
         RebornCore.get().api().addStat(p.getUniqueId(),
                 StatType.CHARISMA, 3, "ship-capture");
+        // 나포는 후원 제국에 대한 큰 무공 — 평판 +15 (라이벌 제국 -7).
+        String patron = patronEmpire(p.getUniqueId());
+        if (patron != null) gainEmpireFavor(p, patron, 15);
         Bukkit.broadcastMessage("§3§l[해전] §f" + p.getName()
                 + " §7가 적선을 나포 §6(총 " + n + "척) §7- 해양력 +100");
     }
@@ -271,5 +290,19 @@ public final class OceanGrowth implements GrowthStrategy {
         Map<String, Integer> out = new java.util.LinkedHashMap<>();
         for (String c : EMPIRES) out.put(c, empireReputation(p, c));
         return out;
+    }
+
+    /**
+     * 후원 제국 — 평판이 가장 높은(>0) 제국. /empire join 또는 해상 임무로 형성.
+     * 후원 제국이 있어야 전투·항해가 평판을 누적하고 동맹 단계 보급을 받는다.
+     */
+    public String patronEmpire(UUID p) {
+        String best = null;
+        int bestRep = 0;
+        for (String c : EMPIRES) {
+            int rep = empireReputation(p, c);
+            if (rep > bestRep) { bestRep = rep; best = c; }
+        }
+        return best;
     }
 }

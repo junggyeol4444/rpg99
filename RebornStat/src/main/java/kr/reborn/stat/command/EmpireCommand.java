@@ -39,14 +39,22 @@ public final class EmpireCommand implements CommandExecutor {
         }
         if (a.length == 0) {
             Msg.send(p, "&3=== 7대 해양 제국 평판 ===");
+            java.util.Map<String, Integer> ruledCount = new java.util.HashMap<>();
+            for (var port : empire.ports().all()) {
+                if (port.currentRuler != null) {
+                    ruledCount.merge(port.currentRuler, 1, Integer::sum);
+                }
+            }
             for (var e : empire.allEmpireReputations(p.getUniqueId()).entrySet()) {
                 int tier = empire.empireTier(e.getValue());
                 String[] labels = {"&4적", "&c적대", "&7냉랭", "&f중립", "&a동맹", "&b시민"};
                 String label = labels[Math.max(0, Math.min(labels.length - 1, tier))];
+                int ruled = ruledCount.getOrDefault(e.getKey(), 0);
+                String portLabel = ruled > 0 ? " §6[항구 " + ruled + "/7]" : "";
                 p.sendMessage("§3• §f" + e.getKey() + " §7: §f" + e.getValue()
-                        + " §8[" + label + "&8]");
+                        + " §8[" + label + "&8]" + portLabel);
             }
-            Msg.send(p, "&7/empire join <EMPIRE> | /empire mission <e> <type>");
+            Msg.send(p, "&7/empire join <EMPIRE> | /empire mission <e> <type> | /port");
             return true;
         }
         switch (a[0].toLowerCase()) {

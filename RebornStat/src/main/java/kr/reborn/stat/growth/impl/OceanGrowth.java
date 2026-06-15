@@ -42,6 +42,11 @@ public final class OceanGrowth implements GrowthStrategy {
     /** uuid → 적용된 단계 */
     private final Map<UUID, Integer> stage = new ConcurrentHashMap<>();
     private final java.util.Set<UUID> loaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    /** uuid → 현재 활동 중인 항구 id. */
+    private final Map<UUID, String> activePort = new ConcurrentHashMap<>();
+    private final PortRegistry ports = new PortRegistry();
+
+    public PortRegistry ports() { return ports; }
 
     private void ensureLoaded(UUID p) {
         if (loaded.add(p)) {
@@ -83,11 +88,40 @@ public final class OceanGrowth implements GrowthStrategy {
                     Msg.send(p, "&3[" + patron + "] §7제국 후원 — 항해 보급 지원.");
                 }
             }
+            // 활동 항구가 후원 제국 점령지면 추가 +10% — 점령지 항만 우대.
+            String port = activePortOf(p.getUniqueId());
+            if (port != null && patron.equals(ports.rulerOf(port))) {
+                power *= 1.10;
+            }
             gainEmpireFavor(p, patron, (int) Math.round(8 * weight));
         }
         RebornCore.get().api().addStat(p.getUniqueId(),
                 StatType.OCEAN_POWER, power, "voyage");
         checkStage(p);
+    }
+
+    /** 활동 중인 항구 id. null이면 정박 안 함. */
+    public String activePortOf(UUID p) {
+        String cached = activePort.get(p);
+        if (cached != null) return cached;
+        String stored = RebornCore.get().kv().get(NS, p, "port");
+        if (stored != null && !stored.isEmpty()) {
+            activePort.put(p, stored);
+            return stored;
+        }
+        return null;
+    }
+
+    public boolean setActivePort(Player p, String portId) {
+        if (!OceanPort.isPort(portId)) return false;
+        activePort.put(p.getUniqueId(), portId);
+        RebornCore.get().kv().put(NS, p.getUniqueId(), "port", portId);
+        return true;
+    }
+
+    public void clearActivePort(Player p) {
+        activePort.remove(p.getUniqueId());
+        RebornCore.get().kv().remove(NS, p.getUniqueId(), "port");
     }
 
     @Override
@@ -240,6 +274,11 @@ public final class OceanGrowth implements GrowthStrategy {
                 int rivalCur = empireReputation(p.getUniqueId(), rival);
                 int rivalNext = Math.max(-1000, rivalCur - (delta / 2));
                 RebornCore.get().kv().putInt(EMPIRE_NS, p.getUniqueId(), rival, rivalNext);
+            }
+            // 활동 중인 항구가 있으면 제국 영향력 누적 (항구 점령전).
+            String port = activePortOf(p.getUniqueId());
+            if (port != null) {
+                ports.addInfluence(port, empireId, delta);
             }
         }
         notifyEmpireStatus(p, empireId, cur, next);

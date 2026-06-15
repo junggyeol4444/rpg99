@@ -46,6 +46,9 @@ commands:
   district:
     description: 사이버시티 7대 구역 점령전 (사이버펑크)
     usage: /district [enter <ID> | exit]
+  port:
+    description: 해양 7대 항구 점령전 (해양)
+    usage: /port [enter <ID> | exit]
 permissions:
   rebornstat.use:
     default: true

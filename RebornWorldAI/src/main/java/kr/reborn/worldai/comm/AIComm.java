@@ -4,13 +4,31 @@ import kr.reborn.core.data.WorldKey;
 import kr.reborn.worldai.RebornWorldAI;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
-/** 세계 AI 간 메시지 통신. */
+/**
+ * 세계 AI 간 메시지 통신 + 인박스.
+ *
+ * 발신자는 send()로 받는 세계의 인박스에 push. 수신자는 다음 사이클 시작 시
+ * processInbox()로 drain하여 메시지 의미에 따라 자기 state를 변동한다.
+ *
+ * 5가지 메시지 타입:
+ *   TENSION_ALERT      이웃 긴장 경보 (+5 tension, -2 stability)
+ *   WAR_DECLARATION    전쟁 선언 — 같은 연결권이면 동맹 참전, 적 연결권이면 대리전
+ *   ECONOMY_REPORT     payload "boom" → tradeActivity +0.15, "crash" → -0.15
+ *   QUEST_LINK         이웃 사건에 연동 — stability +3 (목적 부여)
+ *   POLLUTION_ALERT    오염 확산 — mobBalance -0.15, stability -3
+ */
 public final class AIComm {
 
     private final RebornWorldAI plugin;
     private final Deque<Message> log = new ArrayDeque<>();
+    private final Map<WorldKey, Deque<Message>> inbox = new EnumMap<>(WorldKey.class);
 
     public AIComm(RebornWorldAI p) { this.plugin = p; }
 
@@ -22,13 +40,20 @@ public final class AIComm {
         Message m = new Message(from, to, type, payload, System.currentTimeMillis());
         log.push(m);
         if (log.size() > 1000) log.pollLast();
-        // 수신측 AI에 전달
-        var ai = plugin.of(to);
-        if (ai != null) {
-            // 향후: AI 사이클에서 처리. 여기서는 간단히 tension만 살짝 조정.
-            if (type == Type.TENSION_ALERT) ai.state().tension += 5;
-            if (type == Type.WAR_DECLARATION) ai.state().tension += 20;
-        }
+        // 수신측 인박스에 push — 수신자가 다음 cycle에서 processInbox()로 소비.
+        inbox.computeIfAbsent(to, k -> new ConcurrentLinkedDeque<>()).add(m);
+        // 인박스 폭주 방지 (최근 50개만 유지)
+        Deque<Message> q = inbox.get(to);
+        while (q.size() > 50) q.pollFirst();
+    }
+
+    /** 수신자가 자기 인박스를 비우고 메시지 리스트를 받아간다. */
+    public List<Message> drain(WorldKey self) {
+        Deque<Message> q = inbox.get(self);
+        if (q == null || q.isEmpty()) return List.of();
+        List<Message> out = new ArrayList<>(q);
+        q.clear();
+        return out;
     }
 
     public java.util.List<Message> recent(int count) {

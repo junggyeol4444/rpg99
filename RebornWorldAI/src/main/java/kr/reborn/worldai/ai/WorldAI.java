@@ -70,11 +70,13 @@ public final class WorldAI {
     public State state() { return state; }
 
     public void cycle() {
+        processInbox();
         analyzeEconomy();
         analyzePolitics();
         analyzeMobs();
         analyzeWeather();
         propagateToNeighbors();
+        coordinateGroup();
         decideQuests();
         directNpcs();
         directFactions();
@@ -86,6 +88,66 @@ public final class WorldAI {
 
         Bukkit.getPluginManager().callEvent(new RebornWorldAIAnalysisEvent(world,
                 state.inflation, state.tension, state.stability));
+    }
+
+    /**
+     * 인박스 소비 — 이웃 AI가 보낸 메시지를 자기 state에 반영.
+     *
+     * TENSION_ALERT      +5 tension, -2 stability
+     * WAR_DECLARATION    동맹(같은 연결권): +15 tension, -8 stability
+     *                    적대(다른 연결권): +8 tension (대리전)
+     * ECONOMY_REPORT     "boom": tradeActivity +0.15, inflation +5
+     *                    "crash": tradeActivity -0.15, inflation -5
+     * QUEST_LINK         +3 stability (목적 부여)
+     * POLLUTION_ALERT    -0.15 mobBalance, -3 stability
+     */
+    private void processInbox() {
+        var msgs = plugin.comm().drain(world);
+        if (msgs.isEmpty()) return;
+        for (var m : msgs) {
+            switch (m.type) {
+                case TENSION_ALERT -> {
+                    state.tension = clamp(state.tension + 5, 0, 100);
+                    state.stability = clamp(state.stability - 2, 0, 100);
+                }
+                case WAR_DECLARATION -> {
+                    boolean ally = sameGroup(m.from, world);
+                    if (ally) {
+                        state.tension = clamp(state.tension + 15, 0, 100);
+                        state.stability = clamp(state.stability - 8, 0, 100);
+                    } else {
+                        state.tension = clamp(state.tension + 8, 0, 100);
+                    }
+                }
+                case ECONOMY_REPORT -> {
+                    if ("boom".equals(m.payload)) {
+                        state.tradeActivity = clamp(state.tradeActivity + 0.15, 0.1, 3.0);
+                        state.inflation = clamp(state.inflation + 5, 50, 300);
+                    } else if ("crash".equals(m.payload)) {
+                        state.tradeActivity = clamp(state.tradeActivity - 0.15, 0.1, 3.0);
+                        state.inflation = clamp(state.inflation - 5, 50, 300);
+                    }
+                }
+                case QUEST_LINK -> {
+                    state.stability = clamp(state.stability + 3, 0, 100);
+                }
+                case POLLUTION_ALERT -> {
+                    state.mobBalance = clamp(state.mobBalance - 0.15, 0, 2.0);
+                    state.stability = clamp(state.stability - 3, 0, 100);
+                }
+            }
+        }
+    }
+
+    private static double clamp(double v, double lo, double hi) {
+        return Math.max(lo, Math.min(hi, v));
+    }
+
+    private boolean sameGroup(WorldKey a, WorldKey b) {
+        for (var g : NEIGHBOR_GROUPS) {
+            if (g.contains(a) && g.contains(b)) return true;
+        }
+        return false;
     }
 
     /**
@@ -116,6 +178,96 @@ public final class WorldAI {
             ai.state().inflation = Math.max(50, Math.min(300,
                     ai.state().inflation + inflationLeak * 0.6));
         }
+        // 추가 메시지 — 인박스 기반 협력 시그널
+        var comm = plugin.comm();
+        // 1. 경제 보고: 인플레 극단 시 이웃에 알림
+        if (state.inflation > 200) {
+            for (var nw : group) comm.send(world, nw,
+                    kr.reborn.worldai.comm.AIComm.Type.ECONOMY_REPORT, "crash");
+        } else if (state.inflation < 70 && state.tradeActivity > 1.5) {
+            for (var nw : group) comm.send(world, nw,
+                    kr.reborn.worldai.comm.AIComm.Type.ECONOMY_REPORT, "boom");
+        }
+        // 2. 오염 경보: 산업·종말 세계가 몹 폭주 시
+        boolean polluter = world == WorldKey.APOCALYPSE || world == WorldKey.MAGITECH
+                || world == WorldKey.CYBERPUNK;
+        if (polluter && state.mobBalance > 1.5) {
+            for (var nw : group) comm.send(world, nw,
+                    kr.reborn.worldai.comm.AIComm.Type.POLLUTION_ALERT, "mb:" + state.mobBalance);
+        }
+    }
+
+    /**
+     * 연결권 단위 집단 행동 — 그룹 리더(가장 낮은 ordinal)만 실행.
+     *
+     * 황금기: 그룹 평균 tension<30 & stability>75 → 회원 stability +2, 역사 기록.
+     * 암흑기 위험: 회원 2개 이상 stability<25 → 그룹 내 POLLUTION_ALERT 캐스케이드.
+     * 대리전: 그룹 평균 tension>70 → 반대 연결권 리더에 TENSION_ALERT.
+     */
+    private void coordinateGroup() {
+        var group = groupOf(world);
+        if (group == null) return;
+        WorldKey leader = leaderOf(group);
+        if (world != leader) return;
+        double sumT = 0, sumS = 0;
+        int n = 0, lowStab = 0;
+        for (WorldKey k : group) {
+            var ai = plugin.of(k);
+            if (ai == null) continue;
+            sumT += ai.state().tension;
+            sumS += ai.state().stability;
+            if (ai.state().stability < 25) lowStab++;
+            n++;
+        }
+        if (n < 2) return;
+        double avgT = sumT / n, avgS = sumS / n;
+        var comm = plugin.comm();
+        if (avgT < 30 && avgS > 75) {
+            for (WorldKey k : group) {
+                var ai = plugin.of(k);
+                if (ai != null) ai.state().stability =
+                        clamp(ai.state().stability + 2, 0, 100);
+            }
+            try { plugin.history().record(world,
+                    kr.reborn.worldai.history.WorldHistory.EventKind.SPECIAL,
+                    "연결권 황금기 (그룹 평균 안정 " + (int) avgS + ")"); }
+            catch (Throwable ignored) {}
+            Bukkit.broadcastMessage("§6§l[황금기] §f" + world + " 연결권 §7- 평화·풍요 도래");
+        }
+        if (lowStab >= 2) {
+            for (WorldKey k : group) {
+                if (k == world) continue;
+                comm.send(world, k,
+                        kr.reborn.worldai.comm.AIComm.Type.POLLUTION_ALERT, "groupchaos");
+            }
+        }
+        if (avgT > 70) {
+            WorldKey enemyLeader = oppositeGroupLeader(group);
+            if (enemyLeader != null) {
+                comm.send(world, enemyLeader,
+                        kr.reborn.worldai.comm.AIComm.Type.TENSION_ALERT, "proxy");
+            }
+        }
+    }
+
+    private static WorldKey leaderOf(java.util.Set<WorldKey> group) {
+        WorldKey best = null;
+        for (WorldKey k : group) {
+            if (best == null || k.ordinal() < best.ordinal()) best = k;
+        }
+        return best;
+    }
+
+    private static java.util.Set<WorldKey> groupOf(WorldKey w) {
+        for (var g : NEIGHBOR_GROUPS) if (g.contains(w)) return g;
+        return null;
+    }
+
+    private WorldKey oppositeGroupLeader(java.util.Set<WorldKey> ownGroup) {
+        for (var g : NEIGHBOR_GROUPS) {
+            if (g != ownGroup) return leaderOf(g);
+        }
+        return null;
     }
 
     private static final java.util.List<java.util.Set<kr.reborn.core.data.WorldKey>> NEIGHBOR_GROUPS =
@@ -352,6 +504,22 @@ public final class WorldAI {
                 if (isLinkedRealm(world, other)) {
                     comm.send(world, other, kr.reborn.worldai.comm.AIComm.Type.QUEST_LINK,
                             "linked:" + key);
+                }
+            }
+            // WAR 발동 — 동맹 참전 + 적 연결권 대리전 신호
+            if ("WAR".equals(key)) {
+                var group = groupOf(world);
+                if (group != null) {
+                    for (WorldKey ally : group) {
+                        if (ally == world) continue;
+                        comm.send(world, ally,
+                                kr.reborn.worldai.comm.AIComm.Type.WAR_DECLARATION, label);
+                    }
+                    WorldKey enemyLeader = oppositeGroupLeader(group);
+                    if (enemyLeader != null) {
+                        comm.send(world, enemyLeader,
+                                kr.reborn.worldai.comm.AIComm.Type.WAR_DECLARATION, label);
+                    }
                 }
             }
         } catch (Throwable ignored) {}

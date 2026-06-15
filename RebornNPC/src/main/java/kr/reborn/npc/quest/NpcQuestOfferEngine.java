@@ -196,8 +196,8 @@ public final class NpcQuestOfferEngine {
                     "젊은이여, 5개 마을을 둘러보고 경험을 쌓아 오게.",
                     40, "MENTAL", 5, "job-elder"));
             case "KING", "EMPEROR" -> out.add(new OfferTemplate(
-                    "KILL", "PILLAGER_CAPTAIN", 1,
-                    "왕국에 도전한 약탈단 두목을 처치하라.",
+                    "KILL", "PILLAGER", 3,
+                    "왕국에 도전한 약탈단을 처치하라.",
                     60, "CHARISMA", 5, "job-king"));
             case "KNIGHT", "PALADIN" -> out.add(new OfferTemplate(
                     "KILL", "ENDERMAN", 3,

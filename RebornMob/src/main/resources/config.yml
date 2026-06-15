@@ -60,8 +60,7 @@ monsters:
   demon_imp:             { base: VEX, name: "&c하급 데몬", world: DEMON, hp: 40, damage: 10, ai: BASIC }
   demon_succubus:        { base: WITCH, name: "&d서큐버스", world: DEMON, hp: 120, damage: 25, ai: RANGED }
   demon_marune:          { base: PIGLIN_BRUTE, name: "&5중급 데몬", world: DEMON, hp: 350, damage: 45, ai: BASIC }
-  demon_archdemon:       { base: WITHER_SKELETON, name: "&4상급 데몬", world: DEMON, hp: 1500, damage: 80, ai: BASIC }
-  demon_balrog:          { base: BLAZE, name: "&4&l발록", world: DEMON, hp: 4000, damage: 130, ai: BOSS, phases: 3 }
+  demon_highdemon:       { base: WITHER_SKELETON, name: "&4상급 데몬", world: DEMON, hp: 1500, damage: 80, ai: BASIC }
   demon_corpse_giant:    { base: ZOMBIE, name: "&2부패 거인", world: DEMON, hp: 800, damage: 50, ai: BASIC }
   demon_shadow_hunter:   { base: VINDICATOR, name: "&8그림자 사냥꾼", world: DEMON, hp: 200, damage: 60, ai: TERRITORIAL }
   demon_business_worm:   { base: ENDERMITE, name: "&8심연충", world: DEMON, hp: 30, damage: 8, ai: SWARM }
@@ -133,7 +132,6 @@ monsters:
   earth_gate_b:          { base: PIGLIN_BRUTE, name: "&5B급 게이트 몬스터", world: EARTH, hp: 700, damage: 50, ai: BASIC }
   earth_gate_a:          { base: WITHER_SKELETON, name: "&6A급 게이트 몬스터", world: EARTH, hp: 1500, damage: 80, ai: BASIC }
   earth_gate_s:          { base: WITHER, name: "&cS급 게이트 보스", world: EARTH, hp: 5000, damage: 200, ai: BOSS, phases: 3 }
-  earth_labyrinth_100f:  { base: ENDER_DRAGON, name: "&0&l미궁 100층", world: EARTH, hp: 100000, damage: 1000, ai: BOSS, phases: 10 }
 
   # ─── 마도공학계 ──────────────────────────────────
   magitech_runaway_drone: { base: VEX, name: "&c폭주 마도 드론", world: MAGITECH, hp: 80, damage: 18, ai: FLYING }
@@ -172,7 +170,6 @@ monsters:
   ocean_siren:           { base: WITCH, name: "&d사이렌", world: OCEAN, hp: 250, damage: 35, ai: AQUATIC }
   ocean_kraken:          { base: ELDER_GUARDIAN, name: "&5&l크라켄", world: OCEAN, hp: 8000, damage: 200, ai: BOSS, phases: 3 }
   ocean_sea_dragon:      { base: ENDER_DRAGON, name: "&3&l해룡", world: OCEAN, hp: 12000, damage: 250, ai: BOSS, phases: 5 }
-  ocean_sea_king:        { base: WITHER, name: "&3&l[해왕] 부활", world: OCEAN, hp: 60000, damage: 700, ai: BOSS, phases: 7 }
 
 # ============================================================
 # 보스 (월드 퀘스트로 소환되는 별도 보스)

@@ -401,8 +401,8 @@ public final class SignatureRegistry {
                 null, Sound.ENTITY_ENDER_DRAGON_FLAP, null,
                 "&6용의 입김.",
                 60, 2, 60);
-        s("flight", SkillSignature.ParticlePattern.AURA_OUT, Particle.CLOUD,
-                Particle.SWEEP_ATTACK, Sound.ENTITY_PHANTOM_FLAP, null,
+        s("flight", SkillSignature.ParticlePattern.AURA_OUT, Particle.DRAGON_BREATH,
+                Particle.CLOUD, Sound.ENTITY_ENDER_DRAGON_FLAP, Sound.ITEM_ELYTRA_FLYING,
                 "&c용의 날개 — 비행 가능.",
                 1200, 0, 0);
         s("dragon_lord_roar", SkillSignature.ParticlePattern.WAVE_FRONT, Particle.EXPLOSION_LARGE,
@@ -449,10 +449,6 @@ public final class SignatureRegistry {
                 Particle.REDSTONE, Sound.BLOCK_BEACON_POWER_SELECT, Sound.BLOCK_PISTON_EXTEND,
                 "&b뉴로부스터 — 신경 가속.",
                 600, 2, 0);
-        s("hunter_basic", SkillSignature.ParticlePattern.AURA_OUT, Particle.ENCHANTMENT_TABLE,
-                null, Sound.BLOCK_ANVIL_USE, null,
-                "&7헌터 기본 스킬.",
-                Integer.MAX_VALUE, 0, 0);
         s("cyber_master_hack", SkillSignature.ParticlePattern.TIME_RIPPLE, Particle.ELECTRIC_SPARK,
                 Particle.PORTAL, Sound.BLOCK_END_PORTAL_FRAME_FILL, Sound.UI_TOAST_CHALLENGE_COMPLETE,
                 "&b&l마스터 해킹 — 모든 시스템에 침투.",
@@ -473,8 +469,8 @@ public final class SignatureRegistry {
                 Particle.PORTAL, Sound.ENTITY_VEX_AMBIENT, Sound.ENTITY_ENDERMAN_TELEPORT,
                 "&7영혼이 시선 끝으로 — 환혼.",
                 0, 0, 40);
-        s("time_rewind", SkillSignature.ParticlePattern.TIME_RIPPLE, Particle.END_ROD,
-                Particle.PORTAL, Sound.BLOCK_BELL_RESONATE, Sound.BLOCK_AMETHYST_BLOCK_CHIME,
+        s("time_rewind", SkillSignature.ParticlePattern.TIME_RIPPLE, Particle.NAUTILUS,
+                Particle.SPELL_INSTANT, Sound.BLOCK_AMETHYST_BLOCK_RESONATE, Sound.BLOCK_BELL_USE,
                 "&e&l시간이 거꾸로 흐른다.",
                 0, 0, 60);
         s("time_manipulation", SkillSignature.ParticlePattern.TIME_RIPPLE, Particle.END_ROD,
@@ -537,8 +533,8 @@ public final class SignatureRegistry {
         s("cheonsu_gwaneumjang", SkillSignature.ParticlePattern.STAR_BURST, Particle.HEART,
                 Particle.END_ROD, Sound.BLOCK_BELL_RESONATE, Sound.ENTITY_PLAYER_ATTACK_STRONG,
                 "&b&l천수관음장 — 천 손이 동시에 펼쳐진다.", 0, 0, 0);
-        s("chilsanggwon", SkillSignature.ParticlePattern.RING, Particle.CRIT,
-                Particle.SMOKE_LARGE, Sound.ENTITY_PLAYER_ATTACK_STRONG, Sound.ENTITY_RAVAGER_ATTACK,
+        s("chilsanggwon", SkillSignature.ParticlePattern.RING, Particle.FLAME,
+                Particle.CRIT_MAGIC, Sound.ENTITY_PLAYER_ATTACK_STRONG, Sound.ENTITY_BLAZE_HURT,
                 "&c&l칠상권 — 일곱 가지 변화의 권법.", 0, 0, 0);
         s("amyeon_sohonjang", SkillSignature.ParticlePattern.AURA_IN, Particle.SOUL,
                 Particle.SPELL_WITCH, Sound.ENTITY_VEX_DEATH, Sound.ENTITY_VAMPIRE_HURT,
@@ -562,8 +558,8 @@ public final class SignatureRegistry {
 
     // ──────────────────── 판타지 추가 (15) ────────────────────
     private static void seedFantasyExtra() {
-        s("meteor_strike", SkillSignature.ParticlePattern.METEOR_RAIN, Particle.LAVA,
-                Particle.EXPLOSION_HUGE, Sound.ENTITY_LIGHTNING_BOLT_THUNDER, Sound.ENTITY_GENERIC_EXPLODE,
+        s("meteor_strike", SkillSignature.ParticlePattern.METEOR_RAIN, Particle.DRIPPING_LAVA,
+                Particle.SMOKE_LARGE, Sound.ENTITY_GENERIC_EXPLODE, Sound.BLOCK_STONE_BREAK,
                 "&c&l메테오 스트라이크 — 단발 운석.", 80, 3, 0);
         s("wish_spell", SkillSignature.ParticlePattern.STAR_BURST, Particle.TOTEM,
                 Particle.END_ROD, Sound.UI_TOAST_CHALLENGE_COMPLETE, Sound.BLOCK_BELL_RESONATE,
@@ -607,8 +603,8 @@ public final class SignatureRegistry {
         s("illusion_world", SkillSignature.ParticlePattern.AURA_OUT, Particle.SPELL_WITCH,
                 Particle.PORTAL, Sound.BLOCK_PORTAL_AMBIENT, null,
                 "&d&l환영 세계 — 진실과 환영이 뒤바뀐다.", 600, 4, 0);
-        s("resurrection", SkillSignature.ParticlePattern.VERTICAL_PILLAR, Particle.TOTEM,
-                Particle.END_ROD, Sound.ITEM_TOTEM_USE, Sound.BLOCK_BELL_RESONATE,
+        s("resurrection", SkillSignature.ParticlePattern.STAR_BURST, Particle.TOTEM,
+                Particle.HEART, Sound.UI_TOAST_CHALLENGE_COMPLETE, Sound.ENTITY_PLAYER_LEVELUP,
                 "&6&l부활 — 죽음을 거스른다.", 0, 0, 0);
     }
 
@@ -710,8 +706,8 @@ public final class SignatureRegistry {
         s("heart_sword", SkillSignature.ParticlePattern.AURA_OUT, Particle.HEART,
                 Particle.CRIT, Sound.ITEM_TRIDENT_THROW, Sound.BLOCK_AMETHYST_BLOCK_CHIME,
                 "&d&l심검 — 마음의 검.", 0, 0, 0);
-        s("nightmare_grimoire", SkillSignature.ParticlePattern.AURA_IN, Particle.SPELL_WITCH,
-                Particle.SOUL, Sound.ENTITY_VEX_AMBIENT, Sound.ENTITY_PHANTOM_AMBIENT,
+        s("nightmare_grimoire", SkillSignature.ParticlePattern.AURA_IN, Particle.SQUID_INK,
+                Particle.SPELL_WITCH, Sound.ITEM_BOOK_PAGE_TURN, Sound.ENTITY_PHANTOM_AMBIENT,
                 "&8&l악몽의 마도서.", 200, 4, 0);
         s("nameless_assassin", SkillSignature.ParticlePattern.AURA_IN, Particle.SQUID_INK,
                 Particle.SPELL_WITCH, Sound.ENTITY_VEX_AMBIENT, Sound.ENTITY_PLAYER_ATTACK_CRIT,
@@ -735,8 +731,8 @@ public final class SignatureRegistry {
         s("guyang_singong", SkillSignature.ParticlePattern.AURA_OUT, Particle.FLAME,
                 Particle.END_ROD, Sound.BLOCK_FIRE_AMBIENT, Sound.BLOCK_BEACON_AMBIENT,
                 "&c&l구양신공 — 무궁한 양의 기운.", 200, 2, 100);
-        s("manryu_gyijong", SkillSignature.ParticlePattern.STAR_BURST, Particle.TOTEM,
-                Particle.END_ROD, Sound.UI_TOAST_CHALLENGE_COMPLETE, Sound.ENTITY_LIGHTNING_BOLT_THUNDER,
+        s("manryu_gyijong", SkillSignature.ParticlePattern.STAR_BURST, Particle.FIREWORKS_SPARK,
+                Particle.SWEEP_ATTACK, Sound.BLOCK_BELL_RESONATE, Sound.ENTITY_PLAYER_ATTACK_CRIT,
                 "&5&l만류귀종 — 만 가지가 하나로.", 100, 4, 200);
         s("mangeom_gyijong", SkillSignature.ParticlePattern.STAR_BURST, Particle.CRIT_MAGIC,
                 Particle.SWEEP_ATTACK, Sound.ITEM_TRIDENT_THUNDER, Sound.ENTITY_PLAYER_ATTACK_STRONG,
@@ -789,8 +785,8 @@ public final class SignatureRegistry {
         s("eumyang_mugeuk_gong", SkillSignature.ParticlePattern.SPIRAL, Particle.SOUL_FIRE_FLAME,
                 Particle.END_ROD, Sound.BLOCK_BELL_USE, Sound.BLOCK_AMETHYST_BLOCK_CHIME,
                 "&8&l음양무극공 — 음과 양의 극이 만난다.", 600, 4, 200);
-        s("geongon_daenai", SkillSignature.ParticlePattern.STAR_BURST, Particle.END_ROD,
-                Particle.SOUL_FIRE_FLAME, Sound.BLOCK_BEACON_ACTIVATE, Sound.UI_TOAST_CHALLENGE_COMPLETE,
+        s("geongon_daenai", SkillSignature.ParticlePattern.STAR_BURST, Particle.PORTAL,
+                Particle.END_ROD, Sound.BLOCK_PORTAL_AMBIENT, Sound.UI_TOAST_CHALLENGE_COMPLETE,
                 "&6&l건곤대내 — 하늘과 땅을 옮긴다.", 60, 3, 0);
         s("gyuhwa_bojeon", SkillSignature.ParticlePattern.AURA_OUT, Particle.HAPPY_VILLAGER,
                 Particle.HEART, Sound.BLOCK_AMETHYST_BLOCK_CHIME, null,
@@ -816,8 +812,8 @@ public final class SignatureRegistry {
         s("pacheon_singong", SkillSignature.ParticlePattern.VERTICAL_PILLAR, Particle.END_ROD,
                 Particle.EXPLOSION_LARGE, Sound.BLOCK_BELL_RESONATE, Sound.ENTITY_LIGHTNING_BOLT_THUNDER,
                 "&e&l파천신공 — 하늘을 깨는 신공.", 80, 4, 100);
-        s("pokpung_geombeop", SkillSignature.ParticlePattern.STORM, Particle.CLOUD,
-                Particle.SWEEP_ATTACK, Sound.ITEM_TRIDENT_THUNDER, Sound.ITEM_TRIDENT_RIPTIDE_2,
+        s("pokpung_geombeop", SkillSignature.ParticlePattern.STORM, Particle.ELECTRIC_SPARK,
+                Particle.SWEEP_ATTACK, Sound.ITEM_TRIDENT_THUNDER, Sound.ENTITY_PLAYER_ATTACK_SWEEP,
                 "&3&l폭풍검법 — 폭풍처럼 휘몰아치는 검.", 80, 2, 0);
         s("saengsaengbu", SkillSignature.ParticlePattern.AURA_OUT, Particle.HEART,
                 Particle.HAPPY_VILLAGER, Sound.ENTITY_PLAYER_LEVELUP, null,
@@ -852,8 +848,8 @@ public final class SignatureRegistry {
         s("taehyeon_gyeong", SkillSignature.ParticlePattern.AURA_OUT, Particle.END_ROD,
                 Particle.SPELL_WITCH, Sound.BLOCK_BEACON_AMBIENT, null,
                 "&5&l태현경 — 현묘한 경지.", 600, 3, 200);
-        s("yeokeun_seisukyeong", SkillSignature.ParticlePattern.AURA_OUT, Particle.SPELL_INSTANT,
-                Particle.HEART, Sound.BLOCK_AMETHYST_BLOCK_CHIME, null,
+        s("yeokeun_seisukyeong", SkillSignature.ParticlePattern.AURA_OUT, Particle.NAUTILUS,
+                Particle.HAPPY_VILLAGER, Sound.ENTITY_PLAYER_LEVELUP, Sound.BLOCK_AMETHYST_BLOCK_CHIME,
                 "&a&l역근세수경 — 근육과 정수를 바꾼다.", 400, 2, 0);
         s("yeoraesinjang", SkillSignature.ParticlePattern.WAVE_FRONT, Particle.END_ROD,
                 Particle.SPELL_INSTANT, Sound.BLOCK_BELL_RESONATE, Sound.ENTITY_PLAYER_ATTACK_STRONG,
@@ -880,11 +876,11 @@ public final class SignatureRegistry {
 
     // ──────────────────── 도술 (12) ────────────────────
     private static void seedTaoist() {
-        s("tao_barrier", SkillSignature.ParticlePattern.AURA_OUT, Particle.END_ROD,
-                Particle.SPELL_INSTANT, Sound.BLOCK_BEACON_ACTIVATE, null,
+        s("tao_barrier", SkillSignature.ParticlePattern.AURA_OUT, Particle.NAUTILUS,
+                Particle.SPELL_WITCH, Sound.BLOCK_AMETHYST_BLOCK_CHIME, Sound.ITEM_BOOK_PAGE_TURN,
                 "&b&l도사 결계 — 사악함이 들지 못한다.", 400, 3, 100);
-        s("tao_cloud_step", SkillSignature.ParticlePattern.AURA_OUT, Particle.CLOUD,
-                Particle.SPELL_INSTANT, Sound.ENTITY_PHANTOM_FLAP, null,
+        s("tao_cloud_step", SkillSignature.ParticlePattern.AURA_OUT, Particle.NAUTILUS,
+                Particle.CLOUD, Sound.BLOCK_AMETHYST_BLOCK_CHIME, Sound.ENTITY_PHANTOM_FLAP,
                 "&b&l운보 — 구름을 밟고 걷는다.", 200, 3, 0);
         s("tao_exorcism", SkillSignature.ParticlePattern.BEAM, Particle.END_ROD,
                 Particle.SQUID_INK, Sound.BLOCK_BELL_USE, Sound.ENTITY_VEX_DEATH,
@@ -910,8 +906,8 @@ public final class SignatureRegistry {
         s("essence_collect", SkillSignature.ParticlePattern.AURA_IN, Particle.SPELL_MOB_AMBIENT,
                 Particle.END_ROD, Sound.BLOCK_AMETHYST_BLOCK_CHIME, null,
                 "&b&l정수 수집 — 원소 정수를 모은다.", 0, 0, 0);
-        s("dimension_travel", SkillSignature.ParticlePattern.AURA_IN, Particle.PORTAL,
-                Particle.END_ROD, Sound.BLOCK_PORTAL_AMBIENT, Sound.ENTITY_ENDERMAN_TELEPORT,
+        s("dimension_travel", SkillSignature.ParticlePattern.AURA_IN, Particle.SPELL_MOB_AMBIENT,
+                Particle.PORTAL, Sound.BLOCK_PORTAL_AMBIENT, Sound.BLOCK_AMETHYST_BLOCK_CHIME,
                 "&5&l차원 여행 — 다른 세계로.", 0, 0, 60);
         s("concept_dominion", SkillSignature.ParticlePattern.STAR_BURST, Particle.END_ROD,
                 Particle.SOUL_FIRE_FLAME, Sound.BLOCK_BEACON_ACTIVATE, Sound.UI_TOAST_CHALLENGE_COMPLETE,
@@ -920,14 +916,14 @@ public final class SignatureRegistry {
 
     // ──────────────────── 천계 풀 (10) ────────────────────
     private static void seedHeavenFull() {
-        s("holy_light", SkillSignature.ParticlePattern.BEAM, Particle.END_ROD,
-                Particle.SPELL_INSTANT, Sound.BLOCK_BEACON_POWER_SELECT, Sound.UI_TOAST_CHALLENGE_COMPLETE,
+        s("holy_light", SkillSignature.ParticlePattern.BEAM, Particle.GLOW,
+                Particle.FIREWORKS_SPARK, Sound.BLOCK_BELL_USE, Sound.UI_TOAST_CHALLENGE_COMPLETE,
                 "&e&l성광 — 빛의 화살.", 60, 1, 0);
         s("heaven_angel_wings", SkillSignature.ParticlePattern.AURA_OUT, Particle.END_ROD,
                 Particle.SPELL_INSTANT, Sound.ENTITY_PHANTOM_FLAP, Sound.BLOCK_BEACON_ACTIVATE,
                 "&e&l천사의 날개 — 비행 + 빛.", 600, 0, 0);
-        s("heaven_heal_light", SkillSignature.ParticlePattern.AURA_OUT, Particle.HEART,
-                Particle.END_ROD, Sound.ENTITY_PLAYER_LEVELUP, Sound.BLOCK_BEACON_POWER_SELECT,
+        s("heaven_heal_light", SkillSignature.ParticlePattern.AURA_OUT, Particle.GLOW,
+                Particle.HEART, Sound.BLOCK_AMETHYST_BLOCK_CHIME, Sound.ENTITY_PLAYER_LEVELUP,
                 "&b&l치유의 빛.", 60, 0, 0);
         s("heaven_holy_bolt", SkillSignature.ParticlePattern.BEAM, Particle.END_ROD,
                 Particle.SPELL_INSTANT, Sound.ITEM_TRIDENT_THUNDER, Sound.ENTITY_LIGHTNING_BOLT_THUNDER,
@@ -935,11 +931,11 @@ public final class SignatureRegistry {
         s("heaven_holy_chain", SkillSignature.ParticlePattern.SOUL_DRAIN, Particle.END_ROD,
                 Particle.SPELL_INSTANT, Sound.BLOCK_CHAIN_BREAK, Sound.BLOCK_BELL_USE,
                 "&e&l성스러운 사슬 — 사악함을 묶는다.", 200, 4, 0);
-        s("heaven_judgment", SkillSignature.ParticlePattern.VERTICAL_PILLAR, Particle.END_ROD,
-                Particle.TOTEM, Sound.ENTITY_LIGHTNING_BOLT_THUNDER, Sound.BLOCK_BELL_USE,
+        s("heaven_judgment", SkillSignature.ParticlePattern.VERTICAL_PILLAR, Particle.FLAME,
+                Particle.EXPLOSION_LARGE, Sound.ENTITY_LIGHTNING_BOLT_THUNDER, Sound.BLOCK_BELL_RESONATE,
                 "&6&l천계 심판 — 신의 분노가 떨어진다.", 100, 5, 80);
-        s("heaven_light_shield", SkillSignature.ParticlePattern.AURA_OUT, Particle.END_ROD,
-                Particle.SPELL_INSTANT, Sound.BLOCK_BEACON_ACTIVATE, null,
+        s("heaven_light_shield", SkillSignature.ParticlePattern.AURA_OUT, Particle.GLOW,
+                Particle.FIREWORKS_SPARK, Sound.BLOCK_BELL_USE, Sound.BLOCK_BEACON_AMBIENT,
                 "&e&l빛의 방패.", 200, 3, 0);
         s("heaven_purify", SkillSignature.ParticlePattern.AURA_OUT, Particle.SPELL_INSTANT,
                 Particle.HEART, Sound.BLOCK_AMETHYST_BLOCK_CHIME, null,
@@ -975,14 +971,14 @@ public final class SignatureRegistry {
         s("demon_maggi_blast", SkillSignature.ParticlePattern.EXPLOSION, Particle.SQUID_INK,
                 Particle.SOUL_FIRE_FLAME, Sound.ENTITY_GENERIC_EXPLODE, Sound.ENTITY_WITHER_HURT,
                 "&5마기 폭발.", 60, 2, 0);
-        s("demon_maggi_shield", SkillSignature.ParticlePattern.AURA_OUT, Particle.SQUID_INK,
-                Particle.SOUL_FIRE_FLAME, Sound.ENTITY_WITHER_AMBIENT, null,
+        s("demon_maggi_shield", SkillSignature.ParticlePattern.AURA_OUT, Particle.SMOKE_LARGE,
+                Particle.DRAGON_BREATH, Sound.BLOCK_BEACON_ACTIVATE, Sound.ENTITY_WITHER_AMBIENT,
                 "&5마기 방패 — 마기로 두른다.", 200, 3, 0);
         s("demon_shadow_dash", SkillSignature.ParticlePattern.AURA_IN, Particle.SQUID_INK,
                 Particle.SOUL, Sound.ENTITY_ENDERMAN_TELEPORT, null,
                 "&8그림자 돌진.", 0, 0, 0);
-        s("demon_soul_drain", SkillSignature.ParticlePattern.SOUL_DRAIN, Particle.SOUL,
-                Particle.SQUID_INK, Sound.ENTITY_VEX_DEATH, Sound.ENTITY_ENDER_EYE_DEATH,
+        s("demon_soul_drain", SkillSignature.ParticlePattern.SOUL_DRAIN, Particle.SOUL_FIRE_FLAME,
+                Particle.SOUL, Sound.ENTITY_WITHER_HURT, Sound.ENTITY_PHANTOM_DEATH,
                 "&8&l영혼 흡수 — 적의 영혼을 빨아들인다.", 100, 4, 0);
         s("dragon_fear", SkillSignature.ParticlePattern.WAVE_FRONT, Particle.DRAGON_BREATH,
                 Particle.SQUID_INK, Sound.ENTITY_ENDER_DRAGON_GROWL, null,
@@ -1003,8 +999,8 @@ public final class SignatureRegistry {
         s("yokai_clone", SkillSignature.ParticlePattern.AURA_OUT, Particle.PORTAL,
                 Particle.SOUL_FIRE_FLAME, Sound.ENTITY_ENDERMAN_TELEPORT, null,
                 "&5분신 — 여러 너가 나타난다.", 400, 2, 100);
-        s("yokai_illusion", SkillSignature.ParticlePattern.AURA_OUT, Particle.SPELL_WITCH,
-                Particle.PORTAL, Sound.BLOCK_PORTAL_AMBIENT, null,
+        s("yokai_illusion", SkillSignature.ParticlePattern.AURA_OUT, Particle.SPELL_MOB,
+                Particle.HEART, Sound.ENTITY_FOX_AMBIENT, Sound.ENTITY_CAT_PURREOW,
                 "&d환술 — 진실이 흐려진다.", 200, 3, 0);
         s("yokai_kangshi", SkillSignature.ParticlePattern.VERTICAL_PILLAR, Particle.SOUL_FIRE_FLAME,
                 Particle.SOUL, Sound.ENTITY_ZOMBIE_AMBIENT, Sound.ENTITY_SKELETON_AMBIENT,
@@ -1078,8 +1074,8 @@ public final class SignatureRegistry {
         s("basic_firearm", SkillSignature.ParticlePattern.BEAM, Particle.CRIT,
                 Particle.SMOKE_NORMAL, Sound.ENTITY_FIREWORK_ROCKET_SHOOT, Sound.ENTITY_PLAYER_HURT,
                 "&7기본 총격.", 0, 0, 0);
-        s("survival_kit", SkillSignature.ParticlePattern.AURA_OUT, Particle.HEART,
-                Particle.SPELL_INSTANT, Sound.ENTITY_PLAYER_LEVELUP, null,
+        s("survival_kit", SkillSignature.ParticlePattern.AURA_OUT, Particle.HAPPY_VILLAGER,
+                Particle.HEART, Sound.ITEM_BOTTLE_FILL, Sound.BLOCK_ANVIL_USE,
                 "&a생존 키트 — 응급 처치.", 0, 0, 0);
     }
 
@@ -1123,9 +1119,6 @@ public final class SignatureRegistry {
 
     // ──────────────────── 잡 (마지막 정리) ────────────────────
     private static void seedMisc() {
-        s("nightmare_grimoire", SkillSignature.ParticlePattern.AURA_IN, Particle.SPELL_WITCH,
-                Particle.SOUL, Sound.ENTITY_VEX_AMBIENT, null,
-                "&8악몽의 그리모어.", 200, 4, 0);
         s("nightmare_grimoire2", SkillSignature.ParticlePattern.AURA_IN, Particle.SOUL,
                 Particle.SPELL_WITCH, Sound.ENTITY_PHANTOM_AMBIENT, null,
                 "&8&l악몽 — 잠들수 없다.", 400, 5, 0);

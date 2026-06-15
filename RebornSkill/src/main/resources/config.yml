@@ -74,6 +74,7 @@ skills:
   silvania_green_blade: { name: "&a❀ 정령검법 「실바니아 그린 블레이드」", world: FANTASY, category: MARTIAL, min-tier-stats: 700, cost: { type: AURA, amount: 60 }, damage: "strength * 4 + spirit_power * 0.5", element: NATURE, learn: NPC }
   kaiser_imperial:      { name: "&e✦ 황제검법 「카이젤 임페리얼」", world: FANTASY, category: MARTIAL, min-tier-stats: 1000, cost: { type: AURA, amount: 120 }, damage: "strength * 6 + aura * 0.8", element: HOLY, learn: NPC }
   nameless_swordplay:   { name: "&7✧ 무명검법", world: FANTASY, category: MARTIAL, min-tier-stats: 2000, cost: { type: AURA, amount: 100 }, damage: "strength * 5 + mental * 3", learn: NPC }
+  magic_sword_fusion:   { name: "&d⚔ 마검 융합 (魔劍融合)", world: FANTASY, category: MARTIAL, min-tier-stats: 2000, cost: { type: AURA, amount: 150 }, damage: "intelligence * 4 + strength * 4 + mana * 0.2", element: ARCANE, learn: ACHIEVEMENT }
 
   # ============================================================
   # 무협 비급 70종 (5장 5-5) — 1~35

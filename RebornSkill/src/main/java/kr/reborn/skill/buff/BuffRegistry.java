@@ -28,6 +28,8 @@ public final class BuffRegistry {
         seedHoly();
         seedDemon();
         seedElement();
+        seedTransformations();
+        seedShieldVariants();
     }
 
     private static BuffProfile reg(String id) {
@@ -260,6 +262,84 @@ public final class BuffRegistry {
                 .add(PotionEffectType.HEALTH_BOOST, 600, 4)
                 .add(PotionEffectType.DAMAGE_RESISTANCE, 600, 1)
                 .add(PotionEffectType.SLOW, 600, 1);
+    }
+
+    // ──────────── 변신 (8) — yokai/dragon/demon/ocean 컨셉 차별 ────────────
+    private static void seedTransformations() {
+        // 요수 변신 — 야성 본능 (속도·점프·시야)
+        reg("yokai_beast_form")
+                .add(PotionEffectType.SPEED, 1200, 2)
+                .add(PotionEffectType.JUMP, 1200, 2)
+                .add(PotionEffectType.INCREASE_DAMAGE, 1200, 1)
+                .add(PotionEffectType.NIGHT_VISION, 1200, 0);
+        // 인간 변신 — 시민 활동용 (방어 + 위장)
+        reg("transform_human")
+                .add(PotionEffectType.DAMAGE_RESISTANCE, 600, 1)
+                .add(PotionEffectType.HEALTH_BOOST, 600, 1);
+        // 요왕 변신 — 광역 위압 (종합 강화)
+        reg("transform_roar")
+                .add(PotionEffectType.INCREASE_DAMAGE, 1200, 3)
+                .add(PotionEffectType.DAMAGE_RESISTANCE, 1200, 2)
+                .add(PotionEffectType.REGENERATION, 1200, 2)
+                .add(PotionEffectType.HEALTH_BOOST, 1200, 3);
+        // 용 변신 (가상) — 화염 면역 + 비행
+        reg("dragon_form")
+                .add(PotionEffectType.FIRE_RESISTANCE, 1200, 0)
+                .add(PotionEffectType.INCREASE_DAMAGE, 1200, 3)
+                .add(PotionEffectType.HEALTH_BOOST, 1200, 4)
+                .addSide("ALLOW_FLIGHT");
+        // 마기 변신 (수라) — 데미지 + 위더 자기 부담
+        reg("demon_transform")
+                .add(PotionEffectType.INCREASE_DAMAGE, 1200, 4)
+                .add(PotionEffectType.SPEED, 1200, 2)
+                .add(PotionEffectType.WITHER, 1200, 0); // 대가
+        // 인어 변신 — 수중 활성
+        reg("ocean_form")
+                .add(PotionEffectType.WATER_BREATHING, 1200, 0)
+                .add(PotionEffectType.DOLPHINS_GRACE, 1200, 1)
+                .add(PotionEffectType.DAMAGE_RESISTANCE, 1200, 1);
+        // 정령 융합 — 4원소 친화
+        reg("spirit_fusion")
+                .add(PotionEffectType.INCREASE_DAMAGE, 1200, 2)
+                .add(PotionEffectType.FIRE_RESISTANCE, 1200, 0)
+                .add(PotionEffectType.WATER_BREATHING, 1200, 0)
+                .add(PotionEffectType.SPEED, 1200, 1);
+        // 천계 강림 — 신성 + 비행
+        reg("angel_form")
+                .add(PotionEffectType.REGENERATION, 1200, 2)
+                .add(PotionEffectType.INCREASE_DAMAGE, 1200, 2)
+                .add(PotionEffectType.GLOWING, 1200, 0)
+                .addSide("ALLOW_FLIGHT");
+    }
+
+    // ──────────── 보호막 변종 (6) — 종류별 차별 ────────────
+    private static void seedShieldVariants() {
+        // 마기 방패 — 마기로 두름 (저항 + 위더 부여 시도)
+        reg("demon_maggi_shield")
+                .add(PotionEffectType.DAMAGE_RESISTANCE, 200, 2)
+                .add(PotionEffectType.ABSORPTION, 200, 4);
+        // 에너지 실드 — 데미지 흡수 강화
+        reg("energy_shield")
+                .add(PotionEffectType.ABSORPTION, 200, 5)
+                .add(PotionEffectType.GLOWING, 200, 0);
+        // 마기 결계
+        reg("magic_barrier")
+                .add(PotionEffectType.DAMAGE_RESISTANCE, 200, 2)
+                .add(PotionEffectType.FIRE_RESISTANCE, 200, 0);
+        // 정령 보호 — 4원소 면역
+        reg("spirit_shield")
+                .add(PotionEffectType.DAMAGE_RESISTANCE, 200, 1)
+                .add(PotionEffectType.FIRE_RESISTANCE, 200, 0)
+                .add(PotionEffectType.WATER_BREATHING, 200, 0);
+        // 사이버 실드 (energy_shield 별칭)
+        reg("cyber_shield")
+                .add(PotionEffectType.ABSORPTION, 200, 4)
+                .add(PotionEffectType.DAMAGE_RESISTANCE, 200, 1);
+        // 도사 결계 — 사악 차단 (성격상 정신·시야 보호)
+        reg("tao_barrier")
+                .add(PotionEffectType.DAMAGE_RESISTANCE, 400, 2)
+                .add(PotionEffectType.ABSORPTION, 400, 3)
+                .addSide("REMOVE_CONFUSION_POISON");
     }
 
     public static BuffProfile get(String skillId) {

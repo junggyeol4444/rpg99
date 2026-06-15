@@ -420,38 +420,86 @@ public final class EffectExecutor {
 
     /* ───────────────── 신규 스킬 타입 구현 ───────────────── */
 
-    /** 보호막 - 일시 흡수치 + 반사. */
+    /**
+     * 보호막 — BuffRegistry 우선, 없으면 element/skill 컨셉별 기본 흡수·저항.
+     *   성스러운 방패: GLOW + END_ROD + BELL_USE
+     *   마기 방패: SMOKE_LARGE + DRAGON_BREATH + WITHER_AMBIENT
+     *   에너지 실드: ELECTRIC_SPARK + END_ROD + BEACON_AMBIENT
+     *   금강불괴: BLOCK_DUST + IRON_GOLEM + ANVIL_LAND
+     */
     private void shield(Player caster, SkillDef def, double power) {
-        try {
-            int dur = def.durationTicks > 0 ? def.durationTicks : 200;
-            caster.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, dur, 3));
-            caster.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, dur, 3));
-            caster.getWorld().spawnParticle(Particle.END_ROD, caster.getLocation(), 50, 1, 1, 1);
-            caster.getWorld().playSound(caster.getLocation(), Sound.BLOCK_ANVIL_LAND, 0.8f, 1.5f);
-            Msg.send(caster, "&b보호막 — " + (dur / 20) + "초 흡수 + 저항 3.");
-        } catch (Throwable ignored) {}
+        int dur = def.durationTicks > 0 ? def.durationTicks : 200;
+        kr.reborn.skill.buff.BuffProfile profile = kr.reborn.skill.buff.BuffRegistry.get(def.id);
+        if (profile != null) {
+            for (var st : profile.statuses) {
+                int d = st.duration < 0 ? Integer.MAX_VALUE : st.duration;
+                try { caster.addPotionEffect(new PotionEffect(st.type, d, st.amplifier, st.ambient, st.particles)); }
+                catch (Throwable ignored) {}
+            }
+            for (String side : profile.sideEffects) applySideEffect(caster, side, dur);
+        } else {
+            try {
+                caster.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, dur, 3));
+                caster.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, dur, 3));
+            } catch (Throwable ignored) {}
+        }
+        // 시그니처가 있으면 거기서 처리; 없을 때만 폴백 입자
+        if (kr.reborn.skill.signature.SignatureRegistry.lookup(def.id) == null) {
+            Particle prt = shieldParticle(def);
+            Sound snd = shieldSound(def);
+            try { caster.getWorld().spawnParticle(prt, caster.getLocation().add(0, 1, 0), 50, 1, 1, 1); }
+            catch (Throwable ignored) {}
+            try { caster.getWorld().playSound(caster.getLocation(), snd, 0.8f, 1.5f); }
+            catch (Throwable ignored) {}
+        }
+        Msg.send(caster, "&b" + def.name + " — " + (dur / 20) + "초 보호.");
     }
 
-    /** 광역 디버프 (피해 없음, 상태이상만). */
+    /**
+     * 광역 디버프 — 원소·스킬 컨셉별 차별화.
+     *   FIRE: BLINDNESS + WEAKNESS (시야 + 약화)
+     *   ICE: SLOW + SLOW_DIGGING (둔화 + 채굴)
+     *   DARK: BLINDNESS + WITHER (실명 + 위더)
+     *   POISON: POISON + WEAKNESS (중독)
+     *   HOLY: GLOWING + WEAKNESS (성광 노출)
+     *   LIGHTNING: SLOW + NAUSEA (감전 멍)
+     *   기본: WEAKNESS + SLOW
+     */
     private void debuff(Player caster, SkillDef def, double power) {
         double r = def.radius > 0 ? def.radius : 10;
         int dur = def.durationTicks > 0 ? def.durationTicks : 200;
         int amp = (int) Math.min(4, power / 30);
+        String el = def.element == null ? "" : def.element.toUpperCase();
+        PotionEffectType[] effects = debuffEffects(el);
+        Particle prt = debuffParticle(el);
+        int hits = 0;
         for (Entity e : caster.getNearbyEntities(r, r, r)) {
             if (e instanceof LivingEntity le && e != caster) {
                 try {
-                    le.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, dur, amp));
-                    le.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, dur, amp));
-                    le.getWorld().spawnParticle(Particle.SQUID_INK, le.getLocation(), 20, 1, 1, 1);
+                    for (var eff : effects) le.addPotionEffect(new PotionEffect(eff, dur, amp));
+                    le.getWorld().spawnParticle(prt, le.getLocation().add(0, 1, 0), 20, 1, 1, 1);
                 } catch (Throwable ignored) {}
+                hits++;
             }
         }
-        Msg.send(caster, "&8광역 디버프 — 반경 " + r + " amp " + amp);
+        try { caster.getWorld().playSound(caster.getLocation(), debuffSound(el), 1f, 0.9f); }
+        catch (Throwable ignored) {}
+        Msg.send(caster, "&8" + def.name + " — 반경 " + r + " amp " + amp + " (" + hits + "명)");
     }
 
-    /** 지속 시전 - 매 0.5초마다 시선 방향에 빔, dur 동안. */
+    /**
+     * 지속 시전 — 원소별 빔 입자·피해 부가.
+     *   FIRE: FLAME + 화상
+     *   ICE: SNOWFLAKE + 둔화
+     *   DARK: SQUID_INK + 위더
+     *   HOLY: END_ROD + 발광
+     *   LIGHTNING: ELECTRIC_SPARK + 낙뢰 (확률)
+     *   POISON: SLIME + 중독
+     */
     private void channeled(Player caster, SkillDef def, double power) {
         int ticks = def.durationTicks > 0 ? def.durationTicks : 100;
+        String el = def.element == null ? "" : def.element.toUpperCase();
+        Particle beamP = channeledParticle(el);
         final int[] elapsed = {0};
         final int every = 10;
         Runnable beam = new Runnable() {
@@ -462,12 +510,15 @@ public final class EffectExecutor {
                 Location origin = caster.getEyeLocation();
                 Vector dir = origin.getDirection().normalize();
                 for (int i = 0; i < 20; i++) {
-                    Location p = origin.clone().add(dir.clone().multiply(i));
-                    try { p.getWorld().spawnParticle(Particle.FLAME, p, 5, 0.2, 0.2, 0.2); }
+                    Location pt = origin.clone().add(dir.clone().multiply(i));
+                    try { pt.getWorld().spawnParticle(beamP, pt, 5, 0.2, 0.2, 0.2); }
                     catch (Throwable ignored) {}
-                    for (Entity e : p.getWorld().getNearbyEntities(p, 1.2, 1.2, 1.2)) {
+                    for (Entity e : pt.getWorld().getNearbyEntities(pt, 1.2, 1.2, 1.2)) {
                         if (e instanceof LivingEntity le && e != caster) {
-                            try { le.damage(power * 0.15, caster); } catch (Throwable ignored) {}
+                            try {
+                                le.damage(power * 0.15 * Element.multiplier(el, le), caster);
+                                Element.applyStatus(le, el, power * 0.2);
+                            } catch (Throwable ignored) {}
                         }
                     }
                 }
@@ -476,27 +527,54 @@ public final class EffectExecutor {
             }
         };
         beam.run();
-        Msg.send(caster, "&c지속 시전 — " + (ticks / 20) + "초 빔.");
+        Msg.send(caster, "&c" + def.name + " — " + (ticks / 20) + "초 지속 빔.");
     }
 
-    /** 변신 - 모든 스탯 일시 강화. */
+    /**
+     * 변신 — BuffRegistry 우선, 없으면 skill 컨셉별 효과·사운드.
+     *   yokai/fox: ENTITY_FOX_AGGRO
+     *   dragon/breath: ENTITY_ENDER_DRAGON_GROWL
+     *   demon/마/sura: ENTITY_WITHER_SPAWN
+     *   ocean/sea: ENTITY_DOLPHIN_AMBIENT
+     *   기본: ENDER_DRAGON_GROWL
+     */
     private void transform(Player caster, SkillDef def) {
         int dur = def.durationTicks > 0 ? def.durationTicks : 600;
-        try {
-            caster.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, dur, 2));
-            caster.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, dur, 1));
-            caster.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, dur, 2));
-            caster.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, dur, 1));
-            caster.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, dur, 0));
-            caster.getWorld().playSound(caster.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1.5f, 1.0f);
-            caster.getWorld().spawnParticle(Particle.PORTAL, caster.getLocation(), 200, 1, 2, 1);
-        } catch (Throwable ignored) {}
-        Msg.send(caster, "&5변신 — " + (dur / 20) + "초간 종합 강화.");
+        kr.reborn.skill.buff.BuffProfile profile = kr.reborn.skill.buff.BuffRegistry.get(def.id);
+        if (profile != null) {
+            for (var st : profile.statuses) {
+                int d = st.duration < 0 ? Integer.MAX_VALUE : st.duration;
+                try { caster.addPotionEffect(new PotionEffect(st.type, d, st.amplifier, st.ambient, st.particles)); }
+                catch (Throwable ignored) {}
+            }
+            for (String side : profile.sideEffects) applySideEffect(caster, side, dur);
+        } else {
+            try {
+                caster.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, dur, 2));
+                caster.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, dur, 1));
+                caster.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, dur, 2));
+                caster.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, dur, 1));
+            } catch (Throwable ignored) {}
+        }
+        if (kr.reborn.skill.signature.SignatureRegistry.lookup(def.id) == null) {
+            try { caster.getWorld().playSound(caster.getLocation(), transformSound(def), 1.5f, 1.0f); }
+            catch (Throwable ignored) {}
+            try { caster.getWorld().spawnParticle(transformParticle(def), caster.getLocation().add(0, 1, 0), 80, 1, 2, 1); }
+            catch (Throwable ignored) {}
+        }
+        Msg.send(caster, "&5" + def.name + " — " + (dur / 20) + "초간 변신.");
     }
 
-    /** 끌어당기기 - 반경 내 적을 자기에게로. */
+    /**
+     * 끌어당기기 — skill 컨셉별 입자·사운드 차별.
+     *   demon/마: SQUID_INK + WARDEN_AMBIENT
+     *   tao/도: PORTAL + AMETHYST_CHIME
+     *   spirit/정령: SPELL_MOB + PHANTOM_FLAP
+     *   기본: PORTAL + ENDERMAN_TELEPORT
+     */
     private void grab(Player caster, SkillDef def) {
         double r = def.radius > 0 ? def.radius : 10;
+        int hits = 0;
         for (Entity e : caster.getNearbyEntities(r, r, r)) {
             if (e instanceof LivingEntity le && e != caster) {
                 try {
@@ -505,10 +583,141 @@ public final class EffectExecutor {
                     le.setVelocity(dir);
                     le.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 60, 3));
                 } catch (Throwable ignored) {}
+                hits++;
             }
         }
-        try { caster.getWorld().spawnParticle(Particle.PORTAL, caster.getLocation(), 100, 3, 3, 3); }
-        catch (Throwable ignored) {}
-        Msg.send(caster, "&5끌어당기기 — 반경 " + r);
+        if (kr.reborn.skill.signature.SignatureRegistry.lookup(def.id) == null) {
+            try { caster.getWorld().spawnParticle(grabParticle(def), caster.getLocation().add(0, 1, 0), 60, 2, 2, 2); }
+            catch (Throwable ignored) {}
+            try { caster.getWorld().playSound(caster.getLocation(), grabSound(def), 1f, 1.1f); }
+            catch (Throwable ignored) {}
+        }
+        Msg.send(caster, "&5" + def.name + " — 반경 " + r + " (" + hits + "명)");
+    }
+
+    // ───────── 폴백 입자·사운드 헬퍼 (시그니처가 없을 때만 사용) ─────────
+
+    private Particle shieldParticle(SkillDef def) {
+        String id = def.id == null ? "" : def.id;
+        String el = def.element == null ? "" : def.element.toUpperCase();
+        if (el.equals("HOLY") || id.contains("holy") || id.contains("divine") || id.contains("heaven")) return Particle.END_ROD;
+        if (el.equals("DARK") || id.contains("demon") || id.contains("maggi") || id.contains("ma_")) return Particle.SMOKE_LARGE;
+        if (id.contains("cyber") || id.contains("energy") || id.contains("neural")) return Particle.ELECTRIC_SPARK;
+        if (id.contains("vajra") || id.contains("geum") || id.contains("iron")) return Particle.NAUTILUS;
+        if (el.equals("FIRE")) return Particle.FLAME;
+        if (el.equals("ICE")) return Particle.SNOWFLAKE;
+        if (id.contains("spirit") || id.contains("정령")) return Particle.SPELL_MOB;
+        return Particle.END_ROD;
+    }
+
+    private Sound shieldSound(SkillDef def) {
+        String id = def.id == null ? "" : def.id;
+        if (id.contains("holy") || id.contains("divine") || id.contains("heaven")) return Sound.BLOCK_BELL_USE;
+        if (id.contains("demon") || id.contains("maggi")) return Sound.ENTITY_WITHER_AMBIENT;
+        if (id.contains("cyber") || id.contains("energy")) return Sound.BLOCK_BEACON_AMBIENT;
+        if (id.contains("vajra") || id.contains("geum") || id.contains("iron")) return Sound.BLOCK_ANVIL_LAND;
+        return Sound.BLOCK_BEACON_ACTIVATE;
+    }
+
+    private PotionEffectType[] debuffEffects(String el) {
+        switch (el) {
+            case "FIRE":      return new PotionEffectType[]{PotionEffectType.BLINDNESS, PotionEffectType.WEAKNESS};
+            case "ICE":       return new PotionEffectType[]{PotionEffectType.SLOW, PotionEffectType.SLOW_DIGGING};
+            case "WATER":     return new PotionEffectType[]{PotionEffectType.SLOW, PotionEffectType.WEAKNESS};
+            case "DARK":      return new PotionEffectType[]{PotionEffectType.BLINDNESS, PotionEffectType.WITHER};
+            case "POISON":    return new PotionEffectType[]{PotionEffectType.POISON, PotionEffectType.WEAKNESS};
+            case "HOLY":      return new PotionEffectType[]{PotionEffectType.GLOWING, PotionEffectType.WEAKNESS};
+            case "LIGHTNING": return new PotionEffectType[]{PotionEffectType.SLOW, PotionEffectType.CONFUSION};
+            case "WIND":      return new PotionEffectType[]{PotionEffectType.LEVITATION, PotionEffectType.WEAKNESS};
+            case "EARTH":     return new PotionEffectType[]{PotionEffectType.SLOW, PotionEffectType.MINING_FATIGUE};
+            case "NATURE":    return new PotionEffectType[]{PotionEffectType.POISON, PotionEffectType.HUNGER};
+            case "ARCANE":    return new PotionEffectType[]{PotionEffectType.WEAKNESS, PotionEffectType.CONFUSION};
+            default:          return new PotionEffectType[]{PotionEffectType.WEAKNESS, PotionEffectType.SLOW};
+        }
+    }
+
+    private Particle debuffParticle(String el) {
+        switch (el) {
+            case "FIRE":      return Particle.FLAME;
+            case "ICE":       return Particle.SNOWFLAKE;
+            case "WATER":     return Particle.WATER_SPLASH;
+            case "DARK":      return Particle.SQUID_INK;
+            case "POISON":    return Particle.SLIME;
+            case "HOLY":      return Particle.END_ROD;
+            case "LIGHTNING": return Particle.ELECTRIC_SPARK;
+            case "WIND":      return Particle.CLOUD;
+            case "EARTH":     return Particle.LANDING_OBSIDIAN_TEAR;
+            case "NATURE":    return Particle.HAPPY_VILLAGER;
+            case "ARCANE":    return Particle.SPELL_WITCH;
+            default:          return Particle.SQUID_INK;
+        }
+    }
+
+    private Sound debuffSound(String el) {
+        switch (el) {
+            case "FIRE":      return Sound.ENTITY_BLAZE_HURT;
+            case "ICE":       return Sound.BLOCK_GLASS_BREAK;
+            case "DARK":      return Sound.ENTITY_WITHER_AMBIENT;
+            case "POISON":    return Sound.ENTITY_SPIDER_HURT;
+            case "HOLY":      return Sound.BLOCK_BELL_USE;
+            case "LIGHTNING": return Sound.ENTITY_LIGHTNING_BOLT_IMPACT;
+            case "WIND":      return Sound.ENTITY_PHANTOM_AMBIENT;
+            case "EARTH":     return Sound.BLOCK_STONE_FALL;
+            default:          return Sound.ENTITY_VEX_AMBIENT;
+        }
+    }
+
+    private Particle channeledParticle(String el) {
+        switch (el) {
+            case "FIRE":      return Particle.FLAME;
+            case "ICE":       return Particle.SNOWFLAKE;
+            case "WATER":     return Particle.WATER_SPLASH;
+            case "DARK":      return Particle.SQUID_INK;
+            case "POISON":    return Particle.SLIME;
+            case "HOLY":      return Particle.END_ROD;
+            case "LIGHTNING": return Particle.ELECTRIC_SPARK;
+            case "WIND":      return Particle.CLOUD;
+            case "EARTH":     return Particle.LANDING_OBSIDIAN_TEAR;
+            case "NATURE":    return Particle.HAPPY_VILLAGER;
+            case "ARCANE":    return Particle.SPELL_WITCH;
+            default:          return Particle.CRIT_MAGIC;
+        }
+    }
+
+    private Sound transformSound(SkillDef def) {
+        String id = def.id == null ? "" : def.id;
+        if (id.contains("yokai") || id.contains("fox")) return Sound.ENTITY_FOX_AGGRO;
+        if (id.contains("dragon") || id.contains("yong") || id.contains("ryong")) return Sound.ENTITY_ENDER_DRAGON_GROWL;
+        if (id.contains("demon") || id.contains("ma_") || id.contains("sura")) return Sound.ENTITY_WITHER_SPAWN;
+        if (id.contains("ocean") || id.contains("sea")) return Sound.ENTITY_DOLPHIN_AMBIENT;
+        if (id.contains("spirit") || id.contains("정령")) return Sound.BLOCK_BEACON_ACTIVATE;
+        return Sound.ENTITY_ENDER_DRAGON_GROWL;
+    }
+
+    private Particle transformParticle(SkillDef def) {
+        String id = def.id == null ? "" : def.id;
+        if (id.contains("yokai") || id.contains("fox")) return Particle.SPELL_WITCH;
+        if (id.contains("dragon") || id.contains("yong") || id.contains("ryong")) return Particle.DRAGON_BREATH;
+        if (id.contains("demon") || id.contains("ma_") || id.contains("sura")) return Particle.SQUID_INK;
+        if (id.contains("ocean") || id.contains("sea")) return Particle.WATER_BUBBLE;
+        if (id.contains("spirit") || id.contains("정령")) return Particle.SPELL_MOB;
+        return Particle.PORTAL;
+    }
+
+    private Particle grabParticle(SkillDef def) {
+        String id = def.id == null ? "" : def.id;
+        if (id.contains("demon") || id.contains("ma_") || id.contains("yeolma")) return Particle.SQUID_INK;
+        if (id.contains("tao") || id.contains("도술")) return Particle.NAUTILUS;
+        if (id.contains("spirit") || id.contains("정령")) return Particle.SPELL_MOB;
+        if (id.contains("ocean") || id.contains("water")) return Particle.WATER_SPLASH;
+        return Particle.PORTAL;
+    }
+
+    private Sound grabSound(SkillDef def) {
+        String id = def.id == null ? "" : def.id;
+        if (id.contains("demon") || id.contains("ma_")) return Sound.ENTITY_WARDEN_AMBIENT;
+        if (id.contains("tao") || id.contains("도술")) return Sound.BLOCK_AMETHYST_BLOCK_CHIME;
+        if (id.contains("spirit")) return Sound.ENTITY_PHANTOM_FLAP;
+        return Sound.ENTITY_ENDERMAN_TELEPORT;
     }
 }

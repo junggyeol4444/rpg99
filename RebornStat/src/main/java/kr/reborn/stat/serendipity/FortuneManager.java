@@ -128,6 +128,17 @@ public final class FortuneManager implements Listener {
                 Bukkit.broadcastMessage("§5§l[혼돈의 정령] §f" + p.getName()
                         + " §7이(가) 카오스의 일족이 되었다 — 모든 원소를 다스리는 자.");
             }
+            case "genesis_touch" -> {
+                // GOD 신계 창세의 파편: 신격 계승 — 완전 회복 + 영구 경지(LEVEL) 도약.
+                try {
+                    p.setHealth(p.getMaxHealth());
+                    p.setFoodLevel(20);
+                } catch (Throwable ignored) {}
+                RebornCore.get().api().addStat(p.getUniqueId(), StatType.LEVEL, 200, "genesis-touch");
+                RebornCore.get().api().addStat(p.getUniqueId(), StatType.DIVINITY, 500, "genesis-touch");
+                Bukkit.broadcastMessage("§e§l[창세의 계승] §f" + p.getName()
+                        + " §7이(가) 창세신의 힘 일부를 계승했다 — 신격에 한 발 다가선 존재.");
+            }
             default -> {}
         }
     }

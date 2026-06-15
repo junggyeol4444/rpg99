@@ -223,3 +223,21 @@ fortunes:
   lost_magitech_core: { name: "&b잃어버린 마도 코어", world: MAGITECH, trigger: MINE, chance: 0.02, message: "폐연구소의 고대 마도 코어.", stats: { MAGITECH_ENERGY: 300 } }
   mutation_serum:     { name: "&2변이 혈청", world: APOCALYPSE, trigger: KILL, chance: 0.02, message: "변종의 정수가 담긴 혈청.", stats: { ENDURANCE: 50, STRENGTH: 50 } }
   legendary_chip:     { name: "&d전설의 데이터 칩", world: CYBERPUNK, trigger: EXPLORE, chance: 0.003, message: "전설의 넷러너가 남긴 칩.", stats: { CYBER_ADAPTATION: 200 } }
+  # ── 숨겨진 6세계 (히든 엔드게임) — 기획서 4장 ──
+  # ABYSS 심연 — 공허 저항·정신
+  abyss_void_pearl:   { name: "&8심연의 공허 진주", world: ABYSS, trigger: EXPLORE, chance: 0.0012, broadcast: true, message: "심연 바닥에서 건진 공허의 진주. 무(無)에 대한 저항이 새겨진다.", stats: { ABYSS_RESISTANCE: 400, MENTAL: 100 } }
+  abyss_madness_gaze: { name: "&5심연을 들여다본 자", world: ABYSS, trigger: MEDITATE, chance: 0.004, message: "심연이 너를 마주 본다. 광기를 견딘 정신이 단단해진다.", stats: { MENTAL: 250, ABYSS_RESISTANCE: 150 } }
+  # UNDERWORLD 명계 — 명계력
+  underworld_obol:    { name: "&2삼도천 노잣돈", world: UNDERWORLD, trigger: EXPLORE, chance: 0.0015, broadcast: true, message: "삼도천을 건너는 망자의 노잣돈. 명계의 힘이 깃든다.", stats: { UNDERWORLD_KI: 400 } }
+  reaper_scythe_shard: { name: "&8사신의 낫 파편", world: UNDERWORLD, trigger: KILL, chance: 0.015, message: "부서진 사신의 낫 조각. 죽음의 무게가 실린다.", stats: { UNDERWORLD_KI: 200, STRENGTH: 80 } }
+  # TIME_REALM 시간의 틈 — 전 스탯 (시간 숙련)
+  time_sand_hourglass: { name: "&e역류하는 모래시계", world: TIME_REALM, trigger: EXPLORE, chance: 0.001, broadcast: true, message: "시간이 역류하는 모래시계. 잃었던 모든 가능성이 되돌아온다.", stats: { INTELLIGENCE: 150, MENTAL: 150, LUCK: 100 } }
+  chronos_fragment:   { name: "&6&l크로노스의 파편", world: TIME_REALM, trigger: MEDITATE, chance: 0.0008, broadcast: true, message: "시간의 신 크로노스의 파편. 찰나에 영겁을 수련한다.", stats: { ENDURANCE: 150, STRENGTH: 150, AGILITY: 150, INTELLIGENCE: 150, MENTAL: 150, LUCK: 150, CHARISMA: 150, CHARM: 150 } }
+  # DREAM 꿈의 세계 — 정신
+  dream_lucid_pearl:  { name: "&d자각몽의 진주", world: DREAM, trigger: MEDITATE, chance: 0.005, message: "꿈을 지배한 자에게 주어지는 진주. 정신이 무한히 확장된다.", stats: { MENTAL: 300 } }
+  nightmare_conquered: { name: "&5악몽을 정복한 자", world: DREAM, trigger: EXPLORE, chance: 0.002, broadcast: true, message: "가장 깊은 악몽을 정복했다. 정신과 매혹이 함께 깨어난다.", stats: { MENTAL: 200, CHARM: 100 } }
+  # VOID 공허 — 공허 저항 + 전 스탯 (무에서 유)
+  void_null_crystal:  { name: "&0&l공허의 무(無) 결정", world: VOID, trigger: EXPLORE, chance: 0.0006, broadcast: true, message: "존재를 지우는 공허에서 홀로 빛나는 결정. 무에서 모든 것이 태어난다.", stats: { ABYSS_RESISTANCE: 300, ENDURANCE: 120, STRENGTH: 120, AGILITY: 120, INTELLIGENCE: 120, MENTAL: 120, LUCK: 120, CHARISMA: 120, CHARM: 120 } }
+  # GOD 신계 — 신격
+  divine_spark:       { name: "&f신격의 불씨", world: GOD, trigger: EXPLORE, chance: 0.001, broadcast: true, message: "신의 영역에서 얻은 신격의 불씨. 인간을 넘어선 격이 깃든다.", stats: { DIVINITY: 400 } }
+  creator_fragment:   { name: "&e&l창세의 파편", world: GOD, trigger: MEDITATE, chance: 0.0005, broadcast: true, special: "genesis_touch", message: "창세신이 세계를 빚은 힘의 파편. 신격과 모든 능력이 동시에 폭증한다.", stats: { DIVINITY: 1000, ENDURANCE: 200, STRENGTH: 200, AGILITY: 200, INTELLIGENCE: 200, MENTAL: 200, LUCK: 200, CHARISMA: 200, CHARM: 200 } }

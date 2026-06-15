@@ -41,14 +41,23 @@ public final class CorpCommand implements CommandExecutor {
         }
         if (a.length == 0) {
             Msg.send(p, "&6=== 7대 메가코프 평판 ===");
+            // 코프별 점령 구역 수 집계
+            java.util.Map<String, Integer> ownedCount = new java.util.HashMap<>();
+            for (var d : corp.cities().all()) {
+                if (d.currentOwner != null) {
+                    ownedCount.merge(d.currentOwner, 1, Integer::sum);
+                }
+            }
             for (var e : corp.allCorpReputations(p.getUniqueId()).entrySet()) {
                 int tier = corp.corpTier(e.getValue());
                 String[] labels = {"&4적", "&c적대", "&7냉랭", "&f중립", "&a우호", "&b동맹"};
                 String label = labels[Math.max(0, Math.min(labels.length - 1, tier))];
+                int owned = ownedCount.getOrDefault(e.getKey(), 0);
+                String districtLabel = owned > 0 ? " §6[구역 " + owned + "/7]" : "";
                 p.sendMessage("§b• §f" + e.getKey() + " §7: §f" + e.getValue()
-                        + " §8[" + label + "&8]");
+                        + " §8[" + label + "&8]" + districtLabel);
             }
-            Msg.send(p, "&7/corp join <CORP> | /corp mission <type>");
+            Msg.send(p, "&7/corp join <CORP> | /corp mission <type> | /district");
             return true;
         }
         switch (a[0].toLowerCase()) {

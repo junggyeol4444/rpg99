@@ -43,6 +43,9 @@ commands:
   empire:
     description: 7대 해양 제국 평판 (해양)
     usage: /empire [join <EMPIRE> | mission <EMPIRE> <escort|naval|explore|pirate|betray>]
+  district:
+    description: 사이버시티 7대 구역 점령전 (사이버펑크)
+    usage: /district [enter <ID> | exit]
 permissions:
   rebornstat.use:
     default: true

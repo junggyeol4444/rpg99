@@ -60,6 +60,11 @@ public final class CyberpunkGrowth implements GrowthStrategy {
 
     private final Map<UUID, Map<Slot, Implant>> implants = new ConcurrentHashMap<>();
     private final java.util.Set<UUID> loaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    /** uuid → 현재 활동 중인 구역 id. */
+    private final Map<UUID, String> activeDistrict = new ConcurrentHashMap<>();
+    private final CityRegistry cities = new CityRegistry();
+
+    public CityRegistry cities() { return cities; }
 
     private static String encodeBonus(Map<StatType, Double> b) {
         StringBuilder sb = new StringBuilder();
@@ -133,6 +138,12 @@ public final class CyberpunkGrowth implements GrowthStrategy {
                     Msg.send(p, "&b[" + patron + "] §7코프 후원 — 개조 적응 가속.");
                 }
             }
+            // 활동 구역이 후원 코프 점령지면 추가 +10% — 점령지 보호 효과.
+            String district = activeDistrictOf(p.getUniqueId());
+            if (district != null && patron.equals(cities.ownerOf(district))) {
+                adaptation *= 1.10;
+                intel *= 1.10;
+            }
             // 코프 의뢰 수행 — 평판 누적 (라이벌 코프는 자동 감소).
             gainCorpFavor(p, patron, (int) Math.round(8 * weight));
         }
@@ -140,6 +151,30 @@ public final class CyberpunkGrowth implements GrowthStrategy {
                 StatType.CYBER_ADAPTATION, adaptation, "augment");
         RebornCore.get().api().addStat(p.getUniqueId(),
                 StatType.INTELLIGENCE, intel, "hack");
+    }
+
+    /** 활동 중인 구역 id. null이면 진입 안 함. */
+    public String activeDistrictOf(UUID p) {
+        String cached = activeDistrict.get(p);
+        if (cached != null) return cached;
+        String stored = RebornCore.get().kv().get(NS, p, "district");
+        if (stored != null && !stored.isEmpty()) {
+            activeDistrict.put(p, stored);
+            return stored;
+        }
+        return null;
+    }
+
+    public boolean setActiveDistrict(Player p, String districtId) {
+        if (!CyberCity.isDistrict(districtId)) return false;
+        activeDistrict.put(p.getUniqueId(), districtId);
+        RebornCore.get().kv().put(NS, p.getUniqueId(), "district", districtId);
+        return true;
+    }
+
+    public void clearActiveDistrict(Player p) {
+        activeDistrict.remove(p.getUniqueId());
+        RebornCore.get().kv().remove(NS, p.getUniqueId(), "district");
     }
 
     @Override
@@ -296,6 +331,11 @@ public final class CyberpunkGrowth implements GrowthStrategy {
                 int rivalCur = corpReputation(p.getUniqueId(), rival);
                 int rivalNext = Math.max(-1000, rivalCur - (delta / 2));
                 RebornCore.get().kv().putInt(CORP_NS, p.getUniqueId(), rival, rivalNext);
+            }
+            // 활동 중인 구역이 있으면 해당 구역의 코프 영향력 누적 (도시 점령전).
+            String district = activeDistrictOf(p.getUniqueId());
+            if (district != null) {
+                cities.addInfluence(district, corpId, delta);
             }
         }
         // 단계 변경 알림

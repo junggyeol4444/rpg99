@@ -61,6 +61,9 @@ public final class RebornStat extends JavaPlugin {
         if (getCommand("empire") != null) {
             getCommand("empire").setExecutor(new kr.reborn.stat.command.EmpireCommand(this));
         }
+        if (getCommand("district") != null) {
+            getCommand("district").setExecutor(new kr.reborn.stat.command.DistrictCommand(this));
+        }
 
         getServer().getPluginManager().registerEvents(growth, this);
         getServer().getPluginManager().registerEvents(

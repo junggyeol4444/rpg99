@@ -118,17 +118,14 @@ public final class HiddenWorldUnlock {
             plugin.api().addStat(p.getUniqueId(), StatType.MENTAL, 50, "hidden-world:" + w);
             plugin.api().addStat(p.getUniqueId(), StatType.LUCK, 30, "hidden-world:" + w);
         } catch (Throwable ignored) {}
-        // 칭호 부여 (RebornTitle 리플렉션)
+        // 업적 부여 — 6 히든 월드 모두 발견 시 (기존 라인 127의 titles().grant("hidden_world_visitor")는
+        // TitleManager에 해당 ID 미정의 → silent fail. AchievementManager에 정의된 동일 ID를 6/6 달성 시 부여).
         try {
             var tp = Bukkit.getPluginManager().getPlugin("RebornTitle");
             if (tp != null) {
-                Object tm = tp.getClass().getMethod("titles").invoke(tp);
-                tm.getClass().getMethod("grant", Player.class, String.class)
-                        .invoke(tm, p, "hidden_world_visitor");
-                // 6 히든 월드 모두 발견 시 추가 업적
-                Object am = tp.getClass().getMethod("achievements").invoke(tp);
                 Object set2 = unlocked.get(p.getUniqueId());
                 if (set2 instanceof Set<?> ss && ss.size() == 6) {
+                    Object am = tp.getClass().getMethod("achievements").invoke(tp);
                     am.getClass().getMethod("grant", Player.class, String.class)
                             .invoke(am, p, "hidden_world_visitor");
                 }

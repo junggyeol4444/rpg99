@@ -223,16 +223,16 @@ public final class FamousNpcRegistry {
                 "악의 고룡. 어둠 속에 거주.");
         // 기획서 5-12: 5대 드래곤 로드 가문 가주 (Aurelius/Ignifer/Nocterna/Cerylis/Silvarex)
         add("dragon_lord_ignifer", "&c&l[가주] 이그니페르 (적룡 가문)", WorldKey.DRAGON,
-                "DRAGON_LORD", "house_ignifer", "가주", 10, "fire_breath",
+                "DRAGON_LORD", "house_ignifer", "가주", 10, "dragon_fire_breath",
                 "이그니페르 가문 가주. 용암 화산 지대 '영원의 화염' 지배. 8500년.");
         add("dragon_lord_nocterna", "&8&l[가주] 녹테르나 (흑룡 가문)", WorldKey.DRAGON,
-                "DRAGON_LORD", "house_nocterna", "가주", 10, "acid_breath",
+                "DRAGON_LORD", "house_nocterna", "가주", 10, "dragon_acid_breath",
                 "녹테르나 가문 가주. 구름 해 아래 '심연의 둥지' 지배. 7000년.");
         add("dragon_lord_cerylis", "&9&l[가주] 세릴리스 (청룡 가문)", WorldKey.DRAGON,
-                "DRAGON_LORD", "house_cerylis", "가주", 10, "lightning_breath",
+                "DRAGON_LORD", "house_cerylis", "가주", 10, "dragon_lightning_breath",
                 "세릴리스 가문 가주. '뇌전의 바다' 지배. 6500년.");
         add("dragon_lord_silvarex", "&2&l[가주] 실바렉스 (녹룡 가문)", WorldKey.DRAGON,
-                "DRAGON_LORD", "house_silvarex", "가주", 10, "poison_breath",
+                "DRAGON_LORD", "house_silvarex", "가주", 10, "dragon_poison_breath",
                 "실바렉스 가문 가주. '용수림' 지배. 외교 우선. 6000년.");
 
         // ── 해양 ──

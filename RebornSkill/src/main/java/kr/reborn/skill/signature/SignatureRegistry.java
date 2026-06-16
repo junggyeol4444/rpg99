@@ -167,6 +167,11 @@ public final class SignatureRegistry {
                 Particle.CRIT_MAGIC, Sound.ITEM_TRIDENT_THUNDER, Sound.ITEM_TRIDENT_RIPTIDE_3,
                 "&6&l아르테온의 빛이 검에 깃든다.",
                 60, 3, 40);
+        // 마검사 (히든클래스) 융합 비기 — 마법 입자 + 검기 호
+        s("magic_sword_fusion", SkillSignature.ParticlePattern.SLASH_ARC, Particle.SPELL_WITCH,
+                Particle.CRIT_MAGIC, Sound.ITEM_TRIDENT_THUNDER, Sound.ENTITY_EVOKER_CAST_SPELL,
+                "&d마검 융합 — 마법과 검술이 하나로.",
+                80, 3, 60);
         // 파이어볼
         s("fireball_1", SkillSignature.ParticlePattern.BEAM, Particle.FLAME,
                 Particle.LAVA, Sound.ENTITY_BLAZE_SHOOT, Sound.ENTITY_GENERIC_EXPLODE,
@@ -397,6 +402,14 @@ public final class SignatureRegistry {
                 Particle.FLAME, Sound.ENTITY_ENDER_DRAGON_FLAP, Sound.ENTITY_BLAZE_AMBIENT,
                 "&c용염 — 모든 것을 태운다.",
                 100, 4, 100);
+        s("dragon_acid_breath", SkillSignature.ParticlePattern.DRAGON_BREATH, Particle.SQUID_INK,
+                Particle.DRIPPING_LAVA, Sound.ENTITY_ENDER_DRAGON_FLAP, Sound.ENTITY_WITHER_HURT,
+                "&8흑룡의 산성 브레스 — 갑옷을 녹인다.",
+                100, 3, 80);
+        s("dragon_poison_breath", SkillSignature.ParticlePattern.DRAGON_BREATH, Particle.SLIME,
+                Particle.HAPPY_VILLAGER, Sound.ENTITY_ENDER_DRAGON_FLAP, Sound.ENTITY_SPIDER_HURT,
+                "&2녹룡의 독 브레스 — 숲의 분노.",
+                120, 2, 60);
         s("breath_basic", SkillSignature.ParticlePattern.DRAGON_BREATH, Particle.DRAGON_BREATH,
                 null, Sound.ENTITY_ENDER_DRAGON_FLAP, null,
                 "&6용의 입김.",

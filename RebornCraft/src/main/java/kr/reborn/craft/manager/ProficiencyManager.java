@@ -53,6 +53,16 @@ public final class ProficiencyManager {
         return data.getOrDefault(p, Map.of()).getOrDefault(profession, 0);
     }
 
+    /** 마스터 도달(5000 명장 이상) 직업 분야 수. */
+    public int masteredCount(UUID p) {
+        ensureLoaded(p);
+        Map<String, Integer> map = data.get(p);
+        if (map == null) return 0;
+        int count = 0;
+        for (int x : map.values()) if (x >= 5000) count++;
+        return count;
+    }
+
     public Tier tier(UUID p, String profession) {
         int x = exp(p, profession);
         Tier last = tiers.isEmpty() ? null : tiers.get(0);

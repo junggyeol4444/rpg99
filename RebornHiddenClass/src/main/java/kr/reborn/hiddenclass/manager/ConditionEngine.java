@@ -98,6 +98,15 @@ public final class ConditionEngine {
                 return data.dragonAge() >= c.numericValue;
             case SKILL_LEARNED:
                 return skillLearned(p, c.stringValue);
+            case WORLD:
+                // 현재 거주 세계와 stringValue 일치 여부.
+                if (c.stringValue == null || c.stringValue.isEmpty()) return false;
+                try {
+                    WorldKey required = WorldKey.valueOf(c.stringValue.toUpperCase());
+                    return data.worldKey() == required;
+                } catch (IllegalArgumentException e) { return false; }
+            case CRAFT_MASTERY:
+                return craftMasteryCount(id) >= c.numericValue;
             case ADMIN_GRANT:
                 return false;
             case RANDOM_ON_SPAWN:
@@ -132,6 +141,18 @@ public final class ConditionEngine {
             if (cnt instanceof Number n) return n.intValue() >= minMembers;
         } catch (Throwable ignored) {}
         return false;
+    }
+
+    /** RebornCraft 마스터급 도달 직업 분야 수 (RebornCraft 없으면 0). */
+    private int craftMasteryCount(UUID id) {
+        try {
+            var cp = Bukkit.getPluginManager().getPlugin("RebornCraft");
+            if (cp == null) return 0;
+            Object prof = cp.getClass().getMethod("proficiency").invoke(cp);
+            Object cnt = prof.getClass().getMethod("masteredCount", UUID.class).invoke(prof, id);
+            if (cnt instanceof Number n) return n.intValue();
+        } catch (Throwable ignored) {}
+        return 0;
     }
 
     private boolean skillLearned(Player p, String skillId) {

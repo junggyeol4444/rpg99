@@ -21,6 +21,8 @@ public final class Condition {
         SKILL_LEARNED,        // stringValue = skill id (RebornSkill reflection)
         PLAYTIME_MIN,         // numericValue = required playtime in seconds
         AGE_MIN,              // numericValue = required dragon age (DRAGON world)
+        WORLD,                // stringValue = WorldKey name (현재 거주 세계 일치)
+        CRAFT_MASTERY,        // numericValue = 마스터한 직업 분야 수
         ADMIN_GRANT
     }
 

@@ -6,7 +6,7 @@ folia-supported: true
 authors: [ReincarnationWorld]
 description: 스탯·경지·성장·미니게임
 depend: [RebornCore]
-softdepend: [RebornCurse, RebornNPC, RebornSkill, RebornEconomy]
+softdepend: [RebornCurse, RebornNPC, RebornSkill, RebornEconomy, RebornHiddenClass]
 load: POSTWORLD
 commands:
   stats:

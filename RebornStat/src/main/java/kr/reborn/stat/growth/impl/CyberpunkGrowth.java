@@ -279,6 +279,8 @@ public final class CyberpunkGrowth implements GrowthStrategy {
     }
 
     private void checkDependency(Player p, int count) {
+        // UNLIMITED_CYBERWARE 히든클래스 passive — 임플란트 제한·페널티 면제.
+        if (hasPassive(p, "UNLIMITED_CYBERWARE")) return;
         try {
             var cp = Bukkit.getPluginManager().getPlugin("RebornCurse");
             if (cp == null) return;
@@ -292,6 +294,20 @@ public final class CyberpunkGrowth implements GrowthStrategy {
                 }
             }
         } catch (Throwable ignored) {}
+    }
+
+    /** RebornHiddenClass 리플렉션 — passive 보유 여부. */
+    private boolean hasPassive(Player p, String passive) {
+        try {
+            var hc = Bukkit.getPluginManager().getPlugin("RebornHiddenClass");
+            if (hc == null) return false;
+            Object pe = hc.getClass().getMethod("passives").invoke(hc);
+            if (pe == null) return false;
+            Object res = pe.getClass().getMethod("has",
+                    java.util.UUID.class, String.class).invoke(pe, p.getUniqueId(), passive);
+            return Boolean.TRUE.equals(res);
+        } catch (Throwable ignored) {}
+        return false;
     }
 
     public int implantCount(UUID p) {

@@ -165,6 +165,26 @@ public final class PassiveEngine implements Listener {
                 && stat == StatType.CYBER_ADAPTATION) {
             RebornCore.get().api().addStat(id, stat, delta, "HC:CYBERPUNK_ECONOMY_RULER");
         }
+        if (pas.contains("UNDERWORLD_FAVOR") && w == WorldKey.UNDERWORLD) {
+            // 명계 호감 — UNDERWORLD 거주 시 UNDERWORLD_KI ×1.50, 그 외 모든 stat ×1.20
+            if (stat == StatType.UNDERWORLD_KI) {
+                RebornCore.get().api().addStat(id, stat, delta * 0.5, "HC:UNDERWORLD_FAVOR");
+            } else {
+                RebornCore.get().api().addStat(id, stat, delta * 0.2, "HC:UNDERWORLD_FAVOR");
+            }
+        }
+        if (pas.contains("CAVEHEAVEN_MASTERY") && w == WorldKey.IMMORTAL
+                && stat == StatType.IMMORTAL_KI) {
+            RebornCore.get().api().addStat(id, stat, delta * 0.5, "HC:CAVEHEAVEN_MASTERY");
+        }
+        if (pas.contains("ORTHODOX_FAVOR_BUFF") && stat == StatType.CHARISMA) {
+            // 정파 호감 — CHARISMA stat 변동 +50% (정파 NPC와의 교류에서 영향 큼)
+            RebornCore.get().api().addStat(id, stat, delta * 0.5, "HC:ORTHODOX_FAVOR_BUFF");
+        }
+        if (pas.contains("BLESSED_PRESENCE") && stat == StatType.LUCK) {
+            // 신성 가호 — LUCK 변동 +50%
+            RebornCore.get().api().addStat(id, stat, delta * 0.5, "HC:BLESSED_PRESENCE");
+        }
     }
 
     /**

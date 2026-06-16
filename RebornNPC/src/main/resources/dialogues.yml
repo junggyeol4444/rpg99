@@ -17,7 +17,7 @@ dialogues:
       village_news:
         text: "&7요즘 도적이 자주 출몰해서… 안전한 사람을 본 적이 없네."
         choices:
-          - { label: "도적 처리해주마", next: hunter_offer, actions: ["addFavor:10", "giveQuest:protect_village"] }
+          - { label: "도적 처리해주마", next: hunter_offer, actions: ["addFavor:10", "giveQuest:fantasy_goblin_hunt"] }
           - { label: "관심없다", next: cold_response, actions: ["addFavor:-5"] }
       ask_help:
         text: "&7도움이 필요한가? 빵 한 조각이라도 줄까?"
@@ -111,7 +111,7 @@ dialogues:
         actions: ["addEmotion:ANGER:30"]
       royal_quest:
         text: "&6변방에서 반란이 일어났다. 처리하라."
-        actions: ["giveQuest:royal_rebellion"]
+        actions: ["giveQuest:rebellion_revolution"]
 
   # ──── 마왕 ────
   demon_lord:
@@ -128,7 +128,7 @@ dialogues:
         actions: ["broadcast:&4&l[마왕] §f%player%이(가) 마왕에 굴복했다"]
       challenge:
         text: "&4감히! 너의 용맹을 인정하노니, 결투를 받아들이마."
-        actions: ["giveQuest:demon_lord_duel"]
+        actions: ["giveQuest:demon_lord_challenge"]
       deal:
         text: "&5...무엇을 원하는가?"
 
@@ -144,7 +144,7 @@ dialogues:
           - { label: "교주, 한 수 가르쳐주시오", next: lesson_request, conditions: ["stat:INNER_KI>=1000"] }
       loyal:
         text: "&5훌륭하다. 마교의 일원으로 받아들이마."
-        actions: ["giveQuest:join_cult"]
+        actions: ["giveQuest:cult_appearance"]
       silent:
         text: "&8...너는 마음 속에 무엇을 품었는가?"
       lesson_request:
@@ -158,7 +158,7 @@ dialogues:
       greet:
         text: "&3무림에 들어선 자여, 정의의 길을 걷겠는가?"
         choices:
-          - { label: "정파에 충성합니다", next: orthodox, actions: ["giveQuest:join_alliance", "addFavor:20"] }
+          - { label: "정파에 충성합니다", next: orthodox, actions: ["giveQuest:martial_alliance_election", "addFavor:20"] }
           - { label: "관망하겠습니다", next: neutral }
           - { label: "사파의 길을 묻고 싶소", next: unorthodox_q, conditions: ["personality:GREED>=50"] }
       orthodox:
@@ -185,7 +185,7 @@ dialogues:
         text: "&c감히! 내 보물을 탐하는가?!"
       trial_request:
         text: "&6용의 시험을 견딜 자격이 있는지 보자."
-        actions: ["giveQuest:dragon_trial"]
+        actions: ["giveQuest:dragon_king_revival"]
 
   # ──── 헌터 ────
   common_hunter:
@@ -199,7 +199,7 @@ dialogues:
           - { label: "물러난다", next: null }
       hunt_offer:
         text: "&b좋다. 사냥에 동행하자."
-        actions: ["giveQuest:hunter_coop"]
+        actions: ["giveQuest:gate_outbreak"]
       info:
         text: "&7요즘은 A급 게이트가 잦다. 조심해라."
 

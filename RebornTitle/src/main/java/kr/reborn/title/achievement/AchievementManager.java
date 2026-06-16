@@ -74,6 +74,8 @@ public final class AchievementManager {
                 Achievement.Rarity.PLATINUM, 100);
         add("pet_master", "펫 마스터", "5마리 동시 길들임", Achievement.Category.SOCIAL,
                 Achievement.Rarity.GOLD, 5);
+        add("famous_met", "유명인사 견문록", "유명 NPC 10인과 조우", Achievement.Category.SOCIAL,
+                Achievement.Rarity.GOLD, 10);
 
         // 경제
         add("first_million", "백만장자", "100만 GOLD 보유", Achievement.Category.ECONOMIC,

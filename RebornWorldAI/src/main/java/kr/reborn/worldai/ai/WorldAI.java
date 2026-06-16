@@ -115,8 +115,17 @@ public final class WorldAI {
                     if (ally) {
                         state.tension = clamp(state.tension + 15, 0, 100);
                         state.stability = clamp(state.stability - 8, 0, 100);
+                        // 동맹국 전쟁 발발 — 자기도 즉시 참전 퀘스트 spawn.
+                        // 쿨다운 무시 + 재전파 차단 (무한 cascade 방지).
+                        tryQuest("WAR", System.currentTimeMillis(),
+                                "동맹 " + m.from.name() + " 참전", true, false);
                     } else {
                         state.tension = clamp(state.tension + 8, 0, 100);
+                        // 적 진영 전쟁 — 30% 확률로 대리전 퀘스트 spawn (역시 재전파 없음).
+                        if (Rand.chance(0.3)) {
+                            tryQuest("WAR", System.currentTimeMillis(),
+                                    "적 진영 " + m.from.name() + " 견제전", true, false);
+                        }
                     }
                 }
                 case ECONOMY_REPORT -> {
@@ -461,9 +470,20 @@ public final class WorldAI {
     }
 
     private void tryQuest(String key, long now, String label) {
-        long cd = plugin.getConfig().getLong("quest-cooldowns." + key, 86400);
-        long last = questCooldowns.getOrDefault(key, 0L);
-        if (now - last < cd * 1000) return;
+        tryQuest(key, now, label, false, true);
+    }
+
+    /**
+     * @param force     true면 쿨다운 무시 (인박스 처리 등에서 강제 발동).
+     * @param propagate true면 WAR 시 동맹·적 진영에 WAR_DECLARATION 송신.
+     *                  인박스로 들어와서 발동한 경우 false로 호출 → 무한 cascade 방지.
+     */
+    private void tryQuest(String key, long now, String label, boolean force, boolean propagate) {
+        if (!force) {
+            long cd = plugin.getConfig().getLong("quest-cooldowns." + key, 86400);
+            long last = questCooldowns.getOrDefault(key, 0L);
+            if (now - last < cd * 1000) return;
+        }
         questCooldowns.put(key, now);
         kr.reborn.core.RebornCore.get().kv().putLong(NS, null, world.name() + ".cd." + key, now);
         Bukkit.getPluginManager().callEvent(new RebornWorldAIDecisionEvent(world, key, label));
@@ -506,8 +526,8 @@ public final class WorldAI {
                             "linked:" + key);
                 }
             }
-            // WAR 발동 — 동맹 참전 + 적 연결권 대리전 신호
-            if ("WAR".equals(key)) {
+            // WAR 발동 — 동맹 참전 + 적 연결권 대리전 신호 (propagate=true일 때만)
+            if ("WAR".equals(key) && propagate) {
                 var group = groupOf(world);
                 if (group != null) {
                     for (WorldKey ally : group) {

@@ -14,9 +14,13 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.GameMode;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import kr.reborn.core.data.WorldKey;
+import kr.reborn.core.data.PlayerData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -114,26 +118,78 @@ public final class PassiveEngine implements Listener {
         if (delta <= 0) return;  // 음수 변동은 증폭 안 함
 
         StatType stat = e.stat();
+        UUID id = p.getUniqueId();
         if (pas.contains("DEMON_KI_X3") && stat == StatType.DEMON_KI) {
             // 원래가 ×1이면 추가 +2× 부여 → 총 ×3
-            RebornCore.get().api().addStat(p.getUniqueId(), StatType.DEMON_KI,
+            RebornCore.get().api().addStat(id, StatType.DEMON_KI,
                     delta * 2.0, "HC:DEMON_KI_X3");
         }
         if (pas.contains("YOKAI_X2") && stat == StatType.YOKAI_KI) {
-            RebornCore.get().api().addStat(p.getUniqueId(), StatType.YOKAI_KI,
+            RebornCore.get().api().addStat(id, StatType.YOKAI_KI,
                     delta, "HC:YOKAI_X2");
         }
         if (pas.contains("DRAGON_GROW_X2") && stat == StatType.DRAGON_POWER) {
-            RebornCore.get().api().addStat(p.getUniqueId(), StatType.DRAGON_POWER,
+            RebornCore.get().api().addStat(id, StatType.DRAGON_POWER,
                     delta, "HC:DRAGON_GROW_X2");
         }
         if (pas.contains("TRAIN_X3") && (stat == StatType.MENTAL || stat == StatType.INTELLIGENCE)) {
-            // 수련/명상 source에서만 — 일반 stat 변동은 영향 없음
             if (src != null && (src.contains("meditate") || src.contains("train")
                     || src.contains("dao") || src.contains("essence"))) {
-                RebornCore.get().api().addStat(p.getUniqueId(), stat,
-                        delta * 2.0, "HC:TRAIN_X3");
+                RebornCore.get().api().addStat(id, stat, delta * 2.0, "HC:TRAIN_X3");
             }
+        }
+        // ── Phase 2 — 월드별 군주·증폭 ──
+        PlayerData d = RebornCore.get().api().getPlayerData(id);
+        WorldKey w = d == null ? null : d.worldKey();
+        if (pas.contains("APOCALYPSE_RULER") && w == WorldKey.APOCALYPSE) {
+            // 종말의 왕 — 거주 시 모든 stat 증폭 +50%
+            RebornCore.get().api().addStat(id, stat, delta * 0.5, "HC:APOCALYPSE_RULER");
+        }
+        if (pas.contains("DRAGON_REALM_PEAK") && w == WorldKey.DRAGON
+                && stat == StatType.DRAGON_POWER) {
+            RebornCore.get().api().addStat(id, stat, delta * 0.2, "HC:DRAGON_REALM_PEAK");
+        }
+        if (pas.contains("YOKAI_REALM_RULER") && w == WorldKey.YOKAI
+                && stat == StatType.YOKAI_KI) {
+            RebornCore.get().api().addStat(id, stat, delta * 0.5, "HC:YOKAI_REALM_RULER");
+        }
+        if (pas.contains("MAGITECH_PEAK") && w == WorldKey.MAGITECH
+                && stat == StatType.MAGITECH_ENERGY) {
+            RebornCore.get().api().addStat(id, stat, delta * 0.2, "HC:MAGITECH_PEAK");
+        }
+        if (pas.contains("GATE_BOOST_20") && w == WorldKey.EARTH) {
+            // 게이트 적응자 — EARTH 거주 시 모든 stat +20%
+            RebornCore.get().api().addStat(id, stat, delta * 0.2, "HC:GATE_BOOST_20");
+        }
+        if (pas.contains("CYBERPUNK_ECONOMY_RULER") && w == WorldKey.CYBERPUNK
+                && stat == StatType.CYBER_ADAPTATION) {
+            RebornCore.get().api().addStat(id, stat, delta, "HC:CYBERPUNK_ECONOMY_RULER");
+        }
+    }
+
+    /**
+     * Phase 2: 대 어둠 진영 데미지 ×1.20.
+     * EntityDamageByEntityEvent를 별도 리스너로 처리.
+     */
+    @EventHandler
+    public void onAttack(EntityDamageByEntityEvent e) {
+        if (!(e.getDamager() instanceof Player p)) return;
+        if (!(e.getEntity() instanceof LivingEntity target)) return;
+        Set<String> pas = passivesOf(p.getUniqueId());
+        if (pas.isEmpty()) return;
+        if (pas.contains("ANTI_DARK_BOOST") && isDarkOrUndead(target)) {
+            e.setDamage(e.getDamage() * 1.20);
+        }
+    }
+
+    private boolean isDarkOrUndead(LivingEntity t) {
+        switch (t.getType()) {
+            case ZOMBIE: case ZOMBIE_VILLAGER: case HUSK: case DROWNED:
+            case SKELETON: case STRAY: case WITHER_SKELETON: case WITHER:
+            case PHANTOM: case ZOMBIFIED_PIGLIN: case ZOGLIN:
+            case SKELETON_HORSE: case VEX: case ENDERMAN: case ENDERMITE:
+                return true;
+            default: return false;
         }
     }
 
@@ -216,6 +272,7 @@ public final class PassiveEngine implements Listener {
         for (Player p : Bukkit.getOnlinePlayers()) {
             Set<String> pas = passivesOf(p.getUniqueId());
             if (pas.isEmpty()) continue;
+            UUID id = p.getUniqueId();
             if (pas.contains("COMBAT_HEAL_AURA")) {
                 for (var e : p.getNearbyEntities(30, 15, 30)) {
                     if (e instanceof Player ally && !ally.isDead()) {
@@ -236,6 +293,30 @@ public final class PassiveEngine implements Listener {
             }
             if (pas.contains("CYBER_IMMUNE") && p.hasPotionEffect(PotionEffectType.CONFUSION)) {
                 p.removePotionEffect(PotionEffectType.CONFUSION);
+            }
+            // Phase 2 — 월드별 자동 효과
+            PlayerData d = RebornCore.get().api().getPlayerData(id);
+            WorldKey w = d == null ? null : d.worldKey();
+            if (pas.contains("DRAGON_MOUNT") && w == WorldKey.DRAGON) {
+                // 용 탑승 — DRAGON 거주자 한정 비행 허용
+                if (p.getGameMode() != GameMode.CREATIVE
+                        && p.getGameMode() != GameMode.SPECTATOR
+                        && !p.getAllowFlight()) {
+                    try { p.setAllowFlight(true); }
+                    catch (Throwable ignored) {}
+                }
+            }
+            if (pas.contains("DREAM_TRAIN_WHILE_SLEEP") && w == WorldKey.DREAM) {
+                // 꿈에서 수련 — DREAM 거주 + 식사 게이지 낮을 때 MENTAL 자동 누적
+                if (p.getFoodLevel() < 10) {
+                    RebornCore.get().api().addStat(id, StatType.MENTAL,
+                            0.5, "HC:DREAM_TRAIN_WHILE_SLEEP");
+                }
+            }
+            if (pas.contains("TIME_PERCEPTION")) {
+                // 시간 인지 — 매 tick MENTAL +0.1 (정적 인지 보너스)
+                RebornCore.get().api().addStat(id, StatType.MENTAL,
+                        0.1, "HC:TIME_PERCEPTION");
             }
         }
     }

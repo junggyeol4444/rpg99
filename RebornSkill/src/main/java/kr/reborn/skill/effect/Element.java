@@ -91,6 +91,13 @@ public final class Element {
                 case "ARCANE":
                     target.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, dur, 0));
                     break;
+                case "WIND":
+                    target.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, Math.min(dur, 60), 0));
+                    break;
+                case "TIME":
+                    target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, dur, 2));
+                    target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, dur, 2));
+                    break;
                 default: break;
             }
         } catch (Throwable ignored) {}

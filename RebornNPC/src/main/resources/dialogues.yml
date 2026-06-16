@@ -89,7 +89,7 @@ dialogues:
         text: "&7동문은 시장, 서문은 신전. 잘 기억해두시오."
       spar_offer:
         text: "&c좋소. 한 수 부탁하리다."
-        actions: ["addEmotion:JOY:10"]
+        actions: ["addEmotion:HAPPINESS:10"]
 
   # ──── 왕·황제 ────
   court_king:

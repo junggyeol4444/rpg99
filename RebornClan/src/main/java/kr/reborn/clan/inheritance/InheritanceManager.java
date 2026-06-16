@@ -50,7 +50,7 @@ public final class InheritanceManager implements Listener {
     }
 
     /** uuid의 유언장 lazy 로드 — 재시작 후에도 KV에서 복원. */
-    private Will willOf(UUID uuid) {
+    public Will willOf(UUID uuid) {
         Will cached = wills.get(uuid);
         if (cached != null) return cached;
         try {
@@ -153,17 +153,6 @@ public final class InheritanceManager implements Listener {
         double retained = c.treasury * 0.10;
         Msg.send(p, "&6환생 후에도 가문 §f" + c.name + " §7과의 연 유지 (treasury "
                 + (long) retained + "g 상징적 잔존)");
-    }
-
-    public Will willOf(UUID p) {
-        Will cached = wills.get(p);
-        if (cached != null) return cached;
-        String heir = kr.reborn.core.RebornCore.get().kv().get(NS, p, "heir");
-        if (heir == null) return null;
-        long at = kr.reborn.core.RebornCore.get().kv().getLong(NS, p, "writtenAt", System.currentTimeMillis());
-        Will w = new Will(p, heir, at);
-        wills.put(p, w);
-        return w;
     }
 
     public static final class Will {

@@ -104,6 +104,38 @@ public final class DialogueRegistry {
         jobDefaults.put("HUNTER", "common_hunter");
         jobDefaults.put("HERMIT", "common_hermit");
         jobDefaults.put("PRIEST", "common_priest");
+        // 유명 NPC 직업 — 기존 트리 중 가장 가까운 페르소나로 매핑.
+        // 성직 계열
+        jobDefaults.put("ABBOT", "common_priest");
+        jobDefaults.put("ARCHANGEL", "common_priest");
+        jobDefaults.put("PRIEST_KING", "common_priest");
+        // 은둔·도가 계열
+        jobDefaults.put("TAOIST", "common_hermit");
+        jobDefaults.put("ELDER", "common_hermit");
+        // 통치자·궁정 계열 → 왕 트리
+        jobDefaults.put("QUEEN", "court_king");
+        jobDefaults.put("PRINCESS", "court_king");
+        jobDefaults.put("CEO", "court_king");
+        jobDefaults.put("ADMIRAL", "court_king");
+        jobDefaults.put("COUNCIL", "court_king");
+        // 강대 보스·반체제 → 마왕 트리 (위압형)
+        jobDefaults.put("BOSS", "demon_lord");
+        jobDefaults.put("WARLORD", "demon_lord");
+        jobDefaults.put("PIRATE_KING", "demon_lord");
+        jobDefaults.put("FALLEN_ANGEL", "demon_lord");
+        jobDefaults.put("ELEMENTAL_KING", "demon_lord");
+        jobDefaults.put("GHOST_CAPTAIN", "demon_lord");
+        jobDefaults.put("PRIMORDIAL", "demon_lord");
+        // 지도자급 → 무림맹주 트리 (학자·지도자형)
+        jobDefaults.put("ARCHMAGE", "wulin_alliance_master");
+        jobDefaults.put("MASTER", "wulin_alliance_master");
+        jobDefaults.put("PALACE_MASTER", "wulin_alliance_master");
+        jobDefaults.put("ASSOC_HEAD", "wulin_alliance_master");
+        jobDefaults.put("GUILD_MASTER", "wulin_alliance_master");
+        // 용족 장로
+        jobDefaults.put("ELDER_DRAGON", "dragon_lord");
+        // 정보 수집형 → 헌터
+        jobDefaults.put("HACKER", "common_hunter");
     }
 
     public Dialogue get(String id) { return dialogues.get(id); }

@@ -28,6 +28,10 @@ public final class FaithEngine {
 
     public FaithEngine(RebornGod plugin) { this.plugin = plugin; }
 
+    /** 교단별 마지막 milestone 마크 — 중복 broadcast 방지. */
+    private final java.util.Map<String, Integer> lastMilestone = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final int[] FAITH_MILESTONES = {1000, 5000, 10000, 50000, 100000};
+
     /** 한 주기 — 모든 교단에 적용. RebornGod 스케줄러가 주기적으로 호출. */
     public void tick() {
         for (Religion r : plugin.religions().all()) {
@@ -53,7 +57,32 @@ public final class FaithEngine {
                     g.influence = computeInfluence(g);
                 }
             }
+            // 5) 신앙 milestone broadcast — 큰 종교 성장 이벤트.
+            int prev = lastMilestone.getOrDefault(r.id, 0);
+            int curMile = currentMilestone((int) r.faith);
+            if (curMile > prev) {
+                lastMilestone.put(r.id, curMile);
+                org.bukkit.Bukkit.broadcastMessage("§6§l[교단 융성] §f" + r.name
+                        + " §7이(가) 신앙 §6" + curMile + " §7돌파 (신도 "
+                        + r.totalFollowers() + "명).");
+                // 모든 신도에게 luck 임시 +1
+                for (java.util.UUID uuid : r.followers) {
+                    org.bukkit.entity.Player fp = org.bukkit.Bukkit.getPlayer(uuid);
+                    if (fp != null) {
+                        try { fp.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                                org.bukkit.potion.PotionEffectType.LUCK,
+                                12000, 0, true, false)); }
+                        catch (Throwable ignored) {}
+                    }
+                }
+            }
         }
+    }
+
+    private static int currentMilestone(int faith) {
+        int best = 0;
+        for (int m : FAITH_MILESTONES) if (faith >= m) best = m;
+        return best;
     }
 
     /** 플레이어별 마지막 기도 시각 — 스팸 방지. */

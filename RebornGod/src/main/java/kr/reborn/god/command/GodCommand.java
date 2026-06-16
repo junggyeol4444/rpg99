@@ -4,6 +4,7 @@ import kr.reborn.core.util.Msg;
 import kr.reborn.god.RebornGod;
 import kr.reborn.god.data.God;
 import kr.reborn.god.miracle.Miracle;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -85,7 +86,10 @@ public final class GodCommand implements CommandExecutor {
             }
 
             case "religion": {
-                if (a.length < 2) { Msg.send(p, "&7/god religion create <id> <name> | list"); break; }
+                if (a.length < 2) {
+                    Msg.send(p, "&7/god religion create <id> <name> | list | info <id> | mine | join <id> | leave <id>");
+                    break;
+                }
                 String sub = a[1].toLowerCase();
                 if ("create".equals(sub) && a.length >= 4) {
                     plugin.religions().create(p, a[2], a[3]);
@@ -94,9 +98,59 @@ public final class GodCommand implements CommandExecutor {
                     int shown = 0;
                     for (var r : plugin.religions().all()) {
                         if (shown++ >= 20) { p.sendMessage("§7…"); break; }
-                        p.sendMessage("§e" + r.id + " §7- " + r.name + " §8신앙:" + (int) r.faith
+                        boolean iam = r.followers.contains(p.getUniqueId());
+                        String mark = iam ? "§a✦ " : "§7";
+                        p.sendMessage(mark + "§e" + r.id + " §7- " + r.name + " §8신앙:" + (int) r.faith
                                 + " 신도:" + r.totalFollowers());
                     }
+                } else if ("info".equals(sub) && a.length >= 3) {
+                    var r = plugin.religions().get(a[2]);
+                    if (r == null) { Msg.error(p, "교단 없음: " + a[2]); break; }
+                    Msg.send(p, "&6=== " + r.name + " ===");
+                    p.sendMessage("§7ID: §f" + r.id);
+                    p.sendMessage("§7섬기는 신: §f" + r.godIdentifier);
+                    if (r.doctrine != null && !r.doctrine.isEmpty())
+                        p.sendMessage("§7교리: §f" + r.doctrine);
+                    p.sendMessage("§7신앙: §f" + (int) r.faith + " §7누적 신도: §f"
+                            + r.totalFollowers() + " §7(인간 " + r.followers.size()
+                            + " + NPC " + r.npcFollowerCount + ")");
+                    if (!r.antiReligion.isEmpty())
+                        p.sendMessage("§c적대 교단: §f" + r.antiReligion);
+                    if (!r.allyReligions.isEmpty())
+                        p.sendMessage("§a동맹 교단: §f" + r.allyReligions);
+                    if (r.forbidden) p.sendMessage("§8금지된 교단");
+                    if (r.protective) p.sendMessage("§b보호받는 교단");
+                    boolean iam = r.followers.contains(p.getUniqueId());
+                    p.sendMessage(iam ? "§a당신은 이 교단의 신도입니다."
+                                      : "§7가입: /god religion join " + r.id);
+                } else if ("mine".equals(sub)) {
+                    Msg.send(p, "&6=== 내 신앙 ===");
+                    int count = 0;
+                    for (var r : plugin.religions().all()) {
+                        if (r.followers.contains(p.getUniqueId())) {
+                            p.sendMessage("§a✦ §f" + r.name + " §7(" + r.id + ") §8섬기는 신: " + r.godIdentifier);
+                            count++;
+                        }
+                    }
+                    if (count == 0) p.sendMessage("§7섬기는 교단 없음. /god religion list 로 둘러보고 /god pray <id> 또는 /god religion join <id>.");
+                } else if ("join".equals(sub) && a.length >= 3) {
+                    var r = plugin.religions().get(a[2]);
+                    if (r == null) { Msg.error(p, "교단 없음: " + a[2]); break; }
+                    if (r.followers.contains(p.getUniqueId())) {
+                        Msg.warn(p, "이미 신도입니다."); break;
+                    }
+                    r.followers.add(p.getUniqueId());
+                    Msg.send(p, "&a" + r.name + " §a신도로 등록되었다. §7/god pray "
+                            + r.id + " 로 신앙을 바치세요.");
+                    Bukkit.broadcastMessage("§6[" + r.name + "] §f" + p.getName()
+                            + " §7이(가) 새 신도가 되었다 (총 " + r.totalFollowers() + ").");
+                } else if ("leave".equals(sub) && a.length >= 3) {
+                    var r = plugin.religions().get(a[2]);
+                    if (r == null) { Msg.error(p, "교단 없음: " + a[2]); break; }
+                    if (!r.followers.remove(p.getUniqueId())) {
+                        Msg.warn(p, "신도가 아닙니다."); break;
+                    }
+                    Msg.send(p, "&7" + r.name + " 신도 탈퇴.");
                 }
                 break;
             }

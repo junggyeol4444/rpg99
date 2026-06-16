@@ -124,6 +124,19 @@ public final class OceanGrowth implements GrowthStrategy {
         RebornCore.get().kv().remove(NS, p.getUniqueId(), "port");
     }
 
+    /** 플레이어 위치 기반 자동 정박/출항 — port-bounds config 설정 시 작동. */
+    public void autoDetectActivePort(Player p) {
+        String detected = ports.detectAt(p.getLocation());
+        String current = activePortOf(p.getUniqueId());
+        if (detected == null && current != null) {
+            clearActivePort(p);
+            Msg.send(p, "&7항구에서 출항.");
+        } else if (detected != null && !detected.equals(current)) {
+            setActivePort(p, detected);
+            Msg.send(p, "&a항구 정박: " + detected);
+        }
+    }
+
     @Override
     public void onMeditate(Player p, PlayerData d, double quality) {
         if (!atSea(p)) {

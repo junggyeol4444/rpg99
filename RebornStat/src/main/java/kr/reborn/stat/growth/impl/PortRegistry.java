@@ -24,6 +24,43 @@ public final class PortRegistry {
     public PortRegistry() {
         for (String id : OceanPort.PORTS) ports.put(id, new OceanPort(id));
         load();
+        loadBoundsFromConfig();
+    }
+
+    /**
+     * config.yml의 port-bounds 섹션에서 각 항구 좌표 로드.
+     *   port-bounds:
+     *     ATLANTIS_HARBOR: { world: ocean, x: 100, z: 100, radius: 100 }
+     *     ...
+     */
+    private void loadBoundsFromConfig() {
+        try {
+            var plugin = (org.bukkit.plugin.java.JavaPlugin)
+                    org.bukkit.Bukkit.getPluginManager().getPlugin("RebornStat");
+            if (plugin == null) return;
+            var sec = plugin.getConfig().getConfigurationSection("port-bounds");
+            if (sec == null) return;
+            for (String key : sec.getKeys(false)) {
+                OceanPort port = ports.get(key);
+                if (port == null) continue;
+                var ds = sec.getConfigurationSection(key);
+                if (ds == null) continue;
+                port.world = ds.getString("world");
+                port.x = ds.getDouble("x");
+                port.z = ds.getDouble("z");
+                port.radius = ds.getDouble("radius", 80);
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    public String detectAt(org.bukkit.Location loc) {
+        if (loc == null || loc.getWorld() == null) return null;
+        String wn = loc.getWorld().getName();
+        double px = loc.getX(), pz = loc.getZ();
+        for (OceanPort p : ports.values()) {
+            if (p.contains(wn, px, pz)) return p.id;
+        }
+        return null;
     }
 
     private void load() {

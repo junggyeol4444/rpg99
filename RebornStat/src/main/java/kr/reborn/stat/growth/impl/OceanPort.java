@@ -32,8 +32,23 @@ public final class OceanPort {
     /** 제국 id → 영향력 (0 ~ 5000). */
     public final Map<String, Integer> influence = new LinkedHashMap<>();
 
+    /** 물리 좌표 — config로 설정 시 자동 정박 감지. null이면 /port enter 수동만. */
+    public String world;
+    public double x, z, radius;
+
     public OceanPort(String id) {
         this.id = id;
+    }
+
+    public boolean hasBounds() {
+        return world != null && radius > 0;
+    }
+
+    public boolean contains(String worldName, double px, double pz) {
+        if (!hasBounds()) return false;
+        if (!world.equalsIgnoreCase(worldName)) return false;
+        double dx = px - x, dz = pz - z;
+        return dx * dx + dz * dz <= radius * radius;
     }
 
     public static boolean isPort(String id) {

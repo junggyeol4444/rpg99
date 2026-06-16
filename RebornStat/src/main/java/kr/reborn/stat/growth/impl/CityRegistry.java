@@ -31,6 +31,46 @@ public final class CityRegistry {
     public CityRegistry() {
         for (String id : CyberCity.DISTRICTS) districts.put(id, new CyberCity(id));
         load();
+        loadBoundsFromConfig();
+    }
+
+    /**
+     * config.yml의 district-bounds 섹션에서 각 구역 좌표 로드.
+     * 형식:
+     *   district-bounds:
+     *     NIGHT_MARKET: { world: cyberpunk, x: 100, z: 100, radius: 80 }
+     *     ...
+     * 설정 없으면 hasBounds=false → 수동 /district enter만 작동.
+     */
+    private void loadBoundsFromConfig() {
+        try {
+            var plugin = (org.bukkit.plugin.java.JavaPlugin)
+                    org.bukkit.Bukkit.getPluginManager().getPlugin("RebornStat");
+            if (plugin == null) return;
+            var sec = plugin.getConfig().getConfigurationSection("district-bounds");
+            if (sec == null) return;
+            for (String key : sec.getKeys(false)) {
+                CyberCity c = districts.get(key);
+                if (c == null) continue;
+                var ds = sec.getConfigurationSection(key);
+                if (ds == null) continue;
+                c.world = ds.getString("world");
+                c.x = ds.getDouble("x");
+                c.z = ds.getDouble("z");
+                c.radius = ds.getDouble("radius", 50);
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    /** 주어진 위치에 해당하는 구역 id 반환. null이면 어떤 구역에도 안 속함. */
+    public String detectAt(org.bukkit.Location loc) {
+        if (loc == null || loc.getWorld() == null) return null;
+        String wn = loc.getWorld().getName();
+        double px = loc.getX(), pz = loc.getZ();
+        for (CyberCity c : districts.values()) {
+            if (c.contains(wn, px, pz)) return c.id;
+        }
+        return null;
     }
 
     private void load() {

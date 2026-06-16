@@ -33,8 +33,25 @@ public final class CyberCity {
     /** 코프 id → 영향력 (0 ~ 5000). */
     public final Map<String, Integer> influence = new LinkedHashMap<>();
 
+    /** 물리 좌표 — config로 설정 시 자동 진입 감지. null이면 /district enter 수동만. */
+    public String world;
+    public double x, z, radius;
+
     public CyberCity(String id) {
         this.id = id;
+    }
+
+    /** 좌표 설정 여부. */
+    public boolean hasBounds() {
+        return world != null && radius > 0;
+    }
+
+    /** 주어진 (worldName, x, z)가 이 구역 안인지. */
+    public boolean contains(String worldName, double px, double pz) {
+        if (!hasBounds()) return false;
+        if (!world.equalsIgnoreCase(worldName)) return false;
+        double dx = px - x, dz = pz - z;
+        return dx * dx + dz * dz <= radius * radius;
     }
 
     public static boolean isDistrict(String id) {

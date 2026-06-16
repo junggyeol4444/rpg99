@@ -177,6 +177,25 @@ public final class CyberpunkGrowth implements GrowthStrategy {
         RebornCore.get().kv().remove(NS, p.getUniqueId(), "district");
     }
 
+    /**
+     * 플레이어의 현재 위치를 검사해 자동으로 activeDistrict 갱신.
+     * district-bounds config가 설정된 경우만 작동.
+     * 구역 진입 → 변경, 이탈 → 클리어.
+     */
+    public void autoDetectActiveDistrict(Player p) {
+        String detected = cities.detectAt(p.getLocation());
+        String current = activeDistrictOf(p.getUniqueId());
+        if (detected == null && current != null) {
+            // 모든 구역 이탈
+            clearActiveDistrict(p);
+            Msg.send(p, "&7구역 이탈.");
+        } else if (detected != null && !detected.equals(current)) {
+            // 다른 구역 진입 (수동/자동 차이 없음 - 통일)
+            setActiveDistrict(p, detected);
+            Msg.send(p, "&a구역 진입: " + detected);
+        }
+    }
+
     @Override
     public void onMeditate(Player p, PlayerData d, double quality) {
         // 해킹 자기교정

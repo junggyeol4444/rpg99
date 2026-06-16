@@ -1,11 +1,14 @@
 package kr.reborn.npc.quest;
 
+import kr.reborn.core.event.RebornQuestCompleteEvent;
 import kr.reborn.core.util.Rand;
 import kr.reborn.npc.RebornNPC;
 import kr.reborn.npc.entity.RebornNpc;
 import kr.reborn.npc.soul.Memory;
 import kr.reborn.npc.soul.Needs;
 import kr.reborn.npc.soul.Personality;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.Bukkit;
 
 import java.util.ArrayList;
@@ -25,7 +28,7 @@ import java.util.List;
  * 보상은 욕구/기억/직업 강도에 비례하여 동적 결정.
  * 만료(24h)되면 호감도 감소 — NPC가 "그 의뢰 무시했군" 기억.
  */
-public final class NpcQuestOfferEngine {
+public final class NpcQuestOfferEngine implements Listener {
 
     private static final long OFFER_TTL_MS = 24L * 3600_000L;
     private static final long OFFER_INTERVAL_MS = 3600_000L;
@@ -283,5 +286,30 @@ public final class NpcQuestOfferEngine {
 
     public String pendingOfferOf(RebornNpc npc) {
         return npc.pendingQuestOffer;
+    }
+
+    /**
+     * 퀘스트 완료 시 — 발주 NPC의 pendingQuestOffer 해제 + 호감도 보상.
+     *
+     * 이전엔 24h TTL 만료까지 NPC가 의뢰 1건에 묶여 새 의뢰 발급 불가 — 완료해도 동일.
+     * 이제 완료가 곧바로 NPC를 해방시켜 다음 의뢰 생성을 허용한다.
+     */
+    @EventHandler
+    public void onQuestComplete(RebornQuestCompleteEvent e) {
+        String questId = e.questId();
+        if (questId == null || !questId.startsWith("npc_")) return;
+        // npc_ prefix인 의뢰만 — 자율 의뢰 식별.
+        for (RebornNpc npc : plugin.registry().all()) {
+            if (questId.equals(npc.pendingQuestOffer)) {
+                npc.pendingQuestOffer = null;
+                npc.pendingQuestOfferAt = 0;
+                if (npc.soul != null) {
+                    // 의뢰 완수 — 발주 NPC가 만족, STATUS·ACHIEVEMENT 욕구 충족.
+                    npc.soul.needs.add(Needs.Kind.STATUS, 8);
+                    npc.soul.needs.add(Needs.Kind.ACHIEVEMENT, 5);
+                }
+                return;
+            }
+        }
     }
 }

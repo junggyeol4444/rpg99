@@ -45,6 +45,7 @@ public final class RebornNPC extends JavaPlugin {
         }
         getServer().getPluginManager().registerEvents(new NpcInteractListener(this), this);
         getServer().getPluginManager().registerEvents(new DialogueChatListener(), this);
+        getServer().getPluginManager().registerEvents(registry.questOffers(), this);
 
         long tick = getConfig().getLong("ai-tick-interval", 10L);
         RebornCore.get().scheduler().runTimer(registry::tickAll, tick, tick);

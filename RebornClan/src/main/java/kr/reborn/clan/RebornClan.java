@@ -74,4 +74,13 @@ public final class RebornClan extends JavaPlugin {
     public kr.reborn.clan.power.PowerEngine powers() { return powers; }
     public kr.reborn.clan.war.ClanWarManager wars() { return wars; }
     public kr.reborn.clan.inheritance.InheritanceManager inheritance() { return inheritance; }
+
+    /** RebornHiddenClass ConditionEngine 등이 reflection으로 호출. */
+    public boolean hasRankAtLeast(java.util.UUID p, String requiredRank) {
+        return clans != null && clans.hasRankAtLeast(p, requiredRank);
+    }
+    /** RebornHiddenClass ConditionEngine 등이 reflection으로 호출. */
+    public int clanMemberCount(java.util.UUID p) {
+        return clans == null ? 0 : clans.clanMemberCount(p);
+    }
 }

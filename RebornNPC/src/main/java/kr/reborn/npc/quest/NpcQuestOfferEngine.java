@@ -274,13 +274,43 @@ public final class NpcQuestOfferEngine implements Listener {
         } catch (Throwable ignored) {}
     }
 
-    /** 만료 시 호감도 감소 — NPC가 "내 의뢰를 무시했군" 기억. */
+    /**
+     * 만료 시 처벌:
+     *   1) 발주 NPC 본인 STATUS -2 (의뢰 실패 자존감 손상).
+     *   2) NPC 30블록 내 온라인 플레이어 favor -10 (가까이 있었으면서 무시한 죄).
+     *   3) NPC의 Memory에 그 플레이어 OPPOSED_ME 5 기록 — 다음 만남 때 시선 차가워짐.
+     *
+     * 거리 기반이라 한 명도 처벌 안 받을 수 있으나, 그건 의뢰가 시골에서 났다는 뜻.
+     * "무시" 처벌이 도시 인구 밀집 NPC에서 더 강하게 작동하는 자연스러운 흐름.
+     */
     private void expirePending(RebornNpc npc) {
+        String offerId = npc.pendingQuestOffer;
         npc.pendingQuestOffer = null;
         npc.pendingQuestOfferAt = 0;
-        // 의뢰를 만든 NPC는 모든 플레이어에게 약간 실망 (의뢰 무시 처벌이지만 작게)
         if (npc.soul != null) {
             npc.soul.needs.add(Needs.Kind.STATUS, -2);
+        }
+        if (npc.location == null || npc.location.getWorld() == null) return;
+        int penalized = 0;
+        for (org.bukkit.entity.Player p : npc.location.getWorld().getPlayers()) {
+            try {
+                if (p.getLocation().distance(npc.location) <= 30) {
+                    npc.relations.addPlayer(p.getUniqueId(), -10);
+                    if (npc.soul != null) {
+                        npc.soul.memory.record(p.getUniqueId().toString(),
+                                kr.reborn.npc.soul.Memory.Kind.OPPOSED_ME, 5,
+                                "내 의뢰 " + (offerId == null ? "" : offerId) + " 무시함");
+                    }
+                    penalized++;
+                }
+            } catch (Throwable ignored) {}
+        }
+        if (penalized > 0) {
+            try {
+                org.bukkit.Bukkit.broadcastMessage("§8[NPC] §f"
+                        + npc.displayName + " §7이(가) 의뢰 무시에 실망 ("
+                        + penalized + "명 호감도 감소)");
+            } catch (Throwable ignored) {}
         }
     }
 

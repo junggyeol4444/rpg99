@@ -177,7 +177,9 @@ public final class NpcSimulator {
                         if (child != null) {
                             Object soul = child.getClass().getField("soul").get(child);
                             if (soul != null) {
-                                java.util.Set fam = (java.util.Set) soul.getClass().getField("family").get(soul);
+                                // Soul.family는 List<String> (Set 아님). Collection으로 받아 add.
+                                java.util.Collection<String> fam =
+                                        (java.util.Collection<String>) soul.getClass().getField("family").get(soul);
                                 fam.add(id);
                             }
                             // SocialNetwork에 KIN 관계

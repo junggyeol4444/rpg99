@@ -56,14 +56,19 @@ public final class CraftingManager {
             Msg.error(p, "숙련도 부족 (필요: " + r.minProficiency + ", 보유: " + exp + ")");
             return;
         }
-        // 재료 체크 + 차감
+        // 재료 체크 + 차감 — ALL_RECIPES_30_PCT_DISCOUNT passive 시 30% 감액 (최소 1개).
+        boolean discount = hasHiddenPassive(p, "ALL_RECIPES_30_PCT_DISCOUNT");
+        java.util.List<Recipe.Mat> effective = new java.util.ArrayList<>();
         for (Recipe.Mat m : r.materials) {
-            if (!p.getInventory().contains(m.material, m.amount)) {
-                Msg.error(p, "재료 부족: " + m.material + " x" + m.amount);
+            int needed = discount ? Math.max(1, (int) Math.ceil(m.amount * 0.70)) : m.amount;
+            effective.add(new Recipe.Mat(m.material, needed));
+            if (!p.getInventory().contains(m.material, needed)) {
+                Msg.error(p, "재료 부족: " + m.material + " x" + needed
+                        + (discount ? " §7(30% 할인 적용)" : ""));
                 return;
             }
         }
-        for (Recipe.Mat m : r.materials) p.getInventory().removeItem(new ItemStack(m.material, m.amount));
+        for (Recipe.Mat m : effective) p.getInventory().removeItem(new ItemStack(m.material, m.amount));
 
         casting.add(p.getUniqueId());
         Msg.send(p, "&e제작 시작... (" + r.castSeconds + "초)");
@@ -105,5 +110,19 @@ public final class CraftingManager {
             }
             Msg.warn(p, "&7인벤 가득 — 발 밑에 떨궈 두었다.");
         }
+    }
+
+    /** RebornHiddenClass.passives().has(uuid, flag) 리플렉션. 미존재 plugin이면 false. */
+    private boolean hasHiddenPassive(Player p, String flag) {
+        try {
+            var hc = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornHiddenClass");
+            if (hc == null) return false;
+            Object pe = hc.getClass().getMethod("passives").invoke(hc);
+            if (pe == null) return false;
+            Object res = pe.getClass().getMethod("has",
+                    java.util.UUID.class, String.class).invoke(pe, p.getUniqueId(), flag);
+            return Boolean.TRUE.equals(res);
+        } catch (Throwable ignored) {}
+        return false;
     }
 }

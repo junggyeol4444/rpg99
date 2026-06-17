@@ -49,6 +49,8 @@ public final class RankingManager {
         for (Player p : Bukkit.getOnlinePlayers()) {
             PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
             if (d == null) continue;
+            // HIDDEN_FROM_RANK 히든클래스 passive 보유 시 랭킹 노출 차단.
+            if (hasHiddenPassive(p.getUniqueId(), "HIDDEN_FROM_RANK")) continue;
             double total = RebornCore.get().api().getTotalStats(p.getUniqueId());
             RankEntry e = new RankEntry(p.getUniqueId(), p.getName(), total);
             next.computeIfAbsent(d.worldKey(), k -> new ArrayList<>()).add(e);
@@ -167,5 +169,19 @@ public final class RankingManager {
             b.set(i, icon, evt -> {});
         }
         b.open(p);
+    }
+
+    /** RebornHiddenClass.passives().has(uuid, flag) 리플렉션. */
+    private boolean hasHiddenPassive(UUID uuid, String flag) {
+        try {
+            var hc = Bukkit.getPluginManager().getPlugin("RebornHiddenClass");
+            if (hc == null) return false;
+            Object pe = hc.getClass().getMethod("passives").invoke(hc);
+            if (pe == null) return false;
+            Object res = pe.getClass().getMethod("has", UUID.class, String.class)
+                    .invoke(pe, uuid, flag);
+            return Boolean.TRUE.equals(res);
+        } catch (Throwable ignored) {}
+        return false;
     }
 }

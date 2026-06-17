@@ -200,6 +200,14 @@ public final class PassiveEngine implements Listener {
         if (pas.contains("ANTI_DARK_BOOST") && isDarkOrUndead(target)) {
             e.setDamage(e.getDamage() * 1.20);
         }
+        if (pas.contains("PRIMORDIAL_LIGHT_DARK")) {
+            // 태초의 빛/어둠 — 모든 적에게 +25% (빛과 어둠의 절대 권능)
+            e.setDamage(e.getDamage() * 1.25);
+        }
+        if (pas.contains("DEMON_LEGION_COMMAND") && isDarkOrUndead(target)) {
+            // 마교 군단 명령 — 어둠 적 데미지 -50% (적 약화)
+            e.setDamage(e.getDamage() * 0.50);
+        }
     }
 
     private boolean isDarkOrUndead(LivingEntity t) {
@@ -337,6 +345,19 @@ public final class PassiveEngine implements Listener {
                 // 시간 인지 — 매 tick MENTAL +0.1 (정적 인지 보너스)
                 RebornCore.get().api().addStat(id, StatType.MENTAL,
                         0.1, "HC:TIME_PERCEPTION");
+            }
+            if (pas.contains("GENESIS_BOND")) {
+                // 창세 연결 — 매 tick 모든 COMMON 스탯 +0.05 (천천히 누적되는 신비)
+                for (StatType st : StatType.COMMON_8) {
+                    RebornCore.get().api().addStat(id, st, 0.05, "HC:GENESIS_BOND");
+                }
+            }
+            if (pas.contains("TAEHEO_HOSTILE")) {
+                // 태허선궁 적대 — 마기 누적 매 tick (선기 시스템에 반하는 마교의 대척점)
+                if (w == WorldKey.IMMORTAL) {
+                    RebornCore.get().api().addStat(id, StatType.DEMON_KI, 0.2,
+                            "HC:TAEHEO_HOSTILE");
+                }
             }
         }
     }

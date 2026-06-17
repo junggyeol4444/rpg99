@@ -6,7 +6,7 @@ folia-supported: true
 authors: [ReincarnationWorld]
 description: NPC AI·감정·관계·대화·전투·자율행동
 depend: [RebornCore]
-softdepend: [ProtocolLib]
+softdepend: [ProtocolLib, RebornQuest, RebornTitle, RebornSkill, RebornSpawn]
 load: POSTWORLD
 commands:
   rnpc:

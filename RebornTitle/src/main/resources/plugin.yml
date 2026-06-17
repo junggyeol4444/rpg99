@@ -6,7 +6,7 @@ folia-supported: true
 authors: [ReincarnationWorld]
 description: 칭호 6종 + 분야별 랭킹
 depend: [RebornCore]
-softdepend: [RebornStat, RebornNPC, RebornQuest, RebornClan]
+softdepend: [RebornStat, RebornNPC, RebornQuest, RebornClan, RebornEconomy]
 load: POSTWORLD
 commands:
   title:

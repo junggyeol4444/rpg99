@@ -6,7 +6,7 @@ folia-supported: true
 authors: [ReincarnationWorld]
 description: 13세계 자율 AI (경제·정치·몬스터·날씨·월드 퀘스트·NPC 지시)
 depend: [RebornCore]
-softdepend: [RebornNPC, RebornMob, RebornQuest, RebornEconomy, RebornStat, RebornClan, RebornTime, RebornSkill]
+softdepend: [RebornNPC, RebornMob, RebornQuest, RebornEconomy, RebornStat, RebornClan, RebornTime, RebornSkill, RebornCurse]
 load: POSTWORLD
 commands:
   worldai:

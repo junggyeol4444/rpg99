@@ -6,7 +6,7 @@ folia-supported: true
 authors: [ReincarnationWorld]
 description: 커스텀 아이템 + 7등급 + 제작 직업
 depend: [RebornCore]
-softdepend: [RebornStat, RebornSkill]
+softdepend: [RebornStat, RebornSkill, RebornCurse, RebornEconomy]
 load: POSTWORLD
 commands:
   craft:

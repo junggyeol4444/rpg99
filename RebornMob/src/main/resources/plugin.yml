@@ -6,7 +6,7 @@ folia-supported: true
 authors: [ReincarnationWorld]
 description: 세계별 몬스터·보스·스폰·드랍
 depend: [RebornCore]
-softdepend: [RebornEconomy, RebornStat]
+softdepend: [RebornEconomy, RebornStat, RebornTitle]
 load: POSTWORLD
 commands:
   rmob:

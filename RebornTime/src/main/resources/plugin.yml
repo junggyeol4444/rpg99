@@ -6,7 +6,7 @@ folia-supported: true
 authors: [ReincarnationWorld]
 description: 시간 동기화·세계 이동·시간의 방·달
 depend: [RebornCore]
-softdepend: [RebornStat, RebornHiddenClass]
+softdepend: [RebornStat, RebornHiddenClass, RebornNPC, RebornEconomy, RebornClan]
 load: POSTWORLD
 commands:
   worldtravel:

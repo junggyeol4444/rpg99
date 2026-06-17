@@ -6,7 +6,7 @@ folia-supported: true
 authors: [ReincarnationWorld]
 description: NPC·월드·발견·자기생성·세력 퀘스트
 depend: [RebornCore]
-softdepend: [RebornNPC, RebornStat, RebornEconomy, RebornWorldAI]
+softdepend: [RebornNPC, RebornStat, RebornEconomy, RebornWorldAI, RebornSkill, RebornCurse, RebornMob, RebornCraft, RebornTitle]
 load: POSTWORLD
 commands:
   quest:

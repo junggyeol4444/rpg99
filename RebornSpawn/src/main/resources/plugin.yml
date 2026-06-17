@@ -6,7 +6,7 @@ folia-supported: true
 authors: [ReincarnationWorld]
 description: 환생·룰렛·초기스탯·헬스장·NPC자녀
 depend: [RebornCore]
-softdepend: [RebornNPC, RebornClan]
+softdepend: [RebornNPC, RebornClan, RebornHiddenClass]
 load: POSTWORLD
 commands:
   reroll:

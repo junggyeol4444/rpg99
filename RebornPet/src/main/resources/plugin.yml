@@ -6,7 +6,7 @@ folia-supported: true
 authors: [ReincarnationWorld]
 description: 펫·탈것·계약
 depend: [RebornCore]
-softdepend: [RebornMob, RebornNPC, RebornSkill, RebornStat, RebornCurse]
+softdepend: [RebornMob, RebornNPC, RebornSkill, RebornStat, RebornCurse, RebornEconomy]
 load: POSTWORLD
 commands:
   pet:

@@ -6,7 +6,7 @@ folia-supported: true
 authors: [ReincarnationWorld]
 description: 13세계 화폐·환전·상점·경매·거래
 depend: [RebornCore]
-softdepend: [RebornNPC, RebornCraft, RebornWorldAI]
+softdepend: [RebornNPC, RebornCraft, RebornWorldAI, RebornHiddenClass]
 load: POSTWORLD
 commands:
   money:

@@ -117,15 +117,22 @@ public final class ExchangeManager {
         return net;
     }
 
-    /** 차원상인 히든 클래스 보유자 = 면제. RebornHiddenClass reflection. */
+    /** 차원상인 히든 클래스 또는 EXCHANGE_FEE_EXEMPT passive 보유자 = 면제. */
     public boolean isFeeExempt(UUID player) {
         try {
             var hcPlugin = Bukkit.getPluginManager().getPlugin("RebornHiddenClass");
             if (hcPlugin == null) return false;
+            // 1) 차원상인 클래스 직접 보유
             Object progress = hcPlugin.getClass().getMethod("progress").invoke(hcPlugin);
-            Object hasMethod = progress.getClass().getMethod("has", UUID.class, String.class)
+            Object dm = progress.getClass().getMethod("has", UUID.class, String.class)
                     .invoke(progress, player, "dimensional_merchant");
-            return hasMethod instanceof Boolean && (Boolean) hasMethod;
+            if (dm instanceof Boolean b && b) return true;
+            // 2) EXCHANGE_FEE_EXEMPT passive 보유 (다른 클래스의 동일 효과)
+            Object passives = hcPlugin.getClass().getMethod("passives").invoke(hcPlugin);
+            if (passives == null) return false;
+            Object pas = passives.getClass().getMethod("has", UUID.class, String.class)
+                    .invoke(passives, player, "EXCHANGE_FEE_EXEMPT");
+            return pas instanceof Boolean b && b;
         } catch (Throwable e) {
             return false;
         }

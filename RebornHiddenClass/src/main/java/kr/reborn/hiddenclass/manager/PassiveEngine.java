@@ -208,6 +208,28 @@ public final class PassiveEngine implements Listener {
             // 마교 군단 명령 — 어둠 적 데미지 -50% (적 약화)
             e.setDamage(e.getDamage() * 0.50);
         }
+        if (pas.contains("SEA_LIFE_COMMUNION") && isSeaCreature(target)) {
+            // 해양 친화 — 해양 생물 데미지 -75% (싸우지 않음)
+            e.setDamage(e.getDamage() * 0.25);
+        }
+        if (pas.contains("PIRATE_COMMAND") && target instanceof Player) {
+            // 해적왕 명령 — 다른 플레이어에 대해 +15% (선원 충성)
+            e.setDamage(e.getDamage() * 1.15);
+        }
+        if (pas.contains("PLUNDER_COMMAND") && target instanceof Player) {
+            // 약탈 명령 — PvP 데미지 +10% + 처치 시 골드 strike (드롭은 별도 listener 필요)
+            e.setDamage(e.getDamage() * 1.10);
+        }
+    }
+
+    private boolean isSeaCreature(LivingEntity t) {
+        switch (t.getType()) {
+            case GUARDIAN: case ELDER_GUARDIAN: case SQUID: case GLOW_SQUID:
+            case DOLPHIN: case TURTLE: case COD: case SALMON: case PUFFERFISH:
+            case TROPICAL_FISH: case DROWNED: case AXOLOTL:
+                return true;
+            default: return false;
+        }
     }
 
     private boolean isDarkOrUndead(LivingEntity t) {
@@ -358,6 +380,26 @@ public final class PassiveEngine implements Listener {
                     RebornCore.get().api().addStat(id, StatType.DEMON_KI, 0.2,
                             "HC:TAEHEO_HOSTILE");
                 }
+            }
+            if (pas.contains("ASCEND_TO_IMMORTAL_REALM")) {
+                // 선계 승천 — 현 거주와 무관하게 IMMORTAL_KI 누적 (요선이 선계에 다가감)
+                RebornCore.get().api().addStat(id, StatType.IMMORTAL_KI, 0.5,
+                        "HC:ASCEND_TO_IMMORTAL_REALM");
+            }
+            if (pas.contains("GOD_DELEGATION")) {
+                // 신 권한 위임 — DIVINITY 매 tick +0.2 (대리신은 작은 신성을 받음)
+                RebornCore.get().api().addStat(id, StatType.DIVINITY, 0.2,
+                        "HC:GOD_DELEGATION");
+            }
+            if (pas.contains("WORLD_HOP_COOL_DOWN")) {
+                // 세계 이동 쿨다운 감소 — 매 tick LUCK +0.05 (자유로운 차원 이동의 행운)
+                RebornCore.get().api().addStat(id, StatType.LUCK, 0.05,
+                        "HC:WORLD_HOP_COOL_DOWN");
+            }
+            if (pas.contains("LEGENDARY_PILL_RECIPES")) {
+                // 전설 단약 레시피 — 매 tick MANA 미세 회복 (영약 제조자의 부산물)
+                RebornCore.get().api().addStat(id, StatType.MANA, 0.5,
+                        "HC:LEGENDARY_PILL_RECIPES");
             }
         }
     }

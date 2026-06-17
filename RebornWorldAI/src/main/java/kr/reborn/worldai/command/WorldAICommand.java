@@ -139,6 +139,34 @@ public final class WorldAICommand implements CommandExecutor {
                 else if ("OVERFLOW".equals(evt)) ai.state().mobBalance = 2.5;
                 Msg.send(s, "&a강제 트리거: " + evt);
             }
+            case "dashboard" -> {
+                // 13세계 한 화면 요약 — 어드민 모니터링 최우선 도구.
+                Msg.send(s, "&6=== WorldAI Dashboard (전 세계) ===");
+                Msg.send(s, "&7세계         | 시대   | 긴장 안정 인플 거래 몹  ");
+                for (WorldAI ai : plugin.all()) {
+                    var st = ai.state();
+                    String w = ai.world().name();
+                    String pad = w + "             ".substring(Math.min(13, w.length()));
+                    String epoch = plugin.epoch().label(plugin.epoch().of(ai.world()));
+                    String ep = epoch + "    ".substring(Math.min(4, epoch.length()));
+                    String line = String.format("§e%s§7| §f%s §c%2d §a%2d §6%3d §b%.2f §d%.2f",
+                            pad, ep,
+                            (int) st.tension, (int) st.stability, (int) st.inflation,
+                            st.tradeActivity, st.mobBalance);
+                    s.sendMessage(line);
+                }
+                int actDisasters = plugin.disasters().activeAll().size();
+                Msg.send(s, "&7활성 재해: §f" + actDisasters
+                        + "  &7최근 메시지: §f/worldai log");
+            }
+            case "inbox" -> {
+                // 특정 세계의 인박스 큐 길이 (디버그 용).
+                if (a.length < 2) return true;
+                WorldKey w = parseWorld(s, a[1]); if (w == null) return true;
+                int size = plugin.comm().recent(50).stream()
+                        .filter(m -> m.to == w).toList().size();
+                Msg.send(s, "&7최근 50건 중 " + w + " 인박스 표시: " + size);
+            }
             default -> Msg.warn(s, "알 수 없는 하위 명령: " + a[0]);
         }
         return true;

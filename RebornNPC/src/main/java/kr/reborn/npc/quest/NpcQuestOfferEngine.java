@@ -214,6 +214,55 @@ public final class NpcQuestOfferEngine implements Listener {
                     "GATHER", "WHEAT", 24,
                     "여관 식량이 부족하다. 밀 24다발만.",
                     16, "CHARISMA", 1, "job-inn"));
+            // ── 추가 직업 12종 (24 → 36) ──
+            case "FISHERMAN" -> out.add(new OfferTemplate(
+                    "GATHER", "COD", 16,
+                    "그물을 잃었다. 대구 16마리만.",
+                    18, "AGILITY", 1, "job-fisher"));
+            case "MINER" -> out.add(new OfferTemplate(
+                    "GATHER", "COAL", 32,
+                    "광산이 추워졌다. 석탄 32덩이.",
+                    20, "STRENGTH", 2, "job-miner"));
+            case "WOODCUTTER" -> out.add(new OfferTemplate(
+                    "GATHER", "OAK_LOG", 32,
+                    "참나무 통나무 32개. 집을 짓는다.",
+                    18, "STRENGTH", 1, "job-wood"));
+            case "TAILOR" -> out.add(new OfferTemplate(
+                    "GATHER", "STRING", 24,
+                    "실 24타래만. 옷이 떨어진다.",
+                    16, "AGILITY", 1, "job-tailor"));
+            case "CARTOGRAPHER" -> out.add(new OfferTemplate(
+                    "EXPLORE", "", 4,
+                    "지도가 낡았다. 4개 마을을 답사해다오.",
+                    25, "INTELLIGENCE", 2, "job-carto"));
+            case "ASSASSIN", "DARK_AGENT" -> out.add(new OfferTemplate(
+                    "KILL", "PILLAGER", 1,
+                    "표적: 약탈자 1명. 조용히 처리하라.",
+                    35, "AGILITY", 3, "job-assassin"));
+            case "BANDIT", "RAIDER" -> out.add(new OfferTemplate(
+                    "GATHER", "GOLD_INGOT", 16,
+                    "노다지를 노린다. 금괴 16개 갖다오면 분배.",
+                    28, "LUCK", 2, "job-bandit"));
+            case "SCHOLAR", "MONK" -> out.add(new OfferTemplate(
+                    "GATHER", "BOOK", 8,
+                    "고서 8권을 모아라 — 연구할 게 많다.",
+                    25, "INTELLIGENCE", 3, "job-scholar"));
+            case "BREWER" -> out.add(new OfferTemplate(
+                    "GATHER", "GLASS_BOTTLE", 12,
+                    "유리병 12개. 새 양조에 쓴다.",
+                    18, "INTELLIGENCE", 1, "job-brewer"));
+            case "TAOIST", "HERMIT" -> out.add(new OfferTemplate(
+                    "EXPLORE", "", 2,
+                    "도의 흐름을 살피게. 2개 영험한 곳을 둘러보아라.",
+                    30, "MENTAL", 3, "job-tao"));
+            case "DUELIST", "SWORDSMAN" -> out.add(new OfferTemplate(
+                    "KILL", "ZOMBIE", 13,
+                    "검의 시험 — 좀비 13체를 단검(短劍)으로.",
+                    25, "STRENGTH", 2, "job-duel"));
+            case "GAMBLER" -> out.add(new OfferTemplate(
+                    "GATHER", "EMERALD", 1,
+                    "운명을 시험하자 — 에메랄드 1개로 도박.",
+                    50, "LUCK", 5, "job-gamble"));
             default -> {} // 일반 villager는 욕구만
         }
 

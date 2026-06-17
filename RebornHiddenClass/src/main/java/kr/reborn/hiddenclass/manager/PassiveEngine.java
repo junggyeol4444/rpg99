@@ -401,6 +401,34 @@ public final class PassiveEngine implements Listener {
                 RebornCore.get().api().addStat(id, StatType.MANA, 0.5,
                         "HC:LEGENDARY_PILL_RECIPES");
             }
+            if (pas.contains("ABYSS_AVATAR") && w == WorldKey.ABYSS) {
+                // 심연의 사도 — ABYSS 거주 시 ABYSS_RESISTANCE +0.5 + MENTAL +0.2
+                RebornCore.get().api().addStat(id, StatType.ABYSS_RESISTANCE, 0.5,
+                        "HC:ABYSS_AVATAR");
+                RebornCore.get().api().addStat(id, StatType.MENTAL, 0.2,
+                        "HC:ABYSS_AVATAR");
+            }
+            if (pas.contains("DUNGEON_AUTHORITY") && w == WorldKey.EARTH) {
+                // 던전 마스터 — EARTH 거주 시 LUCK +0.1 + STRENGTH +0.1 (던전 권한 표현)
+                RebornCore.get().api().addStat(id, StatType.LUCK, 0.1, "HC:DUNGEON_AUTHORITY");
+                RebornCore.get().api().addStat(id, StatType.STRENGTH, 0.1, "HC:DUNGEON_AUTHORITY");
+            }
+            if (pas.contains("LABYRINTH_AUTHORITY") && w == WorldKey.EARTH) {
+                // 미궁의 주인 — EARTH 거주 시 INTELLIGENCE +0.2 (미궁 통찰)
+                RebornCore.get().api().addStat(id, StatType.INTELLIGENCE, 0.2,
+                        "HC:LABYRINTH_AUTHORITY");
+            }
+            if (pas.contains("GATE_CONTROL") && w == WorldKey.EARTH) {
+                // 게이트 제어 — EARTH 모든 stat +0.05 (게이트 통제력)
+                for (StatType st : StatType.COMMON_8) {
+                    RebornCore.get().api().addStat(id, st, 0.05, "HC:GATE_CONTROL");
+                }
+            }
+            if (pas.contains("GOD_ASCENT_RELAX")) {
+                // 신 승급 완화 — DIVINITY 누적 매 tick +0.3 (승급 조건 점진 도달)
+                RebornCore.get().api().addStat(id, StatType.DIVINITY, 0.3,
+                        "HC:GOD_ASCENT_RELAX");
+            }
         }
     }
 

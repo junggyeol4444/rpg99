@@ -429,6 +429,14 @@ public final class PassiveEngine implements Listener {
                 RebornCore.get().api().addStat(id, StatType.DIVINITY, 0.3,
                         "HC:GOD_ASCENT_RELAX");
             }
+            if (pas.contains("ALL_ELEMENTS") && w == WorldKey.SPIRIT) {
+                // 혼돈의 아이 — SPIRIT 거주 시 SPIRIT_POWER +0.5 + 모든 COMMON_8에 +0.02
+                RebornCore.get().api().addStat(id, StatType.SPIRIT_POWER, 0.5,
+                        "HC:ALL_ELEMENTS");
+                for (StatType st : StatType.COMMON_8) {
+                    RebornCore.get().api().addStat(id, st, 0.02, "HC:ALL_ELEMENTS");
+                }
+            }
         }
     }
 

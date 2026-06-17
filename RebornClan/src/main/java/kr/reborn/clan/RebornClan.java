@@ -56,7 +56,32 @@ public final class RebornClan extends JavaPlugin {
             if (kingdoms != null) try { kingdoms.saveAll(); } catch (Throwable ignored) {}
         }, 6000L, 6000L);
 
+        // 1시간마다 왕국 세금 — 영토 chunk × 가문 수에 비례한 GOLD_COIN을 왕에게 적립.
+        kr.reborn.core.RebornCore.get().scheduler().runTimer(this::tickKingdomTax, 72000L, 72000L);
+
         getLogger().info("RebornClan 활성화");
+    }
+
+    /** 매 1시간 — 모든 왕국 세금을 왕의 GOLD_COIN 통화로 적립. */
+    private void tickKingdomTax() {
+        var ep = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornEconomy");
+        if (ep == null || kingdoms == null) return;
+        try {
+            Object cm = ep.getClass().getMethod("currencies").invoke(ep);
+            for (var k : kingdoms.all()) {
+                long rev = kingdoms.taxRevenue(k);
+                if (rev <= 0 || k.king == null) continue;
+                try {
+                    cm.getClass().getMethod("deposit", java.util.UUID.class, String.class, long.class)
+                            .invoke(cm, k.king, "GOLD_COIN", rev);
+                    org.bukkit.entity.Player kingP = org.bukkit.Bukkit.getPlayer(k.king);
+                    if (kingP != null) {
+                        kingP.sendMessage("§6[왕국 세금] §f" + k.name + " §7→ §6"
+                                + rev + " GOLD §7적립.");
+                    }
+                } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
     }
 
     @Override

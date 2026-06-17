@@ -50,6 +50,9 @@ public final class KingdomCommand implements CommandExecutor {
                 p.sendMessage("§7ID: §f" + kk.id);
                 p.sendMessage("§7왕: §f" + kk.king);
                 p.sendMessage("§7산하 가문: §f" + kk.clans.size());
+                p.sendMessage("§7총 영토 chunk: §f" + plugin.kingdoms().totalTerritory(kk));
+                p.sendMessage("§7총 인구(가문 멤버 합): §f" + plugin.kingdoms().totalPopulation(kk));
+                p.sendMessage("§6주기 세금 수입: §e" + plugin.kingdoms().taxRevenue(kk) + " GOLD");
                 int allies = 0, wars = 0;
                 for (var other : plugin.kingdoms().all()) {
                     if (other.id.equals(kk.id)) continue;

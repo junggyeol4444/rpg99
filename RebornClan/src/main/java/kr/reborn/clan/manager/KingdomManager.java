@@ -145,6 +145,47 @@ public final class KingdomManager {
         return true;
     }
 
+    /**
+     * 왕국 총 영토 — 산하 모든 가문의 Territory chunk 합.
+     * 왕국 단위 세금·자원 산정에 사용.
+     */
+    public int totalTerritory(Kingdom k) {
+        if (k == null) return 0;
+        int sum = 0;
+        for (String cid : k.clans) {
+            try { sum += plugin.territories().ofClan(cid).size(); }
+            catch (Throwable ignored) {}
+        }
+        return sum;
+    }
+
+    /**
+     * 왕국 총 인구 — 산하 모든 가문 멤버 합.
+     */
+    public int totalPopulation(Kingdom k) {
+        if (k == null) return 0;
+        int sum = 0;
+        for (String cid : k.clans) {
+            try {
+                var clan = plugin.clans().get(cid);
+                if (clan != null) sum += clan.members.size();
+            } catch (Throwable ignored) {}
+        }
+        return sum;
+    }
+
+    /**
+     * 왕국 단위 세금 — 영토 chunk × 산하 가문 수.
+     * 매 주기 호출되어 왕에게 GOLD_COIN 자동 적립.
+     */
+    public long taxRevenue(Kingdom k) {
+        if (k == null) return 0;
+        int t = totalTerritory(k);
+        int c = Math.max(1, k.clans.size());
+        // chunk당 1 GOLD + 가문 수 보너스 (centralization 인센티브).
+        return t + (c * 5L);
+    }
+
     public Kingdom get(String id) { return kingdoms.get(id); }
 
     public Kingdom ofPlayer(UUID p) {

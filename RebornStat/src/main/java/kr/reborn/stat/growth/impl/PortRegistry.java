@@ -107,13 +107,16 @@ public final class PortRegistry {
     public void addInfluence(String portId, String empireId, int delta) {
         OceanPort p = ports.get(portId);
         if (p == null) return;
-        int cur = p.influence.getOrDefault(empireId, 0);
-        int next = Math.max(0, Math.min(MAX_INFLUENCE, cur + delta));
-        p.influence.put(empireId, next);
-        RebornCore.get().kv().putInt(NS, null, portId + ".inf." + empireId, next);
-        checkTakeover(p);
+        synchronized (p) {
+            int cur = p.influence.getOrDefault(empireId, 0);
+            int next = Math.max(0, Math.min(MAX_INFLUENCE, cur + delta));
+            p.influence.put(empireId, next);
+            RebornCore.get().kv().putInt(NS, null, portId + ".inf." + empireId, next);
+            checkTakeover(p);
+        }
     }
 
+    /** caller가 synchronized(p) 안에서 호출한다고 가정. */
     private void checkTakeover(OceanPort p) {
         if (p.influence.isEmpty()) return;
         String topEmpire = null;
@@ -128,11 +131,14 @@ public final class PortRegistry {
         p.ruledSince = System.currentTimeMillis();
         RebornCore.get().kv().put(NS, null, p.id + ".ruler", topEmpire);
         RebornCore.get().kv().putLong(NS, null, p.id + ".since", p.ruledSince);
+        java.util.Map<String, Integer> halved = new java.util.LinkedHashMap<>();
         for (var e : p.influence.entrySet()) {
             int half = e.getValue() / 2;
-            p.influence.put(e.getKey(), half);
+            halved.put(e.getKey(), half);
             RebornCore.get().kv().putInt(NS, null, p.id + ".inf." + e.getKey(), half);
         }
+        p.influence.clear();
+        p.influence.putAll(halved);
         Bukkit.broadcastMessage("§3§l[" + p.id + " 점령] §f" + topEmpire
                 + (prev == null ? " §7가 무인 항구를 차지했다."
                                 : " §7가 §6" + prev + " §7로부터 항구를 빼앗았다."));

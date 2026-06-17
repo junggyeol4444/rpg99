@@ -117,13 +117,17 @@ public final class CityRegistry {
     public void addInfluence(String districtId, String corpId, int delta) {
         CyberCity c = districts.get(districtId);
         if (c == null) return;
-        int cur = c.influence.getOrDefault(corpId, 0);
-        int next = Math.max(0, Math.min(MAX_INFLUENCE, cur + delta));
-        c.influence.put(corpId, next);
-        RebornCore.get().kv().putInt(NS, null, districtId + ".inf." + corpId, next);
-        checkTakeover(c);
+        // Folia 다중 리전 동시 접근 차단 — district 인스턴스 단위 lock.
+        synchronized (c) {
+            int cur = c.influence.getOrDefault(corpId, 0);
+            int next = Math.max(0, Math.min(MAX_INFLUENCE, cur + delta));
+            c.influence.put(corpId, next);
+            RebornCore.get().kv().putInt(NS, null, districtId + ".inf." + corpId, next);
+            checkTakeover(c);
+        }
     }
 
+    /** caller가 synchronized(c) 안에서 호출한다고 가정. */
     private void checkTakeover(CyberCity c) {
         if (c.influence.isEmpty()) return;
         String topCorp = null;
@@ -138,12 +142,16 @@ public final class CityRegistry {
         c.ownedSince = System.currentTimeMillis();
         RebornCore.get().kv().put(NS, null, c.id + ".owner", topCorp);
         RebornCore.get().kv().putLong(NS, null, c.id + ".since", c.ownedSince);
-        // 점령 직후 50% 감쇠 — 후속 방어전 쿨다운
+        // 점령 직후 50% 감쇠 — 후속 방어전 쿨다운.
+        // 새 Map에 복사 후 일괄 교체 — iteration 중 put 회피.
+        java.util.Map<String, Integer> halved = new java.util.LinkedHashMap<>();
         for (var e : c.influence.entrySet()) {
             int half = e.getValue() / 2;
-            c.influence.put(e.getKey(), half);
+            halved.put(e.getKey(), half);
             RebornCore.get().kv().putInt(NS, null, c.id + ".inf." + e.getKey(), half);
         }
+        c.influence.clear();
+        c.influence.putAll(halved);
         Bukkit.broadcastMessage("§b§l[" + c.id + " 점령] §f" + topCorp
                 + (prev == null ? " §7가 무주공산을 차지했다."
                                 : " §7가 §6" + prev + " §7로부터 구역을 빼앗았다."));

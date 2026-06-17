@@ -1,10 +1,9 @@
 package kr.reborn.god.data;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 신(神) 1 인스턴스 — 플레이어가 등극한 신 또는 NPC 신.
@@ -18,8 +17,8 @@ public final class God {
     public final String npcId;        // NPC 신 ID (플레이어 신은 "")
     public String name;
     public double divinity;
-    public final Set<UUID> followers = new HashSet<>();
-    public final Set<UUID> allies = new HashSet<>();
+    public final Set<UUID> followers = ConcurrentHashMap.newKeySet();
+    public final Set<UUID> allies = ConcurrentHashMap.newKeySet();
     /** 진행중 전쟁 상대 신 id. */
     public String warOpponent = "";
     public long warStartedAt;
@@ -28,7 +27,7 @@ public final class God {
     /** NPC 신 봉인 여부 (아자토스 등). */
     public boolean sealed;
     /** 기적별 쿨다운 — miracleId → 다음 사용 가능 ms. */
-    public final Map<String, Long> miracleCooldowns = new HashMap<>();
+    public final Map<String, Long> miracleCooldowns = new ConcurrentHashMap<>();
     /** 등극·즉위 시각. */
     public final long ascendedAt = System.currentTimeMillis();
     /** 영향력 — 신도/동맹 수에 따라 증가, 신 전쟁·외교 가중치. */

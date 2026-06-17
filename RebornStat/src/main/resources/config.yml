@@ -241,3 +241,31 @@ fortunes:
   # GOD 신계 — 신격
   divine_spark:       { name: "&f신격의 불씨", world: GOD, trigger: EXPLORE, chance: 0.001, broadcast: true, message: "신의 영역에서 얻은 신격의 불씨. 인간을 넘어선 격이 깃든다.", stats: { DIVINITY: 400 } }
   creator_fragment:   { name: "&e&l창세의 파편", world: GOD, trigger: MEDITATE, chance: 0.0005, broadcast: true, special: "genesis_touch", message: "창세신이 세계를 빚은 힘의 파편. 신격과 모든 능력이 동시에 폭증한다.", stats: { DIVINITY: 1000, ENDURANCE: 200, STRENGTH: 200, AGILITY: 200, INTELLIGENCE: 200, MENTAL: 200, LUCK: 200, CHARISMA: 200, CHARM: 200 } }
+
+# ============================================================
+# 사이버시티 7대 구역 물리 좌표 (자동 진입 감지)
+# world 이름은 실제 서버 cyberpunk 월드 이름으로 어드민이 교체.
+# 좌표는 origin 기준 정팔각형 배치 디폴트 — radius 80블록.
+# 모든 구역 비활성화하려면 district-bounds: {} 로 비우면 됨.
+# ============================================================
+district-bounds:
+  NIGHT_MARKET:     { world: cyberpunk, x: 200,  z: 0,    radius: 80 }
+  CORPORATE_PLAZA:  { world: cyberpunk, x: 141,  z: 141,  radius: 80 }
+  TECH_SLUMS:       { world: cyberpunk, x: 0,    z: 200,  radius: 80 }
+  DATA_CORE:        { world: cyberpunk, x: -141, z: 141,  radius: 60 }
+  BIOTECH_LABS:     { world: cyberpunk, x: -200, z: 0,    radius: 80 }
+  NEON_DOCKS:       { world: cyberpunk, x: -141, z: -141, radius: 100 }
+  SKYBRIDGE:        { world: cyberpunk, x: 0,    z: -200, radius: 80 }
+
+# ============================================================
+# 해양 7대 항구 물리 좌표 (자동 정박 감지) — 동일 규칙.
+# 항구는 반경 100블록 디폴트 — 바다 위 입항 여유.
+# ============================================================
+port-bounds:
+  ATLANTIS_HARBOR:    { world: ocean, x: 0,    z: 0,    radius: 120 }
+  CORAL_TRADE_PORT:   { world: ocean, x: 300,  z: 200,  radius: 100 }
+  ABYSS_TEMPLE_DOCK:  { world: ocean, x: -300, z: 200,  radius: 100 }
+  PEARL_LAGOON:       { world: ocean, x: 200,  z: -200, radius: 100 }
+  FREEPORT_HAVEN:     { world: ocean, x: -200, z: -200, radius: 100 }
+  STORM_FORTRESS:     { world: ocean, x: 400,  z: 0,    radius: 100 }
+  GHOST_GRAVEYARD:    { world: ocean, x: -400, z: 0,    radius: 100 }

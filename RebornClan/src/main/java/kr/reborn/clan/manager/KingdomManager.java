@@ -16,9 +16,9 @@ public final class KingdomManager {
     private static final String NS = "RebornClan.kingdom";
 
     private final RebornClan plugin;
-    private final Map<String, Kingdom> kingdoms = new HashMap<>();
+    private final Map<String, Kingdom> kingdoms = new java.util.concurrent.ConcurrentHashMap<>();
     /** kingdomId → {ALLY, ENEMY, AT_WAR, NEUTRAL} */
-    private final Map<String, Map<String, Relation>> relations = new HashMap<>();
+    private final Map<String, Map<String, Relation>> relations = new java.util.concurrent.ConcurrentHashMap<>();
 
     public KingdomManager(RebornClan p) {
         this.plugin = p;
@@ -45,7 +45,7 @@ public final class KingdomManager {
                     if (parts.length != 2) continue;
                     try {
                         Relation r = Relation.valueOf(e.getValue());
-                        relations.computeIfAbsent(parts[0], k -> new HashMap<>()).put(parts[1], r);
+                        relations.computeIfAbsent(parts[0], k -> new java.util.concurrent.ConcurrentHashMap<>()).put(parts[1], r);
                     } catch (Throwable ignored) {}
                 }
             }
@@ -207,8 +207,8 @@ public final class KingdomManager {
     }
 
     private void setRelation(String a, String b, Relation r) {
-        relations.computeIfAbsent(a, k -> new HashMap<>()).put(b, r);
-        relations.computeIfAbsent(b, k -> new HashMap<>()).put(a, r);
+        relations.computeIfAbsent(a, k -> new java.util.concurrent.ConcurrentHashMap<>()).put(b, r);
+        relations.computeIfAbsent(b, k -> new java.util.concurrent.ConcurrentHashMap<>()).put(a, r);
         try {
             var kv = kr.reborn.core.RebornCore.get().kv();
             kv.put(NS, null, "r." + a + "." + b, r.name());
@@ -222,7 +222,7 @@ public final class KingdomManager {
         public final String id;
         public String name;
         public final UUID king;
-        public final Set<String> clans = new HashSet<>();
+        public final Set<String> clans = java.util.concurrent.ConcurrentHashMap.newKeySet();
         public Kingdom(String id, String name, UUID king) {
             this.id = id; this.name = name; this.king = king;
         }

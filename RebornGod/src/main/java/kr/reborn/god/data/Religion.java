@@ -1,8 +1,8 @@
 package kr.reborn.god.data;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 교단(敎團) — 신을 섬기는 사회 조직.
@@ -21,15 +21,15 @@ public final class Religion {
     public double faith;
     public final long foundedAt = System.currentTimeMillis();
 
-    /** 등록된 플레이어 신도. */
-    public final Set<UUID> followers = new HashSet<>();
+    /** 등록된 플레이어 신도 — Folia 다중 리전 동시 add/remove 안전. */
+    public final Set<UUID> followers = ConcurrentHashMap.newKeySet();
     /** NPC 신도 추정 수 (config base + 동적 증가). */
     public int npcFollowerCount;
 
     /** 적대 교단 ID — faith가 그쪽으로 새거나 깎임. */
     public String antiReligion = "";
     /** 동맹 교단 ID. */
-    public final Set<String> allyReligions = new HashSet<>();
+    public final Set<String> allyReligions = ConcurrentHashMap.newKeySet();
 
     /** 금기 교단 여부 (어둠의 교단 등 — 발각 시 사회적 제재). */
     public boolean forbidden;

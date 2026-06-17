@@ -29,7 +29,7 @@ public final class ChildCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender s, @NotNull Command c,
                              @NotNull String l, @NotNull String[] a) {
         if (!(s instanceof Player p) || a.length == 0) {
-            Msg.send(s, "&7/child request | play | count | list | name <n> <newname> | teach <n>");
+            Msg.send(s, "&7/child request | play | count | list | name <n> <newname> | teach <n> | visit <n> | gift <n>");
             return true;
         }
         switch (a[0].toLowerCase()) {
@@ -42,9 +42,104 @@ public final class ChildCommand implements CommandExecutor {
             case "list" -> handleList(p);
             case "name" -> { if (a.length >= 3) handleName(p, a[1], a[2]); else Msg.warn(p, "/child name <번호> <이름>"); }
             case "teach" -> { if (a.length >= 2) handleTeach(p, a[1]); else Msg.warn(p, "/child teach <번호>"); }
-            default -> Msg.warn(p, "/child request | play | count | list | name | teach");
+            case "visit" -> { if (a.length >= 2) handleVisit(p, a[1]); else Msg.warn(p, "/child visit <번호>"); }
+            case "gift" -> { if (a.length >= 2) handleGift(p, a[1]); else Msg.warn(p, "/child gift <번호>"); }
+            default -> Msg.warn(p, "/child request | play | count | list | name | teach | visit | gift");
         }
         return true;
+    }
+
+    /**
+     * 자녀를 5분간 Villager NPC로 가시화 — 부모 옆에 spawn.
+     * 자녀의 customName 표시, 부모와 가까이 있는 동안 친밀도 표현.
+     * 양육과 별개의 daily 만남 — 자녀와의 시간 자체가 보상 (LUCK 60초).
+     */
+    private void handleVisit(Player p, String idxStr) {
+        int idx;
+        try { idx = Integer.parseInt(idxStr); }
+        catch (NumberFormatException e) { Msg.warn(p, "번호는 숫자."); return; }
+        int n = childCount(p);
+        if (idx < 1 || idx > n) { Msg.error(p, "유효 번호 1~" + n); return; }
+        long now = System.currentTimeMillis();
+        long lastVisit = RebornCore.get().kv().getLong(NS, p.getUniqueId(),
+                "child" + idx + ".lastVisit", 0);
+        if (now - lastVisit < 24L * 3600_000L) {
+            long h = (24L * 3600_000L - (now - lastVisit)) / 3600_000L;
+            Msg.warn(p, "다음 만남까지 " + Math.max(1, h) + "시간 남음.");
+            return;
+        }
+        RebornCore.get().kv().putLong(NS, p.getUniqueId(),
+                "child" + idx + ".lastVisit", now);
+        String name = RebornCore.get().kv().get(NS, p.getUniqueId(),
+                "child" + idx + ".name");
+        if (name == null || name.isEmpty()) name = "자녀 #" + idx;
+
+        // Villager NPC로 spawn — 5분 후 자동 제거.
+        try {
+            org.bukkit.Location at = p.getLocation().add(
+                    p.getLocation().getDirection().setY(0).normalize().multiply(2));
+            org.bukkit.entity.Villager v = (org.bukkit.entity.Villager)
+                    p.getWorld().spawnEntity(at, org.bukkit.entity.EntityType.VILLAGER);
+            v.setCustomName("§d" + name + " §7(" + p.getName() + "의 자녀)");
+            v.setCustomNameVisible(true);
+            v.setAI(true);
+            v.setRemoveWhenFarAway(true);
+            // 5분 후 자동 제거
+            kr.reborn.core.RebornCore.get().scheduler().runTaskLater(() -> {
+                try {
+                    if (v.isValid() && !v.isDead()) {
+                        v.getWorld().spawnParticle(org.bukkit.Particle.HEART,
+                                v.getLocation().add(0, 1, 0), 10);
+                        v.remove();
+                    }
+                } catch (Throwable ignored) {}
+            }, 20L * 60 * 5);
+            // 부모에게 LUCK 60초 (자녀와의 시간 보상)
+            p.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                    org.bukkit.potion.PotionEffectType.LUCK, 20 * 60, 0, true, false));
+            Msg.send(p, "&d" + name + " §7이(가) 만나러 왔다 — 5분간 머무름.");
+        } catch (Throwable t) {
+            Msg.error(p, "자녀 spawn 실패: " + t.getMessage());
+        }
+    }
+
+    /**
+     * 자녀에게 선물 — 메인 손 아이템 1개 소모, 24h 1회.
+     * 선물 받은 자녀의 parentTotal +200 (양육보다 효과 큼 — 실제 선물의 가치).
+     */
+    private void handleGift(Player p, String idxStr) {
+        int idx;
+        try { idx = Integer.parseInt(idxStr); }
+        catch (NumberFormatException e) { Msg.warn(p, "번호는 숫자."); return; }
+        int n = childCount(p);
+        if (idx < 1 || idx > n) { Msg.error(p, "유효 번호 1~" + n); return; }
+        org.bukkit.inventory.ItemStack item = p.getInventory().getItemInMainHand();
+        if (item == null || item.getType() == org.bukkit.Material.AIR) {
+            Msg.error(p, "메인 손에 선물 아이템을 들어라."); return;
+        }
+        long now = System.currentTimeMillis();
+        long lastGift = RebornCore.get().kv().getLong(NS, p.getUniqueId(),
+                "child" + idx + ".lastGift", 0);
+        if (now - lastGift < 24L * 3600_000L) {
+            long h = (24L * 3600_000L - (now - lastGift)) / 3600_000L;
+            Msg.warn(p, "다음 선물까지 " + Math.max(1, h) + "시간 남음.");
+            return;
+        }
+        // 1개 소모
+        item.setAmount(item.getAmount() - 1);
+        p.getInventory().setItemInMainHand(item);
+        RebornCore.get().kv().putLong(NS, p.getUniqueId(),
+                "child" + idx + ".lastGift", now);
+        double cur = RebornCore.get().kv().getDouble(NS, p.getUniqueId(),
+                "child" + idx + ".parentTotal", 0);
+        double next = cur + 200;
+        RebornCore.get().kv().putDouble(NS, p.getUniqueId(),
+                "child" + idx + ".parentTotal", next);
+        String name = RebornCore.get().kv().get(NS, p.getUniqueId(),
+                "child" + idx + ".name");
+        if (name == null) name = "#" + idx;
+        Msg.send(p, "&d" + name + " §a이(가) 선물(§f" + item.getType().name()
+                + "§a)을 받고 기뻐한다 — 인수 보정 +200 (모든 스탯 +1.25).");
     }
 
     private void handleRequest(Player p) {

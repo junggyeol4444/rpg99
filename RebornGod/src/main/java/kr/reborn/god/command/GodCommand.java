@@ -151,6 +151,9 @@ public final class GodCommand implements CommandExecutor {
                         Msg.warn(p, "신도가 아닙니다."); break;
                     }
                     Msg.send(p, "&7" + r.name + " 신도 탈퇴.");
+                } else if ("ritual".equals(sub) && a.length >= 3) {
+                    // 의식 집전 — 신도 본인 + 주변 같은 교단 신도 모두 받는 집단 신앙 부스트.
+                    plugin.faith().performRitual(p, a[2]);
                 }
                 break;
             }

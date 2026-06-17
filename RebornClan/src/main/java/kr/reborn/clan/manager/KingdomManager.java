@@ -98,6 +98,53 @@ public final class KingdomManager {
         return true;
     }
 
+    /**
+     * 다른 가문주가 기존 왕국 산하로 자기 가문을 편입.
+     * 왕국 왕은 아닌 가문주 한정. 가문주 본인 가문만 가입 가능.
+     */
+    public boolean join(Player clanLeader, String kingdomId) {
+        var clan = plugin.clans().ofPlayer(clanLeader.getUniqueId());
+        if (clan == null) { Msg.error(clanLeader, "가문이 없다."); return false; }
+        if (!clanLeader.getUniqueId().equals(clan.leader)) {
+            Msg.error(clanLeader, "가문주만 가입 가능."); return false;
+        }
+        if (clan.kingdomId != null && !clan.kingdomId.isEmpty()) {
+            Msg.error(clanLeader, "이미 " + clan.kingdomId + " 왕국 소속. 먼저 /kingdom leave."); return false;
+        }
+        Kingdom k = kingdoms.get(kingdomId);
+        if (k == null) { Msg.error(clanLeader, "왕국 없음: " + kingdomId); return false; }
+        k.clans.add(clan.id);
+        clan.kingdomId = k.id;
+        persistKingdom(k);
+        Bukkit.broadcastMessage("§6[왕국 가입] §f" + clan.name + " §7가문이 §6"
+                + k.name + " §7왕국에 합류.");
+        return true;
+    }
+
+    /** 가문이 현재 왕국에서 이탈. 왕은 이탈 불가 (왕국 해체는 별도 절차). */
+    public boolean leave(Player clanLeader) {
+        var clan = plugin.clans().ofPlayer(clanLeader.getUniqueId());
+        if (clan == null) { Msg.error(clanLeader, "가문이 없다."); return false; }
+        if (!clanLeader.getUniqueId().equals(clan.leader)) {
+            Msg.error(clanLeader, "가문주만 이탈 가능."); return false;
+        }
+        if (clan.kingdomId == null || clan.kingdomId.isEmpty()) {
+            Msg.warn(clanLeader, "왕국 소속 없음."); return false;
+        }
+        Kingdom k = kingdoms.get(clan.kingdomId);
+        if (k != null) {
+            if (clanLeader.getUniqueId().equals(k.king)) {
+                Msg.error(clanLeader, "왕은 이탈 불가. 다른 가문주에게 양위 필요."); return false;
+            }
+            k.clans.remove(clan.id);
+            persistKingdom(k);
+            Bukkit.broadcastMessage("§7[왕국 이탈] §f" + clan.name
+                    + " §7가문이 §6" + k.name + " §7왕국을 떠났다.");
+        }
+        clan.kingdomId = "";
+        return true;
+    }
+
     public Kingdom get(String id) { return kingdoms.get(id); }
 
     public Kingdom ofPlayer(UUID p) {

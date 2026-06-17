@@ -85,7 +85,7 @@ public final class SignatureRegistry {
                 100, 4, 200);
         // 혈마공 — 피의 마공, 흡혈
         s("hyeolma_gong", SkillSignature.ParticlePattern.AURA_IN, Particle.REDSTONE,
-                Particle.SQUID_INK, Sound.ENTITY_WITCH_DRINK, Sound.ENTITY_VAMPIRE_HURT,
+                Particle.SQUID_INK, Sound.ENTITY_WITCH_DRINK, Sound.ENTITY_WITCH_DRINK,
                 "&4피의 갈증이 일어난다 …",
                 100, 2, 0);
         // 수라마공 — 잔인한 마공
@@ -443,7 +443,7 @@ public final class SignatureRegistry {
                 "&b사이렌의 노래 — 적이 다가온다.",
                 100, 3, 0);
         s("sea_king_command", SkillSignature.ParticlePattern.AURA_OUT, Particle.WATER_BUBBLE,
-                Particle.WATER_SPLASH, Sound.ENTITY_CONDUIT_AMBIENT, Sound.ENTITY_DROWNED_AMBIENT,
+                Particle.WATER_SPLASH, Sound.BLOCK_CONDUIT_AMBIENT, Sound.ENTITY_DROWNED_AMBIENT,
                 "&3해왕의 명령 — 해양 생물 모두 직속.",
                 6000, 0, 0);
         s("water_breathing", SkillSignature.ParticlePattern.AURA_OUT, Particle.BUBBLE_POP,
@@ -550,7 +550,7 @@ public final class SignatureRegistry {
                 Particle.CRIT_MAGIC, Sound.ENTITY_PLAYER_ATTACK_STRONG, Sound.ENTITY_BLAZE_HURT,
                 "&c&l칠상권 — 일곱 가지 변화의 권법.", 0, 0, 0);
         s("amyeon_sohonjang", SkillSignature.ParticlePattern.AURA_IN, Particle.SOUL,
-                Particle.SPELL_WITCH, Sound.ENTITY_VEX_DEATH, Sound.ENTITY_VAMPIRE_HURT,
+                Particle.SPELL_WITCH, Sound.ENTITY_VEX_DEATH, Sound.ENTITY_WITCH_DRINK,
                 "&8&l암련소혼장 — 영혼을 태워 펼치는 사악한 장법.", 100, 2, 0);
         s("cheonma_bi", SkillSignature.ParticlePattern.BEAM, Particle.SQUID_INK,
                 Particle.SOUL_FIRE_FLAME, Sound.ITEM_TRIDENT_THROW, Sound.ENTITY_WITHER_HURT,
@@ -562,7 +562,7 @@ public final class SignatureRegistry {
                 Particle.END_ROD, Sound.ITEM_TRIDENT_THROW, Sound.ENTITY_LIGHTNING_BOLT_THUNDER,
                 "&7&l백보신권 — 백 보 떨어진 적도 격살한다.", 0, 0, 0);
         s("bicheon_singong", SkillSignature.ParticlePattern.AURA_OUT, Particle.CLOUD,
-                Particle.SWEEP_ATTACK, Sound.ENTITY_PHANTOM_FLAP, Sound.ENTITY_ELYTRA_FLYING,
+                Particle.SWEEP_ATTACK, Sound.ENTITY_PHANTOM_FLAP, Sound.ITEM_ELYTRA_FLYING,
                 "&b&l비천신공 — 하늘을 나는 듯한 신법.", 600, 2, 0);
         s("daena_cheonsoo", SkillSignature.ParticlePattern.AURA_OUT, Particle.END_ROD,
                 Particle.HEART, Sound.BLOCK_BEACON_POWER_SELECT, null,
@@ -605,7 +605,7 @@ public final class SignatureRegistry {
                 Particle.SPELL_WITCH, Sound.BLOCK_END_PORTAL_FRAME_FILL, Sound.ENTITY_ENDERMAN_TELEPORT,
                 "&5&l공간 왜곡 — 좌표가 흐려진다.", 100, 5, 0);
         s("life_drain", SkillSignature.ParticlePattern.SOUL_DRAIN, Particle.REDSTONE,
-                Particle.HEART, Sound.ENTITY_VAMPIRE_HURT, Sound.ENTITY_VEX_DEATH,
+                Particle.HEART, Sound.ENTITY_WITCH_DRINK, Sound.ENTITY_VEX_DEATH,
                 "&4&l생명 흡수 — 적의 생명이 너에게로.", 100, 2, 0);
         s("summon_elemental_lord", SkillSignature.ParticlePattern.STAR_BURST, Particle.SPELL_MOB,
                 Particle.END_ROD, Sound.BLOCK_BEACON_ACTIVATE, Sound.ENTITY_ENDER_DRAGON_GROWL,
@@ -733,7 +733,7 @@ public final class SignatureRegistry {
                 null, Sound.ENTITY_PLAYER_ATTACK_SWEEP, Sound.ENTITY_PLAYER_ATTACK_CRIT,
                 "&7기본 베기.", 0, 0, 0);
         s("heupseong_daebeop", SkillSignature.ParticlePattern.SOUL_DRAIN, Particle.REDSTONE,
-                Particle.SOUL, Sound.ENTITY_VAMPIRE_HURT, Sound.ENTITY_VEX_DEATH,
+                Particle.SOUL, Sound.ENTITY_WITCH_DRINK, Sound.ENTITY_VEX_DEATH,
                 "&4&l흡성대법 — 적의 내공을 강탈한다.", 100, 3, 0);
         s("hangyong_18jang", SkillSignature.ParticlePattern.WAVE_FRONT, Particle.EXPLOSION_LARGE,
                 Particle.DRAGON_BREATH, Sound.ENTITY_ENDER_DRAGON_HURT, Sound.ENTITY_GENERIC_EXPLODE,
@@ -757,10 +757,10 @@ public final class SignatureRegistry {
                 Particle.FLAME, Sound.ITEM_TRIDENT_THROW, Sound.ENTITY_BLAZE_AMBIENT,
                 "&c&l화산검법 — 화염을 두른 매화.", 60, 2, 0);
         s("hyeolma_daebeop", SkillSignature.ParticlePattern.AURA_IN, Particle.REDSTONE,
-                Particle.SQUID_INK, Sound.ENTITY_VAMPIRE_HURT, Sound.ENTITY_WITHER_HURT,
+                Particle.SQUID_INK, Sound.ENTITY_WITCH_DRINK, Sound.ENTITY_WITHER_HURT,
                 "&4&l혈마대법 — 피의 마기가 흐른다.", 200, 3, 100);
         s("hyeoldosul", SkillSignature.ParticlePattern.STORM, Particle.REDSTONE,
-                Particle.DRIPPING_LAVA, Sound.ENTITY_VAMPIRE_HURT, Sound.BLOCK_HONEY_BLOCK_BREAK,
+                Particle.DRIPPING_LAVA, Sound.ENTITY_WITCH_DRINK, Sound.BLOCK_HONEY_BLOCK_BREAK,
                 "&4&l혈도술 — 혈도를 짚어 통제한다.", 100, 4, 0);
         s("hyeonmyung_igigeom", SkillSignature.ParticlePattern.SLASH_ARC, Particle.CRIT_MAGIC,
                 Particle.END_ROD, Sound.ITEM_TRIDENT_THUNDER, Sound.ENTITY_PLAYER_ATTACK_CRIT,

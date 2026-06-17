@@ -224,7 +224,7 @@ public final class Roulette {
             case APOCALYPSE: return org.bukkit.Sound.ENTITY_RAVAGER_ROAR;
             case CYBERPUNK: return org.bukkit.Sound.BLOCK_BEACON_POWER_SELECT;
             case DRAGON: return org.bukkit.Sound.ENTITY_ENDER_DRAGON_GROWL;
-            case OCEAN: return org.bukkit.Sound.ENTITY_CONDUIT_AMBIENT;
+            case OCEAN: return org.bukkit.Sound.BLOCK_CONDUIT_AMBIENT;
             default: return org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE;
         }
     }

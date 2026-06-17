@@ -126,7 +126,7 @@ public final class TechniqueFlavor {
         register("빙", Particle.SNOWFLAKE, Sound.BLOCK_GLASS_BREAK, "&b한기!");
         register("암", Particle.SQUID_INK, Sound.ENTITY_VEX_AMBIENT, "&0어둠!");
         register("성", Particle.END_ROD, Sound.BLOCK_BELL_USE, "&e성광!");
-        register("혈", Particle.REDSTONE, Sound.ENTITY_VAMPIRE_HURT, "&4피의 흐름.");
+        register("혈", Particle.REDSTONE, Sound.ENTITY_WITCH_DRINK, "&4피의 흐름.");
         register("심", Particle.HEART, Sound.BLOCK_AMETHYST_BLOCK_CHIME, "&d마음의 검.");
     }
 

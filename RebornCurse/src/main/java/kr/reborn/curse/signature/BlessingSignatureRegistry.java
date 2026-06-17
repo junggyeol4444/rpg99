@@ -36,7 +36,7 @@ public final class BlessingSignatureRegistry {
         s("primordial_dark", Particle.SQUID_INK, Particle.SOUL,
                 Sound.ENTITY_WARDEN_AMBIENT, "&0&l태초의 어둠이 너를 감싼다 — 빛이 닿지 않는다.", 12);
         s("sea_god_blessing", Particle.WATER_BUBBLE, Particle.BUBBLE_POP,
-                Sound.ENTITY_CONDUIT_AMBIENT, "&3&l해왕의 축복 — 바다가 너의 편이다.", 6);
+                Sound.BLOCK_CONDUIT_AMBIENT, "&3&l해왕의 축복 — 바다가 너의 편이다.", 6);
         s("netbreaker_renown", Particle.ELECTRIC_SPARK, Particle.REDSTONE,
                 Sound.BLOCK_PISTON_EXTEND, "&d&lNetBreaker 명성 — 모든 시스템이 너에게 길을 연다.", 4);
         s("abyssal_bond", Particle.SQUID_INK, Particle.SOUL,
@@ -64,7 +64,7 @@ public final class BlessingSignatureRegistry {
         s("immortal_heavenly_punishment", Particle.LAVA, Particle.SOUL,
                 Sound.ENTITY_LIGHTNING_BOLT_THUNDER, "&c&l선계 천벌 — 수련의 길이 막혔다.", 5);
         s("bloodlust", Particle.REDSTONE, Particle.DRIPPING_LAVA,
-                Sound.ENTITY_VAMPIRE_HURT, "&4&l피의 갈증 — 멈출 수 없다.", 6);
+                Sound.ENTITY_WITCH_DRINK, "&4&l피의 갈증 — 멈출 수 없다.", 6);
         s("shadow_taint", Particle.SQUID_INK, Particle.SMOKE_NORMAL,
                 Sound.ENTITY_PHANTOM_BITE, "&8&l그림자 침식 — 어둠이 점점 깊어진다.", 4);
         s("sleep_curse", Particle.SPELL_WITCH, Particle.HEART,

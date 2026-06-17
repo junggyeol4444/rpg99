@@ -83,7 +83,7 @@ public final class AbilitySignature {
         r(HiddenAbility.HERO_AURA, Particle.HEART, Particle.END_ROD,
                 Sound.BLOCK_BELL_USE, "&6&l영웅의 후광 — 신도가 모인다.", "[영웅]");
         r(HiddenAbility.SEA_KING_COMMAND, Particle.WATER_BUBBLE, Particle.NAUTILUS,
-                Sound.ENTITY_CONDUIT_AMBIENT, "&3&l해왕의 후예 — 바다가 너의 명을 듣는다.", "[해왕]");
+                Sound.BLOCK_CONDUIT_AMBIENT, "&3&l해왕의 후예 — 바다가 너의 명을 듣는다.", "[해왕]");
         r(HiddenAbility.GENESIS_BLESSING, Particle.TOTEM, Particle.END_ROD,
                 Sound.UI_TOAST_CHALLENGE_COMPLETE, "&6&l창세신기의 축복.", "[창세]");
         r(HiddenAbility.MASTER_OF_TRADES, Particle.SPELL_INSTANT, Particle.HEART,

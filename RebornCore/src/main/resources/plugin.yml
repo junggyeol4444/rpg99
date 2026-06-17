@@ -20,6 +20,9 @@ commands:
   hidden:
     description: 6 히든 월드 발견 상태 + 해금 조건
     aliases: [hiddenworld]
+  guide:
+    description: 현재 세계의 시스템·명령어 안내
+    aliases: [g, help2]
 permissions:
   reborncore.admin:
     default: op

@@ -65,6 +65,9 @@ public final class RebornCore extends JavaPlugin {
         if (getCommand("hidden") != null) {
             getCommand("hidden").setExecutor(new kr.reborn.core.command.HiddenWorldCommand(this));
         }
+        if (getCommand("guide") != null) {
+            getCommand("guide").setExecutor(new kr.reborn.core.command.GuideCommand(this));
+        }
 
         long interval = getConfig().getLong("auto-save-interval", 300L) * 20L;
         scheduler.runTimerAsync(() -> dataManager.flushAll(), interval, interval);

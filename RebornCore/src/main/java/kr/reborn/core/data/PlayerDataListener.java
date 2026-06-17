@@ -25,6 +25,16 @@ public final class PlayerDataListener implements Listener {
         if (d == null) return;
         d.name(e.getPlayer().getName());
         d.lastJoin(System.currentTimeMillis());
+        // 접속 5초 후 /guide 안내 — 신규/복귀 사용자 온보딩.
+        final var p = e.getPlayer();
+        try {
+            kr.reborn.core.RebornCore.get().scheduler().runTaskLater(() -> {
+                if (p.isOnline()) {
+                    p.sendMessage(kr.reborn.core.util.Msg.c(
+                            "&7현재 세계의 시스템 안내는 &e/guide &7로 확인하세요."));
+                }
+            }, 100L);
+        } catch (Throwable ignored) {}
     }
 
     @EventHandler

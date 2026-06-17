@@ -16,6 +16,7 @@ public final class RebornStat extends JavaPlugin {
     private MinigameManager minigames;
     private kr.reborn.stat.serendipity.FortuneRegistry fortunes;
     private kr.reborn.stat.serendipity.FortuneManager fortuneManager;
+    private kr.reborn.core.util.Gui gui;
 
     public static RebornStat get() { return instance; }
 
@@ -28,6 +29,7 @@ public final class RebornStat extends JavaPlugin {
         this.fortunes = new kr.reborn.stat.serendipity.FortuneRegistry(this);
         this.fortunes.load();
         this.fortuneManager = new kr.reborn.stat.serendipity.FortuneManager(this, fortunes);
+        this.gui = new kr.reborn.core.util.Gui(this);
 
         getCommand("stats").setExecutor(new StatsCommand());
         getCommand("tierup").setExecutor(new TierUpCommand(this));
@@ -98,6 +100,7 @@ public final class RebornStat extends JavaPlugin {
 
     public GrowthRegistry growth() { return growth; }
     public MinigameManager minigames() { return minigames; }
+    public kr.reborn.core.util.Gui gui() { return gui; }
     public kr.reborn.stat.serendipity.FortuneRegistry fortunes() { return fortunes; }
     public kr.reborn.stat.serendipity.FortuneManager fortuneManager() { return fortuneManager; }
 }

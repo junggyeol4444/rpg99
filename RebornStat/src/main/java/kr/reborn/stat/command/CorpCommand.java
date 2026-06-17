@@ -61,6 +61,7 @@ public final class CorpCommand implements CommandExecutor {
             return true;
         }
         switch (a[0].toLowerCase()) {
+            case "gui" -> openGui(p, corp);
             case "join" -> {
                 if (a.length < 2) { Msg.warn(p, "/corp join <CORP>"); return true; }
                 String cid = a[1].toUpperCase();
@@ -76,8 +77,52 @@ public final class CorpCommand implements CommandExecutor {
                 if (a.length < 3) { Msg.warn(p, "/corp mission <CORP> <minor|major|legend|betray>"); return true; }
                 corp.onCorpMission(p, a[1].toUpperCase(), a[2].toLowerCase());
             }
-            default -> Msg.warn(p, "/corp | /corp join | /corp mission");
+            default -> Msg.warn(p, "/corp | /corp gui | /corp join | /corp mission");
         }
         return true;
+    }
+
+    /**
+     * 7대 메가코프 평판 GUI — 각 코프를 아이템으로, 평판 tier 색상 + 점령 구역 수 lore.
+     * 클릭 시 해당 코프 가입 (/corp join).
+     */
+    private void openGui(Player p, CyberpunkGrowth corp) {
+        var b = plugin.gui().builder("&b7대 메가코프", 3);
+        java.util.Map<String, Integer> ownedCount = new java.util.HashMap<>();
+        for (var d : corp.cities().all()) {
+            if (d.currentOwner != null) ownedCount.merge(d.currentOwner, 1, Integer::sum);
+        }
+        String patron = corp.patronCorp(p.getUniqueId());
+        String[] labels = {"&4적", "&c적대", "&7냉랭", "&f중립", "&a우호", "&b동맹"};
+        org.bukkit.Material[] mats = {
+                org.bukkit.Material.IRON_BLOCK, org.bukkit.Material.REDSTONE_BLOCK,
+                org.bukkit.Material.LAPIS_BLOCK, org.bukkit.Material.EMERALD_BLOCK,
+                org.bukkit.Material.DIAMOND_BLOCK, org.bukkit.Material.GOLD_BLOCK,
+                org.bukkit.Material.NETHERITE_BLOCK
+        };
+        int slot = 0;
+        for (String cid : CyberpunkGrowth.CORPS) {
+            final String corpId = cid;
+            int rep = corp.corpReputation(p.getUniqueId(), cid);
+            int tier = corp.corpTier(rep);
+            String label = labels[Math.max(0, Math.min(labels.length - 1, tier))];
+            int owned = ownedCount.getOrDefault(cid, 0);
+            boolean isPatron = cid.equals(patron);
+            var item = kr.reborn.core.util.Items.of(
+                    mats[Math.min(slot, mats.length - 1)],
+                    (isPatron ? "&e★ " : "&b") + cid,
+                    "&7평판: &f" + rep + " &8[" + label + "&8]",
+                    "&7점령 구역: &6" + owned + "/7",
+                    isPatron ? "&e현재 후원 코프" : "",
+                    "",
+                    "&a클릭 — 시민 신청 (+25)");
+            b.set(slot, item, e -> {
+                p.closeInventory();
+                corp.gainCorpFavor(p, corpId, 25);
+                Msg.send(p, "&a" + corpId + " 시민 신청 — 평판 +25, 라이벌 -12");
+            });
+            slot++;
+        }
+        b.open(p);
     }
 }

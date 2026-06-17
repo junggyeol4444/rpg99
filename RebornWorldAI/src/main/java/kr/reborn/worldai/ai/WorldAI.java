@@ -132,9 +132,19 @@ public final class WorldAI {
                     if ("boom".equals(m.payload)) {
                         state.tradeActivity = clamp(state.tradeActivity + 0.15, 0.1, 3.0);
                         state.inflation = clamp(state.inflation + 5, 50, 300);
+                        // 호황 cascade — 자기 인플레가 이미 200↑이면 PEACE_FESTIVAL 발동 (수요 폭증).
+                        if (state.inflation > 200 && state.stability > 50) {
+                            tryQuest("PEACE_FESTIVAL", System.currentTimeMillis(),
+                                    "주변국 " + m.from.name() + " 호황 — 축제 동참", true, false);
+                        }
                     } else if ("crash".equals(m.payload)) {
                         state.tradeActivity = clamp(state.tradeActivity - 0.15, 0.1, 3.0);
                         state.inflation = clamp(state.inflation - 5, 50, 300);
+                        // 폭락 cascade — 자기 stability 낮으면 ECON_CRISIS 트리거 (도미노).
+                        if (state.stability < 40 && Rand.chance(0.5)) {
+                            tryQuest("ECON_CRISIS", System.currentTimeMillis(),
+                                    "주변국 " + m.from.name() + " 폭락 — 경제 도미노", true, false);
+                        }
                     }
                 }
                 case QUEST_LINK -> {
@@ -143,6 +153,11 @@ public final class WorldAI {
                 case POLLUTION_ALERT -> {
                     state.mobBalance = clamp(state.mobBalance - 0.15, 0, 2.0);
                     state.stability = clamp(state.stability - 3, 0, 100);
+                    // 오염 cascade — mobBalance 1.5↑면 인근 세계도 MOB_INVASION 발동 (오염몹 이동).
+                    if (state.mobBalance > 1.5 && Rand.chance(0.4)) {
+                        tryQuest("MOB_INVASION", System.currentTimeMillis(),
+                                "이웃 " + m.from.name() + " 오염 확산 — 변종 침공", true, false);
+                    }
                 }
             }
         }

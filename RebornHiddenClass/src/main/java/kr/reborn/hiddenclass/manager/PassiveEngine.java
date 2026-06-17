@@ -18,7 +18,9 @@ import org.bukkit.GameMode;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import kr.reborn.core.data.WorldKey;
 import kr.reborn.core.data.PlayerData;
 import org.bukkit.potion.PotionEffect;
@@ -308,8 +310,37 @@ public final class PassiveEngine implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
-        // 캐시 워밍 + COMBAT_HEAL_AURA·BLESSED_PRESENCE 대상자라면 초기 효과 부여.
+        // 캐시 워밍 + 즉시 부여형 passive 적용.
         passivesOf(e.getPlayer().getUniqueId());
+        applyInstantPassives(e.getPlayer());
+    }
+
+    @EventHandler
+    public void onWorldChange(PlayerChangedWorldEvent e) {
+        // Bukkit 월드 이동 시 비행 권한 등 리셋되므로 즉시 재부여.
+        applyInstantPassives(e.getPlayer());
+    }
+
+    @EventHandler
+    public void onRespawn(PlayerRespawnEvent e) {
+        // 부활 시 비행 권한 초기화 — 재부여.
+        applyInstantPassives(e.getPlayer());
+    }
+
+    /** 매 tick에 의존하지 않고 즉시 부여해야 하는 passive — 비행 등. */
+    private void applyInstantPassives(Player p) {
+        Set<String> pas = passivesOf(p.getUniqueId());
+        if (pas.isEmpty()) return;
+        PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+        WorldKey w = d == null ? null : d.worldKey();
+        if (pas.contains("DRAGON_MOUNT") && w == WorldKey.DRAGON) {
+            if (p.getGameMode() != GameMode.CREATIVE
+                    && p.getGameMode() != GameMode.SPECTATOR
+                    && !p.getAllowFlight()) {
+                try { p.setAllowFlight(true); }
+                catch (Throwable ignored) {}
+            }
+        }
     }
 
     // ───────────────── 주변 효과 (CHECK 주기 호출) ─────────────────

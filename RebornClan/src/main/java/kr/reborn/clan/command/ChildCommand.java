@@ -28,11 +28,14 @@ public final class ChildCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender s, @NotNull Command c,
                              @NotNull String l, @NotNull String[] a) {
-        if (!(s instanceof Player p) || a.length == 0) {
-            Msg.send(s, "&7/child request | play | count | list | name <n> <newname> | teach <n> | visit <n> | gift <n>");
+        if (!(s instanceof Player p)) return true;
+        if (a.length == 0) {
+            // 인자 없으면 GUI 열기 — 자녀 목록·양육·선물·만남·인수 클릭.
+            openGui(p);
             return true;
         }
         switch (a[0].toLowerCase()) {
+            case "gui" -> openGui(p);
             case "request" -> handleRequest(p);
             case "play" -> handlePlay(p, a.length >= 2 ? a[1] : null);
             case "count" -> {
@@ -309,5 +312,48 @@ public final class ChildCommand implements CommandExecutor {
 
     private int childCount(Player p) {
         return RebornCore.get().kv().getInt(NS, p.getUniqueId(), "count", 0);
+    }
+
+    /**
+     * 자녀 GUI — 각 자녀를 머리 아이템으로 표시.
+     * 좌클릭=양육, 우클릭=만남, Shift+좌클릭=선물, Shift+우클릭=인수.
+     * 하단에 "임신 시도" 버튼.
+     */
+    private void openGui(Player p) {
+        int n = childCount(p);
+        int rows = Math.min(6, Math.max(2, (n / 9) + 2));
+        var b = plugin.gui().builder("&d자녀 (" + n + "명)", rows);
+        long now = System.currentTimeMillis();
+        for (int i = 1; i <= n && i <= (rows - 1) * 9; i++) {
+            final int idx = i;
+            String name = RebornCore.get().kv().get(NS, p.getUniqueId(), "child" + i + ".name");
+            if (name == null || name.isEmpty()) name = "자녀 #" + i;
+            long bornAt = RebornCore.get().kv().getLong(NS, p.getUniqueId(), "child" + i + ".bornAt", now);
+            double total = RebornCore.get().kv().getDouble(NS, p.getUniqueId(), "child" + i + ".parentTotal", 0);
+            long days = (now - bornAt) / (24L * 3600_000L);
+            var item = kr.reborn.core.util.Items.of(org.bukkit.Material.PLAYER_HEAD,
+                    "&d" + name,
+                    "&7나이: &f" + days + "일",
+                    "&7인수 보정: &f≈" + String.format("%.1f", total * 0.05 / 8) + "/스탯",
+                    "",
+                    "&e좌클릭 &7양육 (24h, +50)",
+                    "&e우클릭 &7만남 (24h, NPC 5분)",
+                    "&eShift+좌 &7선물 (손 아이템, +200)",
+                    "&cShift+우 &7이 자녀로 인수 (현 캐릭터 은퇴!)");
+            b.set(i - 1, item, e -> {
+                p.closeInventory();
+                if (e.isShiftClick() && e.isRightClick()) handlePlay(p, String.valueOf(idx));
+                else if (e.isShiftClick()) handleGift(p, String.valueOf(idx));
+                else if (e.isRightClick()) handleVisit(p, String.valueOf(idx));
+                else handleTeach(p, String.valueOf(idx));
+            });
+        }
+        // 하단 임신 시도 버튼
+        int last = rows * 9 - 5;
+        b.set(last, kr.reborn.core.util.Items.of(org.bukkit.Material.EGG,
+                "&a임신 시도",
+                "&7배우자와 자녀를 두려면 클릭 (일 1회)"),
+                e -> { p.closeInventory(); handleRequest(p); });
+        b.open(p);
     }
 }

@@ -17,6 +17,7 @@ public final class RebornClan extends JavaPlugin {
     private kr.reborn.clan.power.PowerEngine powers;
     private kr.reborn.clan.war.ClanWarManager wars;
     private kr.reborn.clan.inheritance.InheritanceManager inheritance;
+    private kr.reborn.core.util.Gui gui;
 
     public static RebornClan get() { return instance; }
 
@@ -31,6 +32,7 @@ public final class RebornClan extends JavaPlugin {
         this.powers = new kr.reborn.clan.power.PowerEngine(this);
         this.wars = new kr.reborn.clan.war.ClanWarManager(this);
         this.inheritance = new kr.reborn.clan.inheritance.InheritanceManager(this);
+        this.gui = new kr.reborn.core.util.Gui(this);
 
         getCommand("clan").setExecutor(new ClanCommand(this));
         getCommand("marry").setExecutor(new MarryCommand(this));
@@ -90,6 +92,7 @@ public final class RebornClan extends JavaPlugin {
         if (marriages != null) marriages.save();
         if (territories != null) territories.save();
         if (kingdoms != null) kingdoms.saveAll();
+        if (gui != null) gui.shutdown();
     }
 
     public ClanManager clans() { return clans; }
@@ -99,6 +102,7 @@ public final class RebornClan extends JavaPlugin {
     public kr.reborn.clan.power.PowerEngine powers() { return powers; }
     public kr.reborn.clan.war.ClanWarManager wars() { return wars; }
     public kr.reborn.clan.inheritance.InheritanceManager inheritance() { return inheritance; }
+    public kr.reborn.core.util.Gui gui() { return gui; }
 
     /** RebornHiddenClass ConditionEngine 등이 reflection으로 호출. */
     public boolean hasRankAtLeast(java.util.UUID p, String requiredRank) {

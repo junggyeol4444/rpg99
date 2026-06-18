@@ -21,6 +21,7 @@ public final class RebornGod extends JavaPlugin {
     private MiracleEngine miracles;
     private TrialManager trials;
     private DivineWarManager wars;
+    private kr.reborn.core.util.Gui gui;
 
     public static RebornGod get() { return instance; }
 
@@ -36,6 +37,7 @@ public final class RebornGod extends JavaPlugin {
         this.miracles = new MiracleEngine(this);
         this.trials = new TrialManager(this);
         this.wars = new DivineWarManager(this);
+        this.gui = new kr.reborn.core.util.Gui(this);
 
         getCommand("god").setExecutor(new GodCommand(this));
         getServer().getPluginManager().registerEvents(
@@ -59,6 +61,7 @@ public final class RebornGod extends JavaPlugin {
     public void onDisable() {
         if (religions != null) religions.saveAll();
         if (gods != null) gods.saveAll();
+        if (gui != null) gui.shutdown();
     }
 
     public GodManager gods() { return gods; }
@@ -68,4 +71,5 @@ public final class RebornGod extends JavaPlugin {
     public MiracleEngine miracles() { return miracles; }
     public TrialManager trials() { return trials; }
     public DivineWarManager wars() { return wars; }
+    public kr.reborn.core.util.Gui gui() { return gui; }
 }

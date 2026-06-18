@@ -17,10 +17,13 @@ public final class KingdomCommand implements CommandExecutor {
                              @NotNull String l, @NotNull String[] a) {
         if (!(s instanceof Player p)) return true;
         if (a.length == 0) {
-            Msg.send(p, "&7/kingdom create <id> <name> | join <id> | leave | list | info [id] | members | relations | ally <id> | war <id> | treaty <id> | marry <id> <npc>");
+            Msg.send(p, "&7/kingdom create <id> <name> | join <id> | leave | list | gui | info [id] | members | relations | ally <id> | war <id> | treaty <id> | marry <id> <npc>");
             return true;
         }
         switch (a[0].toLowerCase()) {
+            case "gui":
+                openGui(p);
+                break;
             case "create":
                 if (a.length < 3) return true;
                 plugin.kingdoms().create(p, a[1], a[2]);
@@ -105,5 +108,67 @@ public final class KingdomCommand implements CommandExecutor {
                 break;
         }
         return true;
+    }
+
+    /**
+     * 왕국 목록 GUI — 각 왕국 영토·인구·관계 색상.
+     * 클릭 → 정보 표시(/kingdom info), Shift-클릭 → 가입(/kingdom join), Shift-우클릭 → 탈퇴.
+     */
+    private void openGui(Player p) {
+        var all = plugin.kingdoms().all();
+        int rows = Math.min(6, Math.max(2, ((all.size() - 1) / 9) + 2));
+        var b = plugin.gui().builder("&6왕국 (" + all.size() + ")", rows);
+        var myKingdom = plugin.kingdoms().ofPlayer(p.getUniqueId());
+        int slot = 0;
+        for (var kk : all) {
+            if (slot >= rows * 9 - 9) break;  // 마지막 행 비워둠
+            final String kid = kk.id;
+            boolean isMine = myKingdom != null && myKingdom.id.equals(kk.id);
+            int territory = plugin.kingdoms().totalTerritory(kk);
+            int population = plugin.kingdoms().totalPopulation(kk);
+            long revenue = plugin.kingdoms().taxRevenue(kk);
+            String relColor = "&7";
+            if (myKingdom != null && !isMine) {
+                var rel = plugin.kingdoms().getRelation(myKingdom.id, kk.id);
+                relColor = switch (rel) {
+                    case ALLY -> "&a";
+                    case AT_WAR -> "&4";
+                    case ENEMY -> "&c";
+                    default -> "&7";
+                };
+            }
+            var item = kr.reborn.core.util.Items.of(
+                    isMine ? org.bukkit.Material.GOLDEN_HELMET
+                           : org.bukkit.Material.IRON_HELMET,
+                    (isMine ? "&e★ " : relColor) + kk.name,
+                    "&7ID: &f" + kk.id,
+                    "&7산하 가문: &f" + kk.clans.size(),
+                    "&7총 영토: &f" + territory + " chunk",
+                    "&7인구: &f" + population,
+                    "&6주기 세금: &e" + revenue + " GOLD",
+                    "",
+                    isMine ? "&7Shift-우클릭 — 탈퇴(왕 제외)" : "&7Shift-클릭 — 가입",
+                    "&a좌클릭 — 정보 보기");
+            b.set(slot, item, e -> {
+                p.closeInventory();
+                if (e.isShiftClick() && e.isRightClick()) {
+                    plugin.kingdoms().leave(p);
+                } else if (e.isShiftClick()) {
+                    plugin.kingdoms().join(p, kid);
+                } else {
+                    p.performCommand("kingdom info " + kid);
+                }
+            });
+            slot++;
+        }
+        // 마지막 행 중앙 — 왕국 창설 안내(가문 Lv 7+).
+        int lastRow = (rows - 1) * 9 + 4;
+        var hint = kr.reborn.core.util.Items.of(
+                org.bukkit.Material.WRITABLE_BOOK,
+                "&e왕국 창설",
+                "&7가문 Lv 7+ 가문주만 가능",
+                "&7/kingdom create <id> <name>");
+        b.set(lastRow, hint, e -> p.closeInventory());
+        b.open(p);
     }
 }

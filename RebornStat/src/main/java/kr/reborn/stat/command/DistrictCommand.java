@@ -63,6 +63,7 @@ public final class DistrictCommand implements CommandExecutor {
             return true;
         }
         switch (a[0].toLowerCase()) {
+            case "gui" -> openGui(p, corp);
             case "enter" -> {
                 if (a.length < 2) { Msg.warn(p, "/district enter <ID>"); return true; }
                 String id = a[1].toUpperCase();
@@ -79,8 +80,53 @@ public final class DistrictCommand implements CommandExecutor {
                 corp.clearActiveDistrict(p);
                 Msg.send(p, "&7구역에서 이탈.");
             }
-            default -> Msg.warn(p, "/district | /district enter <ID> | /district exit");
+            default -> Msg.warn(p, "/district | /district gui | /district enter <ID> | /district exit");
         }
         return true;
+    }
+
+    /**
+     * 사이버시티 7대 구역 GUI — 소유 코프·후원 코프 영향력·활동 여부.
+     * 클릭 → 구역 진입, Shift-클릭 → 이탈.
+     */
+    private void openGui(Player p, CyberpunkGrowth corp) {
+        var b = plugin.gui().builder("&b사이버시티 7대 구역", 3);
+        CityRegistry cities = corp.cities();
+        String myPatron = corp.patronCorp(p.getUniqueId());
+        String active = corp.activeDistrictOf(p.getUniqueId());
+        // 구역별 테마 — 자유시장/본사단지/빈민가/데이터코어/생체공학/네온부두/스카이브릿지.
+        org.bukkit.Material[] mats = {
+                org.bukkit.Material.GOLD_INGOT, org.bukkit.Material.GLASS,
+                org.bukkit.Material.REDSTONE_BLOCK, org.bukkit.Material.LAPIS_BLOCK,
+                org.bukkit.Material.PINK_GLAZED_TERRACOTTA, org.bukkit.Material.PRISMARINE_SHARD,
+                org.bukkit.Material.QUARTZ_BLOCK
+        };
+        int slot = 0;
+        for (var d : cities.all()) {
+            final String did = d.id;
+            String ownerLabel = d.currentOwner == null ? "&7무주공산" : "&b" + d.currentOwner;
+            int patronInfl = myPatron == null ? 0 : cities.influenceOf(d.id, myPatron);
+            boolean isActive = d.id.equals(active);
+            var item = kr.reborn.core.util.Items.of(
+                    mats[Math.min(slot, mats.length - 1)],
+                    (isActive ? "&a▶ " : "&b") + d.id,
+                    "&7소유: " + ownerLabel,
+                    myPatron != null ? "&7" + myPatron + " 영향력: &f" + patronInfl + " &7/ 1000" : "&7후원 코프 없음",
+                    isActive ? "&a현재 활동 중" : "",
+                    "",
+                    isActive ? "&7Shift-클릭 — 이탈" : "&a클릭 — 진입");
+            b.set(slot, item, e -> {
+                p.closeInventory();
+                if (e.isShiftClick() && isActive) {
+                    corp.clearActiveDistrict(p);
+                    Msg.send(p, "&7구역에서 이탈.");
+                } else {
+                    corp.setActiveDistrict(p, did);
+                    Msg.send(p, "&a구역 진입: " + did);
+                }
+            });
+            slot++;
+        }
+        b.open(p);
     }
 }

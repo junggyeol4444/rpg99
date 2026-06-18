@@ -58,6 +58,7 @@ public final class EmpireCommand implements CommandExecutor {
             return true;
         }
         switch (a[0].toLowerCase()) {
+            case "gui" -> openGui(p, empire);
             case "join" -> {
                 if (a.length < 2) { Msg.warn(p, "/empire join <EMPIRE>"); return true; }
                 String eid = a[1].toUpperCase();
@@ -73,8 +74,54 @@ public final class EmpireCommand implements CommandExecutor {
                 if (a.length < 3) { Msg.warn(p, "/empire mission <EMPIRE> <escort|naval|explore|pirate|betray>"); return true; }
                 empire.onEmpireMission(p, a[1].toUpperCase(), a[2].toLowerCase());
             }
-            default -> Msg.warn(p, "/empire | /empire join | /empire mission");
+            default -> Msg.warn(p, "/empire | /empire gui | /empire join | /empire mission");
         }
         return true;
+    }
+
+    /**
+     * 7대 해양 제국 평판 GUI — 각 제국을 테마 아이템으로, 평판 tier 색상 + 점령 항구 수 lore.
+     * 후원 제국은 ★, 클릭 시 해당 제국 가입 (/empire join).
+     */
+    private void openGui(Player p, OceanGrowth empire) {
+        var b = plugin.gui().builder("&37대 해양 제국", 3);
+        java.util.Map<String, Integer> ruledCount = new java.util.HashMap<>();
+        for (var port : empire.ports().all()) {
+            if (port.currentRuler != null) ruledCount.merge(port.currentRuler, 1, Integer::sum);
+        }
+        String patron = empire.patronEmpire(p.getUniqueId());
+        String[] labels = {"&4적", "&c적대", "&7냉랭", "&f중립", "&a동맹", "&b시민"};
+        // 제국별 테마 아이템 — 아쿠아리온=해군(트라이던트), 코럴=무역(에메랄드), 크라켄=신정(프리즈마린),
+        // 펄=인어(해양심장), 자유해=해적(블랙썰), 폭풍=군사(번개기), 망자=언데드(해골).
+        org.bukkit.Material[] mats = {
+                org.bukkit.Material.TRIDENT, org.bukkit.Material.EMERALD_BLOCK,
+                org.bukkit.Material.PRISMARINE_BRICKS, org.bukkit.Material.HEART_OF_THE_SEA,
+                org.bukkit.Material.BLACK_BANNER, org.bukkit.Material.LIGHTNING_ROD,
+                org.bukkit.Material.SKELETON_SKULL
+        };
+        int slot = 0;
+        for (String eid : OceanGrowth.EMPIRES) {
+            final String empireId = eid;
+            int rep = empire.empireReputation(p.getUniqueId(), eid);
+            int tier = empire.empireTier(rep);
+            String label = labels[Math.max(0, Math.min(labels.length - 1, tier))];
+            int ruled = ruledCount.getOrDefault(eid, 0);
+            boolean isPatron = eid.equals(patron);
+            var item = kr.reborn.core.util.Items.of(
+                    mats[Math.min(slot, mats.length - 1)],
+                    (isPatron ? "&e★ " : "&3") + eid,
+                    "&7평판: &f" + rep + " &8[" + label + "&8]",
+                    "&7점령 항구: &6" + ruled + "/7",
+                    isPatron ? "&e현재 후원 제국" : "",
+                    "",
+                    "&a클릭 — 시민 신청 (+25)");
+            b.set(slot, item, e -> {
+                p.closeInventory();
+                empire.gainEmpireFavor(p, empireId, 25);
+                Msg.send(p, "&a" + empireId + " 시민 신청 — 평판 +25, 라이벌 -12");
+            });
+            slot++;
+        }
+        b.open(p);
     }
 }

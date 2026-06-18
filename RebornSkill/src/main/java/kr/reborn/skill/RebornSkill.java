@@ -27,6 +27,7 @@ public final class RebornSkill extends JavaPlugin {
     private kr.reborn.skill.combo.ComboTracker combo;
     private kr.reborn.skill.manual.ManualManager manuals;
     private kr.reborn.skill.school.SchoolManager schools;
+    private kr.reborn.core.util.Gui gui;
 
     public static RebornSkill get() { return instance; }
 
@@ -44,6 +45,7 @@ public final class RebornSkill extends JavaPlugin {
         registry.load();
         this.manuals = new kr.reborn.skill.manual.ManualManager(this);
         this.schools = new kr.reborn.skill.school.SchoolManager(this);
+        this.gui = new kr.reborn.core.util.Gui(this);
         techniques.load();  // 초식 데이터 로드 (techniques.yml)
         creator.load();  // 이전에 창조된 스킬 복원
 
@@ -120,4 +122,5 @@ public final class RebornSkill extends JavaPlugin {
     public kr.reborn.skill.combo.ComboTracker combo() { return combo; }
     public kr.reborn.skill.manual.ManualManager manuals() { return manuals; }
     public kr.reborn.skill.school.SchoolManager schools() { return schools; }
+    public kr.reborn.core.util.Gui gui() { return gui; }
 }

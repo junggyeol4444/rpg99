@@ -63,6 +63,7 @@ public final class PortCommand implements CommandExecutor {
             return true;
         }
         switch (a[0].toLowerCase()) {
+            case "gui" -> openGui(p, empire);
             case "enter" -> {
                 if (a.length < 2) { Msg.warn(p, "/port enter <ID>"); return true; }
                 String id = a[1].toUpperCase();
@@ -79,8 +80,53 @@ public final class PortCommand implements CommandExecutor {
                 empire.clearActivePort(p);
                 Msg.send(p, "&7항구에서 출항.");
             }
-            default -> Msg.warn(p, "/port | /port enter <ID> | /port exit");
+            default -> Msg.warn(p, "/port | /port gui | /port enter <ID> | /port exit");
         }
         return true;
+    }
+
+    /**
+     * 해양 7대 항구 GUI — 통치 제국·후원 제국 영향력·정박 여부.
+     * 클릭 → 항구 정박 (/port enter), Shift-클릭 → 출항.
+     */
+    private void openGui(Player p, OceanGrowth empire) {
+        var b = plugin.gui().builder("&3해양 7대 항구", 3);
+        PortRegistry portsR = empire.ports();
+        String myPatron = empire.patronEmpire(p.getUniqueId());
+        String active = empire.activePortOf(p.getUniqueId());
+        // 항구별 테마 — 모항·무역·신전·라군·자유·요새·묘지.
+        org.bukkit.Material[] mats = {
+                org.bukkit.Material.BEACON, org.bukkit.Material.EMERALD_BLOCK,
+                org.bukkit.Material.PRISMARINE_BRICKS, org.bukkit.Material.SEA_LANTERN,
+                org.bukkit.Material.BLACK_BANNER, org.bukkit.Material.LIGHTNING_ROD,
+                org.bukkit.Material.SKELETON_SKULL
+        };
+        int slot = 0;
+        for (var port : portsR.all()) {
+            final String portId = port.id;
+            String rulerLabel = port.currentRuler == null ? "&7무인" : "&b" + port.currentRuler;
+            int patronInfl = myPatron == null ? 0 : portsR.influenceOf(port.id, myPatron);
+            boolean isActive = port.id.equals(active);
+            var item = kr.reborn.core.util.Items.of(
+                    mats[Math.min(slot, mats.length - 1)],
+                    (isActive ? "&a▶ " : "&3") + port.id,
+                    "&7통치: " + rulerLabel,
+                    myPatron != null ? "&7" + myPatron + " 영향력: &f" + patronInfl + " &7/ 1000" : "&7후원 제국 없음",
+                    isActive ? "&a현재 정박 중" : "",
+                    "",
+                    isActive ? "&7Shift-클릭 — 출항" : "&a클릭 — 정박");
+            b.set(slot, item, e -> {
+                p.closeInventory();
+                if (e.isShiftClick() && isActive) {
+                    empire.clearActivePort(p);
+                    Msg.send(p, "&7항구에서 출항.");
+                } else {
+                    empire.setActivePort(p, portId);
+                    Msg.send(p, "&a항구 정박: " + portId);
+                }
+            });
+            slot++;
+        }
+        b.open(p);
     }
 }

@@ -87,11 +87,13 @@ public final class GodCommand implements CommandExecutor {
 
             case "religion": {
                 if (a.length < 2) {
-                    Msg.send(p, "&7/god religion create <id> <name> | list | info <id> | mine | join <id> | leave <id>");
+                    Msg.send(p, "&7/god religion create <id> <name> | list | gui | info <id> | mine | join <id> | leave <id>");
                     break;
                 }
                 String sub = a[1].toLowerCase();
-                if ("create".equals(sub) && a.length >= 4) {
+                if ("gui".equals(sub)) {
+                    openReligionGui(p);
+                } else if ("create".equals(sub) && a.length >= 4) {
                     plugin.religions().create(p, a[2], a[3]);
                 } else if ("list".equals(sub)) {
                     Msg.send(p, "&6=== 교단 목록 (" + plugin.religions().all().size() + ") ===");
@@ -204,5 +206,70 @@ public final class GodCommand implements CommandExecutor {
             }
         }
         return true;
+    }
+
+    /**
+     * 교단 목록 GUI — 신앙·신도 수 기준 정렬, 내 소속 교단 ★ 표시.
+     * 좌클릭 → 정보 보기, Shift-좌클릭 → 가입, Shift-우클릭 → 탈퇴, 우클릭 → 의식 집전(/god religion ritual).
+     */
+    private void openReligionGui(Player p) {
+        var all = new java.util.ArrayList<>(plugin.religions().all());
+        // 인기순(신앙 내림차) 정렬 — 상위 53개만 (6행 GUI 마지막 행 빼고 채움).
+        all.sort((x, y) -> Double.compare(y.faith, x.faith));
+        int rows = 6;
+        var b = plugin.gui().builder("&6교단 (" + all.size() + ")", rows);
+        int slot = 0;
+        for (var r : all) {
+            if (slot >= 45) break;
+            final String rid = r.id;
+            boolean iam = r.followers.contains(p.getUniqueId());
+            // 보호/금지/일반에 따라 아이콘 변형.
+            org.bukkit.Material mat = r.forbidden ? org.bukkit.Material.WITHER_SKELETON_SKULL
+                    : r.protective ? org.bukkit.Material.BEACON
+                    : org.bukkit.Material.BOOK;
+            String prefix = iam ? "&a✦ " : r.forbidden ? "&8" : r.protective ? "&b" : "&e";
+            var item = kr.reborn.core.util.Items.of(
+                    mat,
+                    prefix + r.name,
+                    "&7ID: &f" + r.id,
+                    "&7섬기는 신: &f" + r.godIdentifier,
+                    "&7신앙: &f" + (int) r.faith,
+                    "&7신도: &f" + r.totalFollowers() + " &8(인 " + r.followers.size() + " + NPC " + r.npcFollowerCount + ")",
+                    r.doctrine != null && !r.doctrine.isEmpty() ? "&7교리: &f" + r.doctrine : "",
+                    iam ? "&a당신은 신도입니다." : "",
+                    "",
+                    iam ? "&7Shift-우클릭 — 탈퇴" : "&7Shift-좌클릭 — 가입",
+                    "&a좌클릭 — 정보",
+                    iam ? "&6우클릭 — 의식 집전 (8h)" : "");
+            b.set(slot, item, e -> {
+                p.closeInventory();
+                if (e.isShiftClick() && e.isRightClick()) {
+                    p.performCommand("god religion leave " + rid);
+                } else if (e.isShiftClick()) {
+                    p.performCommand("god religion join " + rid);
+                } else if (e.isRightClick()) {
+                    if (iam) plugin.faith().performRitual(p, rid);
+                    else Msg.warn(p, "신도가 아니면 의식 집전 불가.");
+                } else {
+                    p.performCommand("god religion info " + rid);
+                }
+            });
+            slot++;
+        }
+        // 하단 — 내 신앙 요약 + 교단 창설 안내.
+        int mineCount = 0;
+        double myFaith = 0;
+        for (var r : plugin.religions().all()) {
+            if (r.followers.contains(p.getUniqueId())) { mineCount++; myFaith += r.faith; }
+        }
+        var mine = kr.reborn.core.util.Items.of(
+                org.bukkit.Material.GOLDEN_APPLE,
+                "&e내 신앙",
+                "&7소속 교단: &f" + mineCount,
+                "&7기여 신앙: &f" + (int) myFaith,
+                "",
+                "&7교단 창설: /god religion create <id> <name>");
+        b.set(49, mine, e -> p.closeInventory());
+        b.open(p);
     }
 }

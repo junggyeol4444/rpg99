@@ -1,0 +1,179 @@
+package kr.reborn.stat.growth.impl;
+
+import kr.reborn.core.RebornCore;
+import org.bukkit.Bukkit;
+
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/**
+ * 사이버시티 7대 구역 점령 엔진.
+ *
+ * 점령 메커니즘:
+ *   1. 플레이어가 활동 중인 구역에서 후원 코프 영향력 누적 (gainCorpFavor → addInfluence).
+ *   2. 영향력 ≥ 1000 & 현 점유자와 다른 코프 → 점령 전환.
+ *   3. 점령 직후 모든 코프 영향력 50% 감쇠 (방어전 쿨다운 효과).
+ *   4. 영향력 상한 5000 — 무한 누적 방지.
+ *
+ * 점령 효과 (CyberpunkGrowth에서 활용):
+ *   - 소유 코프의 동맹(tier≥4) 플레이어가 해당 구역에서 활동 시 보너스 +10%.
+ *   - 점령 사건은 전 서버 방송.
+ */
+public final class CityRegistry {
+
+    private static final String NS = "RebornStat.cyberpunk.city";
+    // 디폴트 값 — config의 takeover.* 가 없으면 사용. 0이면 정복 영구 차단.
+    private static final int DEFAULT_TAKEOVER_THRESHOLD = 1000;
+    private static final int DEFAULT_MAX_INFLUENCE = 5000;
+    private static final int DEFAULT_DECAY_PCT = 50;
+
+    /** 점령 임계 영향력 — config takeover.district-threshold. */
+    private int takeoverThreshold = DEFAULT_TAKEOVER_THRESHOLD;
+    private int maxInfluence = DEFAULT_MAX_INFLUENCE;
+    private int decayPct = DEFAULT_DECAY_PCT;
+
+    private final Map<String, CyberCity> districts = new LinkedHashMap<>();
+
+    public CityRegistry() {
+        for (String id : CyberCity.DISTRICTS) districts.put(id, new CyberCity(id));
+        load();
+        loadBoundsFromConfig();
+        loadTuningFromConfig();
+    }
+
+    private void loadTuningFromConfig() {
+        try {
+            var plugin = (org.bukkit.plugin.java.JavaPlugin)
+                    org.bukkit.Bukkit.getPluginManager().getPlugin("RebornStat");
+            if (plugin == null) return;
+            takeoverThreshold = plugin.getConfig().getInt("takeover.district-threshold", DEFAULT_TAKEOVER_THRESHOLD);
+            maxInfluence = plugin.getConfig().getInt("takeover.max-influence", DEFAULT_MAX_INFLUENCE);
+            decayPct = Math.max(0, Math.min(100, plugin.getConfig().getInt("takeover.takeover-decay-pct", DEFAULT_DECAY_PCT)));
+        } catch (Throwable ignored) {}
+    }
+
+    /**
+     * config.yml의 district-bounds 섹션에서 각 구역 좌표 로드.
+     * 형식:
+     *   district-bounds:
+     *     NIGHT_MARKET: { world: cyberpunk, x: 100, z: 100, radius: 80 }
+     *     ...
+     * 설정 없으면 hasBounds=false → 수동 /district enter만 작동.
+     */
+    private void loadBoundsFromConfig() {
+        try {
+            var plugin = (org.bukkit.plugin.java.JavaPlugin)
+                    org.bukkit.Bukkit.getPluginManager().getPlugin("RebornStat");
+            if (plugin == null) return;
+            var sec = plugin.getConfig().getConfigurationSection("district-bounds");
+            if (sec == null) return;
+            for (String key : sec.getKeys(false)) {
+                CyberCity c = districts.get(key);
+                if (c == null) continue;
+                var ds = sec.getConfigurationSection(key);
+                if (ds == null) continue;
+                c.world = ds.getString("world");
+                c.x = ds.getDouble("x");
+                c.z = ds.getDouble("z");
+                c.radius = ds.getDouble("radius", 50);
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    /** 주어진 위치에 해당하는 구역 id 반환. null이면 어떤 구역에도 안 속함. */
+    public String detectAt(org.bukkit.Location loc) {
+        if (loc == null || loc.getWorld() == null) return null;
+        String wn = loc.getWorld().getName();
+        double px = loc.getX(), pz = loc.getZ();
+        for (CyberCity c : districts.values()) {
+            if (c.contains(wn, px, pz)) return c.id;
+        }
+        return null;
+    }
+
+    private void load() {
+        try {
+            var all = RebornCore.get().kv().loadAll(NS, null);
+            for (var e : all.entrySet()) {
+                int dot = e.getKey().indexOf('.');
+                if (dot < 0) continue;
+                String dId = e.getKey().substring(0, dot);
+                String field = e.getKey().substring(dot + 1);
+                CyberCity c = districts.get(dId);
+                if (c == null) continue;
+                switch (field) {
+                    case "owner" -> c.currentOwner = e.getValue().isEmpty() ? null : e.getValue();
+                    case "since" -> {
+                        try { c.ownedSince = Long.parseLong(e.getValue()); }
+                        catch (Throwable ignored) {}
+                    }
+                    default -> {
+                        if (field.startsWith("inf.")) {
+                            String corpId = field.substring(4);
+                            try { c.influence.put(corpId, Integer.parseInt(e.getValue())); }
+                            catch (Throwable ignored) {}
+                        }
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    public CyberCity get(String id) { return districts.get(id); }
+    public Collection<CyberCity> all() { return districts.values(); }
+
+    public int influenceOf(String districtId, String corpId) {
+        CyberCity c = districts.get(districtId);
+        return c == null ? 0 : c.influence.getOrDefault(corpId, 0);
+    }
+
+    public String ownerOf(String districtId) {
+        CyberCity c = districts.get(districtId);
+        return c == null ? null : c.currentOwner;
+    }
+
+    public void addInfluence(String districtId, String corpId, int delta) {
+        CyberCity c = districts.get(districtId);
+        if (c == null) return;
+        // Folia 다중 리전 동시 접근 차단 — district 인스턴스 단위 lock.
+        synchronized (c) {
+            int cur = c.influence.getOrDefault(corpId, 0);
+            int next = Math.max(0, Math.min(maxInfluence, cur + delta));
+            c.influence.put(corpId, next);
+            RebornCore.get().kv().putInt(NS, null, districtId + ".inf." + corpId, next);
+            checkTakeover(c);
+        }
+    }
+
+    /** caller가 synchronized(c) 안에서 호출한다고 가정. */
+    private void checkTakeover(CyberCity c) {
+        if (c.influence.isEmpty()) return;
+        String topCorp = null;
+        int topInf = 0;
+        for (var e : c.influence.entrySet()) {
+            if (e.getValue() > topInf) { topInf = e.getValue(); topCorp = e.getKey(); }
+        }
+        if (topCorp == null || topInf < takeoverThreshold) return;
+        if (topCorp.equals(c.currentOwner)) return;
+        String prev = c.currentOwner;
+        c.currentOwner = topCorp;
+        c.ownedSince = System.currentTimeMillis();
+        RebornCore.get().kv().put(NS, null, c.id + ".owner", topCorp);
+        RebornCore.get().kv().putLong(NS, null, c.id + ".since", c.ownedSince);
+        // 점령 직후 decayPct% 감쇠 — 후속 방어전 쿨다운.
+        // 새 Map에 복사 후 일괄 교체 — iteration 중 put 회피.
+        java.util.Map<String, Integer> decayed = new java.util.LinkedHashMap<>();
+        int retainPct = 100 - decayPct;
+        for (var e : c.influence.entrySet()) {
+            int kept = e.getValue() * retainPct / 100;
+            decayed.put(e.getKey(), kept);
+            RebornCore.get().kv().putInt(NS, null, c.id + ".inf." + e.getKey(), kept);
+        }
+        c.influence.clear();
+        c.influence.putAll(decayed);
+        Bukkit.broadcastMessage("§b§l[" + c.id + " 점령] §f" + topCorp
+                + (prev == null ? " §7가 무주공산을 차지했다."
+                                : " §7가 §6" + prev + " §7로부터 구역을 빼앗았다."));
+    }
+}

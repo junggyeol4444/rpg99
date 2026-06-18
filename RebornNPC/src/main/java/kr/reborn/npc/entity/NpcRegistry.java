@@ -2,12 +2,22 @@ package kr.reborn.npc.entity;
 
 import kr.reborn.core.data.WorldKey;
 import kr.reborn.npc.RebornNPC;
+import kr.reborn.npc.ai.NpcBrain;
 import kr.reborn.npc.ai.SimpleAI;
+import kr.reborn.npc.ai.behavior.ChildbirthBehavior;
+import kr.reborn.npc.ai.behavior.CombatBehavior;
+import kr.reborn.npc.ai.behavior.FleeBehavior;
+import kr.reborn.npc.ai.behavior.IdleBehavior;
+import kr.reborn.npc.ai.behavior.PatrolBehavior;
+import kr.reborn.npc.ai.behavior.RevengeBehavior;
+import kr.reborn.npc.ai.behavior.ScheduleBehavior;
+import kr.reborn.npc.ai.behavior.SocialBehavior;
 import kr.reborn.npc.emotion.Emotion;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Mob;
 
 import java.io.File;
 import java.util.EnumMap;
@@ -19,9 +29,22 @@ public final class NpcRegistry {
     private final RebornNPC plugin;
     private final ConcurrentHashMap<String, RebornNpc> byId = new ConcurrentHashMap<>();
     private final EnumMap<Emotion.Kind, Double> decayRates = new EnumMap<>(Emotion.Kind.class);
+    private final kr.reborn.npc.soul.GoalGenerator goalGenerator;
+    private final kr.reborn.npc.soul.GoalProgressor goalProgressor;
+    private final kr.reborn.npc.social.SocialNetwork socialNetwork = new kr.reborn.npc.social.SocialNetwork();
+    private final kr.reborn.npc.social.GossipManager gossip;
+    private final kr.reborn.npc.faction.FactionManager factionManager;
+    private final kr.reborn.npc.world.WorldImpact worldImpact;
+    private final kr.reborn.npc.quest.NpcQuestOfferEngine questOffers;
 
     public NpcRegistry(RebornNPC plugin) {
         this.plugin = plugin;
+        this.goalGenerator = new kr.reborn.npc.soul.GoalGenerator(plugin);
+        this.goalProgressor = new kr.reborn.npc.soul.GoalProgressor(plugin);
+        this.gossip = new kr.reborn.npc.social.GossipManager(plugin);
+        this.factionManager = new kr.reborn.npc.faction.FactionManager(plugin);
+        this.worldImpact = new kr.reborn.npc.world.WorldImpact(plugin);
+        this.questOffers = new kr.reborn.npc.quest.NpcQuestOfferEngine(plugin);
         var s = plugin.getConfig().getConfigurationSection("emotion-decay-rate");
         for (Emotion.Kind k : Emotion.Kind.values()) {
             decayRates.put(k, s == null ? 0.5 : s.getDouble(k.name().toLowerCase(), 0.5));
@@ -35,6 +58,8 @@ public final class NpcRegistry {
         RebornNpc n = new RebornNpc(id, name, world, loc);
         n.faction = faction;
         n.job = job;
+        // 직업 기반 성격 부여 (자녀 NPC는 ChildbirthBehavior에서 부모 평균 성격으로 덮어씀)
+        n.soul = new kr.reborn.npc.soul.Soul(kr.reborn.npc.soul.Personality.fromJob(job));
         byId.put(id, n);
         materialize(n);
         return n;
@@ -55,14 +80,121 @@ public final class NpcRegistry {
         var v = w.spawn(n.location, n.defaultEntity());
         v.setCustomName(n.displayName);
         v.setCustomNameVisible(true);
-        v.setAI(false);
+        v.setAI(true);  // 진짜 AI 켬 — Pathfinder 활용
+        v.setRemoveWhenFarAway(false);  // 청크 언로드되도 유지
+        v.setInvulnerable(false);
+        // HP·공격력 stat 적용
+        try {
+            double maxHp = Math.max(20, n.stats.getOrDefault("ENDURANCE", 20.0) * 2);
+            var attr = v.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH);
+            if (attr != null) { attr.setBaseValue(maxHp); v.setHealth(maxHp); }
+            var dmg = v.getAttribute(org.bukkit.attribute.Attribute.GENERIC_ATTACK_DAMAGE);
+            if (dmg != null) dmg.setBaseValue(Math.max(1, n.stats.getOrDefault("STRENGTH", 5.0)));
+        } catch (Throwable ignored) {}
         n.bukkitEntityId = v.getUniqueId();
+        attachBrain(n);
     }
+
+    /** RebornNpc에 NpcBrain을 등록하고 표준 Behavior 9종 부착. */
+    public void attachBrain(RebornNpc n) {
+        if (n.brain != null) return;
+        NpcBrain brain = new NpcBrain(n);
+        brain.register(new IdleBehavior());
+        brain.register(new ScheduleBehavior());
+        brain.register(new PatrolBehavior());
+        brain.register(new CombatBehavior(plugin));
+        brain.register(new FleeBehavior());
+        brain.register(new SocialBehavior(plugin));
+        brain.register(new RevengeBehavior(plugin));
+        brain.register(new ChildbirthBehavior(plugin));
+        brain.register(new kr.reborn.npc.ai.behavior.PursueGoalBehavior(plugin));
+        n.brain = brain;
+    }
+
+    public kr.reborn.npc.soul.GoalGenerator goalGenerator() { return goalGenerator; }
+    public kr.reborn.npc.soul.GoalProgressor goalProgressor() { return goalProgressor; }
+    public kr.reborn.npc.quest.NpcQuestOfferEngine questOffers() { return questOffers; }
+    public kr.reborn.npc.social.SocialNetwork socialNetwork() { return socialNetwork; }
+    public kr.reborn.npc.social.GossipManager gossip() { return gossip; }
+    public kr.reborn.npc.faction.FactionManager factions() { return factionManager; }
+    public kr.reborn.npc.world.WorldImpact worldImpact() { return worldImpact; }
+    private int gossipTickCounter = 0;
+    private int factionTickCounter = 0;
 
     public void tickAll() {
         for (RebornNpc n : byId.values()) {
+            if (n.dead) continue;
             n.emotion.decay(decayRates);
-            SimpleAI.step(n);
+            // 영혼 — 욕구 자연 감쇠, 가상 나이 누적
+            if (n.soul != null) {
+                n.soul.needs.decay();
+                n.soul.ageYears += 1.0 / (60.0 * 60.0 * 24.0 * 365.0)
+                        * (plugin.getConfig().getLong("ai-tick-interval", 10L) * 50.0 / 1000.0);
+            }
+            // 목표 — 자연 진행 + 새 목표 검토
+            goalProgressor.tick(n);
+            goalGenerator.considerNewGoal(n);
+            // 자율 의뢰 — 욕구 기반 퀘스트 생성 검토
+            questOffers.considerOffer(n);
+            // 완료된 목표는 archive로 이동
+            n.goals.removeIf(g -> {
+                if (g.isFulfilled() || g.abandoned) {
+                    n.goalsArchive.add(g);
+                    return true;
+                }
+                return false;
+            });
+            // entity가 살아있나 확인
+            if (n.bukkitEntityId != null) {
+                var ent = Bukkit.getEntity(n.bukkitEntityId);
+                if (ent == null || ent.isDead()) {
+                    if (ent != null && ent.isDead()) {
+                        n.dead = true;
+                        n.deathAt = System.currentTimeMillis();
+                        triggerRevengeForFriends(n);
+                        factionManager.onNpcDeath(n);
+                    }
+                    continue;
+                }
+                if (ent instanceof Mob mob) {
+                    n.location = mob.getLocation();
+                }
+            }
+            // 소문 평판 감쇠 (서서히 잊혀짐)
+            if (n.soul != null) n.soul.reputation.decay();
+
+            if (n.brain != null) n.brain.tick();
+            else SimpleAI.step(n);
+        }
+        // 소문 전파 — 5사이클마다 1번 (성능)
+        if (++gossipTickCounter >= 5) {
+            gossipTickCounter = 0;
+            gossip.propagate();
+        }
+        // 세력 동역학 — 20사이클마다 1번 (무거움: 형성·외교·전쟁)
+        if (++factionTickCounter >= 20) {
+            factionTickCounter = 0;
+            factionManager.tick();
+        }
+        // 세력 영속화 — 100사이클마다 (크래시 대비 안전망)
+        if (++savePersistCounter >= 100) {
+            savePersistCounter = 0;
+            try { factionManager.saveAll(); } catch (Throwable ignored) {}
+        }
+    }
+    private int savePersistCounter = 0;
+
+    /** NPC 사망 시 친한 NPC들에게 복수 트리거 등록. */
+    private void triggerRevengeForFriends(RebornNpc dead) {
+        if (dead.killerId == null) return;
+        for (RebornNpc other : byId.values()) {
+            if (other.dead || other == dead) continue;
+            if (other.relations.npc(dead.id) >= 50) {
+                other.aiData.put("revenge:target", dead.killerId);
+                other.aiData.put("revenge:until", System.currentTimeMillis() + 3_600_000L); // 1시간
+                other.emotion.add(Emotion.Kind.ANGER, 50);
+                other.emotion.add(Emotion.Kind.SADNESS, 30);
+            }
         }
     }
 
@@ -114,18 +246,62 @@ public final class NpcRegistry {
             if (bw == null) continue;
             Location loc = new Location(bw,
                     y.getDouble(id + ".x"), y.getDouble(id + ".y"), y.getDouble(id + ".z"));
-            // 사전 정의 데이터가 있으면 좌표만 갱신 후 스폰
+            RebornNpc target;
             RebornNpc existing = byId.get(id);
             if (existing != null) {
                 existing.location = loc;
                 materialize(existing);
+                target = existing;
             } else {
-                RebornNpc n = spawn(id, name, world, loc,
+                target = spawn(id, name, world, loc,
                         y.getString(id + ".faction", ""), y.getString(id + ".job", "VILLAGER"));
-                n.hermit = y.getBoolean(id + ".hermit", false);
+                target.hermit = y.getBoolean(id + ".hermit", false);
                 var stSec = y.getConfigurationSection(id + ".stats");
                 if (stSec != null) {
-                    for (String key : stSec.getKeys(false)) n.stats.put(key, stSec.getDouble(key));
+                    for (String key : stSec.getKeys(false)) target.stats.put(key, stSec.getDouble(key));
+                }
+            }
+            // home, workplace 선택적 좌표
+            if (y.contains(id + ".home")) {
+                target.home = new Location(bw,
+                        y.getDouble(id + ".home.x"), y.getDouble(id + ".home.y"), y.getDouble(id + ".home.z"));
+            }
+            if (y.contains(id + ".workplace")) {
+                target.workplace = new Location(bw,
+                        y.getDouble(id + ".workplace.x"), y.getDouble(id + ".workplace.y"), y.getDouble(id + ".workplace.z"));
+            }
+            // 신·여신 등은 일과·전투 비활성화 (브레인 비우기)
+            String job = target.job;
+            if ("GODDESS".equals(job) || "GOD".equals(job)
+                    || "DEMON_LORD".equals(job) || "ARCHANGEL".equals(job)
+                    || "SPIRIT_KING".equals(job) || "PRIMORDIAL".equals(job)) {
+                target.brain = null;
+                var ent = target.bukkitEntityId == null ? null : Bukkit.getEntity(target.bukkitEntityId);
+                if (ent instanceof Mob mob) mob.setAI(false);
+            }
+            // 결혼·자녀·사망 복원
+            target.spouseNpcId = y.getString(id + ".spouse", "");
+            var children = y.getStringList(id + ".children");
+            if (!children.isEmpty()) target.children.addAll(children);
+            target.dead = y.getBoolean(id + ".dead", false);
+            // 영혼 복원
+            if (target.soul != null) {
+                var fam = y.getStringList(id + ".soul.family");
+                if (!fam.isEmpty()) { target.soul.family.clear(); target.soul.family.addAll(fam); }
+                var fri = y.getStringList(id + ".soul.friends");
+                if (!fri.isEmpty()) { target.soul.friends.clear(); target.soul.friends.addAll(fri); }
+                var riv = y.getStringList(id + ".soul.rivals");
+                if (!riv.isEmpty()) { target.soul.rivals.clear(); target.soul.rivals.addAll(riv); }
+                var nem = y.getStringList(id + ".soul.nemeses");
+                if (!nem.isEmpty()) { target.soul.nemeses.clear(); target.soul.nemeses.addAll(nem); }
+                if (y.contains(id + ".soul.age")) target.soul.ageYears = y.getDouble(id + ".soul.age", 20);
+                var traitSec = y.getConfigurationSection(id + ".soul.trait");
+                if (traitSec != null) {
+                    for (var t : kr.reborn.npc.soul.Personality.Trait.values()) {
+                        if (traitSec.contains(t.name())) {
+                            target.soul.personality.set(t, traitSec.getInt(t.name()));
+                        }
+                    }
                 }
             }
         }
@@ -147,7 +323,32 @@ public final class NpcRegistry {
             y.set(b + "faction", n.faction);
             y.set(b + "job", n.job);
             y.set(b + "hermit", n.hermit);
+            if (n.home != null) {
+                y.set(b + "home.x", n.home.getX());
+                y.set(b + "home.y", n.home.getY());
+                y.set(b + "home.z", n.home.getZ());
+            }
+            if (n.workplace != null) {
+                y.set(b + "workplace.x", n.workplace.getX());
+                y.set(b + "workplace.y", n.workplace.getY());
+                y.set(b + "workplace.z", n.workplace.getZ());
+            }
+            if (!n.spouseNpcId.isEmpty()) y.set(b + "spouse", n.spouseNpcId);
+            if (!n.children.isEmpty()) y.set(b + "children", n.children);
+            y.set(b + "dead", n.dead);
             for (var e : n.stats.entrySet()) y.set(b + "stats." + e.getKey(), e.getValue());
+            // 영혼 — 가족/친구/원수 명단만 저장 (Memory는 휘발성, Reputation은 크기 큼 → 별도 KV)
+            if (n.soul != null) {
+                if (!n.soul.family.isEmpty()) y.set(b + "soul.family", n.soul.family);
+                if (!n.soul.friends.isEmpty()) y.set(b + "soul.friends", n.soul.friends);
+                if (!n.soul.rivals.isEmpty()) y.set(b + "soul.rivals", n.soul.rivals);
+                if (!n.soul.nemeses.isEmpty()) y.set(b + "soul.nemeses", n.soul.nemeses);
+                y.set(b + "soul.age", n.soul.ageYears);
+                // 성격은 직업 기반 재생성 가능하지만 진화한 성격 보존 필요
+                for (var t : kr.reborn.npc.soul.Personality.Trait.values()) {
+                    y.set(b + "soul.trait." + t.name(), n.soul.personality.get(t));
+                }
+            }
         }
         try { y.save(f); } catch (Exception ignored) {}
     }

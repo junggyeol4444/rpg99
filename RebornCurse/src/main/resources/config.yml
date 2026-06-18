@@ -212,6 +212,130 @@ curses:
       stats_tick: { ENDURANCE: -10 }
     cure_methods: [FOOD, MED_BAY]
     world: APOCALYPSE
+  abyssal_whisper:
+    name: "&0심연의 속삭임"
+    description: "심연계 NPC와 접촉 후 정신 침식 — 매 분 정신력 -2, 5% 광폭"
+    duration: -1
+    tick_interval_seconds: 60
+    effects:
+      stats_tick: { MENTAL: -2 }
+      berserk_chance: 0.05
+      npc_favor_tick: -0.5
+    cure_methods: [SOLIM_ABBOT_NPC, ARCHANGEL_REPENT_QUEST]
+  underworld_chill:
+    name: "&7명계의 한기"
+    description: "명계에서 돌아온 자의 영혼 떨림 — 매 30초 HP 1 감소"
+    duration: 1800
+    tick_interval_seconds: 30
+    effects:
+      hp_tick: -1
+    cure_methods: [HARMONY_FOUNTAIN, AUTO_EXPIRE]
+  void_taint:
+    name: "&8공허의 오염"
+    description: "공허계 접촉 — 모든 스탯 -1/분, 7% 광폭"
+    duration: 7200
+    tick_interval_seconds: 60
+    effects:
+      stats_tick_common: -1
+      berserk_chance: 0.07
+    cure_methods: [PURIFY_ORB, GREATER_SAGE_DISPEL]
+  cybernetic_dependency:
+    name: "&b기계 의존증"
+    description: "사이버 임플란트 4개 이상. 임플란트 3개 이하로 줄이면 해제"
+    duration: -1
+    tick_interval_seconds: 120
+    effects:
+      stats_tick: { MENTAL: -1, CHARM: -1 }
+    cure_methods: [REMOVE_CYBERNETICS_3]
+    world: CYBERPUNK
+  dream_lock:
+    name: "&d꿈의 봉인"
+    description: "꿈에 갇힘 — 모든 신성·도술 스킬 봉인"
+    duration: 3600
+    effects:
+      lock_skill_school: HOLY
+      stats_tick: { MENTAL: -1 }
+    cure_methods: [GREATER_SAGE_DISPEL, AUTO_EXPIRE]
+    world: DREAM
+  time_paradox:
+    name: "&e시간의 역설"
+    description: "시간 수호자 견습생이 무리한 사용. 영구 -30% 수련 효율"
+    duration: -1
+    effects:
+      train_efficiency: -0.3
+    cure_methods: [TAEHEO_REPENT_QUEST]
+    world: TIME_REALM
+  magitech_overload:
+    name: "&9마도공학 과부하"
+    description: "마도공학 에너지 폭주 — 매 분 HP 2 감소"
+    duration: 1800
+    tick_interval_seconds: 60
+    effects:
+      hp_tick: -2
+      stats_tick: { MAGITECH_ENERGY: -5 }
+    cure_methods: [MED_BAY, AUTO_EXPIRE]
+    world: MAGITECH
+  spirit_betrayal:
+    name: "&5정령의 배신"
+    description: "정령 계약 위반 — 영구 정령력 50% 감소, 정령 NPC 모두 적대"
+    duration: -1
+    effects:
+      stats_percent: { SPIRIT_POWER: -0.5 }
+      npc_favor_tick: -1.0
+    cure_methods: []
+    world: SPIRIT
+  monk_oath_break:
+    name: "&7서원 파기"
+    description: "성기사·승려가 살생 금기를 어김 — 신성술 봉인 + 매 시간 신성 -10"
+    duration: 86400
+    tick_interval_seconds: 3600
+    effects:
+      lock_skill_school: HOLY
+      stats_tick: { DIVINITY: -10 }
+    cure_methods: [ARCHANGEL_REPENT_QUEST, AUTO_EXPIRE]
+  reborn_amnesia:
+    name: "&6환생 망각"
+    description: "환생 직후 6시간 — 전 스탯 표시값에 -10% (실제 적용)"
+    duration: 21600
+    effects:
+      stats_percent: { STRENGTH: -0.1, INTELLIGENCE: -0.1, MENTAL: -0.1 }
+    cure_methods: [AUTO_EXPIRE]
+  master_blessing:
+    name: "&6스승의 인정"
+    description: "스승 NPC가 직접 부여 — 학습 효율 +50%, 카리스마 +20"
+    duration: -1
+    effects:
+      stats: { CHARISMA: 20 }
+      train_efficiency: 0.5
+  fortune_smile:
+    name: "&e행운의 미소"
+    description: "운명 보너스 — 행운 영구 +50, 미세 신성 누적"
+    duration: -1
+    effects:
+      stats: { LUCK: 50 }
+      special: FORTUNE_DOUBLE_DROPS
+  warrior_resolve:
+    name: "&c전사의 결의"
+    description: "결사항전 후 부여 — 근력 +30, 체력 +30, 광폭화 면역"
+    duration: -1
+    effects:
+      stats: { STRENGTH: 30, ENDURANCE: 30 }
+      special: BERSERK_IMMUNE
+  scholar_insight:
+    name: "&9학자의 통찰"
+    description: "도서관 1000권 읽기 보상 — 지능 +50, 학습 효율 +30%"
+    duration: -1
+    effects:
+      stats: { INTELLIGENCE: 50 }
+      train_efficiency: 0.3
+  charisma_aura:
+    name: "&d카리스마 아우라"
+    description: "수많은 NPC 호의도 100 달성 — 매력 +40, 주변 NPC 호의도 매 분 +0.5"
+    duration: -1
+    tick_interval_seconds: 60
+    effects:
+      stats: { CHARM: 40 }
+      npc_favor_tick: 0.5
 
 berserk:
   duration-seconds: 10

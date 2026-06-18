@@ -6,10 +6,14 @@ folia-supported: true
 authors: [ReincarnationWorld]
 description: 세계별 몬스터·보스·스폰·드랍
 depend: [RebornCore]
+softdepend: [RebornEconomy, RebornStat, RebornTitle]
 load: POSTWORLD
 commands:
   rmob:
     description: 몬스터 관리
     permission: rebornmob.admin
+  dungeon:
+    description: 13 던전 — 진입/진척/보상
+    usage: /dungeon list|enter|exit|info|progress|current
 permissions:
   rebornmob.admin: { default: op }

@@ -6,14 +6,18 @@ folia-supported: true
 authors: [ReincarnationWorld]
 description: 환생·룰렛·초기스탯·헬스장·NPC자녀
 depend: [RebornCore]
-softdepend: [RebornNPC, RebornClan]
+softdepend: [RebornNPC, RebornClan, RebornHiddenClass]
 load: POSTWORLD
 commands:
   reroll:
-    description: 환생 룰렛 (여신 NPC 대체용 디버그)
-    permission: rebornspawn.use
+    description: 환생 룰렛 (여신 NPC 대체용 디버그 — admin/test 전용)
+    permission: rebornspawn.admin
   gym:
     description: 신들의 헬스장 운동 마무리
     permission: rebornspawn.use
+  race:
+    description: 종족 — list/info/set/all
+    usage: /race [list <WORLD> | info <RACE> | set <player> <RACE> | all]
 permissions:
   rebornspawn.use: { default: true }
+  rebornspawn.admin: { default: op }

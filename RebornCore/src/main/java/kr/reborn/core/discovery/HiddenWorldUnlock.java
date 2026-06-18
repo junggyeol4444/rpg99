@@ -1,0 +1,149 @@
+package kr.reborn.core.discovery;
+
+import kr.reborn.core.RebornCore;
+import kr.reborn.core.data.PlayerData;
+import kr.reborn.core.data.StatType;
+import kr.reborn.core.data.WorldKey;
+import kr.reborn.core.util.Msg;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * 히든 월드 해금 시스템.
+ *
+ * 13 정규 세계 외 6 히든 월드:
+ *   - ABYSS (심연계)        — DEMON_KI 5000 + 사망 100회
+ *   - UNDERWORLD (명계)     — 사망 1회 (자동 해금)
+ *   - TIME_REALM (시간계)   — 환생 50회
+ *   - DREAM (꿈계)          — MENTAL 500 + INTELLIGENCE 500
+ *   - VOID (공허계)         — 모든 13세계 방문 + 신성 1000
+ *   - GOD (신계)            — DIVINITY 1000
+ *
+ * 해금 시:
+ *   - 영구 칭호 부여 (RebornTitle)
+ *   - 해당 월드 거주 권한 (worldKey 변경 허용)
+ *   - broadcast + 보상 스탯
+ */
+public final class HiddenWorldUnlock {
+
+    private final RebornCore plugin;
+    private final Map<UUID, Set<WorldKey>> unlocked = new ConcurrentHashMap<>();
+
+    public HiddenWorldUnlock(RebornCore plugin) {
+        this.plugin = plugin;
+        // 매 분 모든 온라인 체크
+        plugin.scheduler().runTimer(this::tickCheck, 1200L, 1200L);
+    }
+
+    public boolean isUnlocked(UUID p, WorldKey w) {
+        Set<WorldKey> set = unlocked.get(p);
+        return set != null && set.contains(w);
+    }
+
+    private static final String NS = "RebornCore.hiddenWorld";
+
+    public Set<WorldKey> unlockedOf(UUID p) {
+        Set<WorldKey> cached = unlocked.get(p);
+        if (cached != null) return cached;
+        String stored = plugin.kv().get(NS, p, "worlds");
+        if (stored == null || stored.isEmpty()) return java.util.Collections.emptySet();
+        Set<WorldKey> loaded = new HashSet<>();
+        for (String name : stored.split(",")) {
+            try { loaded.add(WorldKey.valueOf(name)); } catch (Exception ignored) {}
+        }
+        unlocked.put(p, loaded);
+        return loaded;
+    }
+
+    private void persist(UUID p, Set<WorldKey> set) {
+        try {
+            StringBuilder sb = new StringBuilder();
+            for (WorldKey w : set) {
+                if (sb.length() > 0) sb.append(",");
+                sb.append(w.name());
+            }
+            plugin.kv().put(NS, p, "worlds", sb.toString());
+        } catch (Throwable ignored) {}
+    }
+
+    private void tickCheck() {
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            PlayerData d = plugin.api().getPlayerData(p.getUniqueId());
+            if (d == null) continue;
+            checkAll(p, d);
+        }
+    }
+
+    public void checkAll(Player p, PlayerData d) {
+        // ABYSS - 마기 5000 + 사망 100
+        checkUnlock(p, d, WorldKey.ABYSS, () ->
+                d.getStat(StatType.DEMON_KI) >= 5000 && d.deaths() >= 100);
+        // UNDERWORLD - 사망 1회
+        checkUnlock(p, d, WorldKey.UNDERWORLD, () -> d.deaths() >= 1);
+        // TIME_REALM - 환생 50회
+        checkUnlock(p, d, WorldKey.TIME_REALM, () -> d.reincarnations() >= 50);
+        // DREAM - 정신 500 + 지능 500
+        checkUnlock(p, d, WorldKey.DREAM, () ->
+                d.getStat(StatType.MENTAL) >= 500 && d.getStat(StatType.INTELLIGENCE) >= 500);
+        // VOID - 13세계 방문 + 신성 1000
+        checkUnlock(p, d, WorldKey.VOID, () ->
+                d.visited().size() >= 13 && d.getStat(StatType.DIVINITY) >= 1000);
+        // GOD - 신성 1000
+        checkUnlock(p, d, WorldKey.GOD, () -> d.getStat(StatType.DIVINITY) >= 1000);
+    }
+
+    private void checkUnlock(Player p, PlayerData d, WorldKey w,
+                             java.util.function.BooleanSupplier cond) {
+        if (isUnlocked(p.getUniqueId(), w)) return;
+        if (!cond.getAsBoolean()) return;
+        unlock(p, w);
+    }
+
+    private void unlock(Player p, WorldKey w) {
+        Set<WorldKey> set = unlocked.computeIfAbsent(p.getUniqueId(), k -> new HashSet<>());
+        set.add(w);
+        persist(p.getUniqueId(), set);
+        String label = labelOf(w);
+        Msg.send(p, "&5&l[히든 월드 발견!] §f" + label);
+        Bukkit.broadcastMessage("§5§l[히든 월드 발견] §f" + p.getName()
+                + " §7가 §6" + label + " §7을 발견했다!");
+        // 보상 스탯
+        try {
+            plugin.api().addStat(p.getUniqueId(), StatType.MENTAL, 50, "hidden-world:" + w);
+            plugin.api().addStat(p.getUniqueId(), StatType.LUCK, 30, "hidden-world:" + w);
+        } catch (Throwable ignored) {}
+        // 업적 부여 — 6 히든 월드 모두 발견 시 (기존 라인 127의 titles().grant("hidden_world_visitor")는
+        // TitleManager에 해당 ID 미정의 → silent fail. AchievementManager에 정의된 동일 ID를 6/6 달성 시 부여).
+        try {
+            var tp = Bukkit.getPluginManager().getPlugin("RebornTitle");
+            if (tp != null) {
+                Object set2 = unlocked.get(p.getUniqueId());
+                if (set2 instanceof Set<?> ss && ss.size() == 6) {
+                    Object am = tp.getClass().getMethod("achievements").invoke(tp);
+                    am.getClass().getMethod("grant", Player.class, String.class)
+                            .invoke(am, p, "hidden_world_visitor");
+                }
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    private String labelOf(WorldKey w) {
+        return switch (w) {
+            case ABYSS -> "심연계 (深淵界)";
+            case UNDERWORLD -> "명계 (冥界)";
+            case TIME_REALM -> "시간계 (時間界)";
+            case DREAM -> "꿈계 (夢界)";
+            case VOID -> "공허계 (虛界)";
+            case GOD -> "신계 (神界)";
+            default -> w.name();
+        };
+    }
+
+    public Map<UUID, Set<WorldKey>> allUnlocked() { return unlocked; }
+}

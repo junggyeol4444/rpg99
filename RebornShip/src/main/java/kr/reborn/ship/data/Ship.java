@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class Ship {
-    public final UUID id = UUID.randomUUID();
+    public final UUID id;
     public final UUID owner;
     public String name;
     public int grade;
@@ -25,6 +25,12 @@ public final class Ship {
     public int rotation = 0;
 
     public Ship(UUID owner, String name, int grade, double hp, Location helm, int blockCount) {
+        this(UUID.randomUUID(), owner, name, grade, hp, helm, blockCount);
+    }
+
+    /** KV 복원용 — 저장된 id 그대로 유지 (재시작 시 id 변경·중복 방지). */
+    public Ship(UUID id, UUID owner, String name, int grade, double hp, Location helm, int blockCount) {
+        this.id = id;
         this.owner = owner; this.name = name; this.grade = grade;
         this.hp = hp; this.maxHp = hp; this.helm = helm; this.blockCount = blockCount;
     }

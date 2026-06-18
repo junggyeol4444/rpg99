@@ -4,27 +4,220 @@ import kr.reborn.core.RebornCore;
 import kr.reborn.core.data.PlayerData;
 import kr.reborn.core.data.StatType;
 import kr.reborn.core.data.WorldKey;
+import kr.reborn.core.util.Msg;
 import kr.reborn.core.util.Rand;
 import kr.reborn.stat.growth.GrowthStrategy;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * 판타지 성장: 마법사 학파·룬·종족 보너스.
+ *
+ * 6 마법학파: ELEMENTAL, ARCANE, HOLY, NECROMANCY, ILLUSION, RUNE
+ *   학파별 마스터리 0~1000. 마스터리 100당 해당 마법 위력 +5%.
+ *   학파 마스터리 500 달성 시 "마법사" 칭호, 1000 = "대마법사"
+ *
+ * 룬 시스템: 룬 수집 (RUNE 마스터리에 가산), 룬 조합 시 마나 +50
+ * 종족: HUMAN(균형), ELF(MANA ×1.5), DWARF(ENDURANCE +20%), HALFLING(LUCK +10)
+ *
+ * 외부 호출:
+ *   onSpellCast(p, school): 학파 마스터리 +1
+ *   onRuneCollect(p, runeId): 룬 수집
+ *   setRace(p, race): 종족 설정 (영구)
+ */
 public final class FantasyGrowth implements GrowthStrategy {
+
+    public enum School { ELEMENTAL, ARCANE, HOLY, NECROMANCY, ILLUSION, RUNE }
+    public enum Race { HUMAN, ELF, DWARF, HALFLING }
+
+    private static final String NS = "RebornStat.fantasy";
+
+    private final Map<UUID, Map<School, Double>> mastery = new ConcurrentHashMap<>();
+    private final Map<UUID, Set<String>> runes = new ConcurrentHashMap<>();
+    private final Map<UUID, Race> race = new ConcurrentHashMap<>();
+    private final Map<UUID, Set<School>> masterTitles = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            var all = RebornCore.get().kv().loadAll(NS, p);
+            // 종족
+            String raceStr = all.get("race");
+            if (raceStr != null) try { race.put(p, Race.valueOf(raceStr)); } catch (Throwable ignored) {}
+            // 학파 마스터리
+            Map<School, Double> m = new java.util.EnumMap<>(School.class);
+            Set<School> titles = new HashSet<>();
+            for (School s : School.values()) {
+                String v = all.get("mast." + s.name());
+                if (v != null) try { m.put(s, Double.parseDouble(v)); } catch (Throwable ignored) {}
+                if ("1".equals(all.get("title." + s.name()))) titles.add(s);
+            }
+            if (!m.isEmpty()) mastery.put(p, m);
+            if (!titles.isEmpty()) masterTitles.put(p, titles);
+            // 룬
+            String runesCsv = all.get("runes");
+            Set<String> rs = new HashSet<>();
+            if (runesCsv != null && !runesCsv.isEmpty()) {
+                for (String r : runesCsv.split(",")) if (!r.isEmpty()) rs.add(r);
+            }
+            if (!rs.isEmpty()) runes.put(p, rs);
+        }
+    }
+
     @Override public WorldKey world() { return WorldKey.FANTASY; }
 
     @Override
     public void onMonsterKill(Player p, PlayerData d, double mobLevel) {
         StatType stat = StatType.COMMON_8[Rand.range(0, 7)];
-        RebornCore.get().api().addStat(p.getUniqueId(), stat, 0.5 + Math.min(2.0, mobLevel / 20.0), "mob");
+        RebornCore.get().api().addStat(p.getUniqueId(), stat,
+                0.5 + Math.min(2.0, mobLevel / 20.0), "mob");
+        // 종족 보너스
+        applyRaceBonus(p, 0.2);
     }
 
     @Override
     public void onQuestComplete(Player p, PlayerData d, double weight) {
-        RebornCore.get().api().addStat(p.getUniqueId(), StatType.INTELLIGENCE, 1.5 * weight, "quest");
-        RebornCore.get().api().addStat(p.getUniqueId(), StatType.MANA, 5 * weight, "quest");
+        RebornCore.get().api().addStat(p.getUniqueId(),
+                StatType.INTELLIGENCE, 1.5 * weight, "quest");
+        RebornCore.get().api().addStat(p.getUniqueId(),
+                StatType.MANA, 5 * weight, "quest");
     }
 
     @Override
     public void onMeditate(Player p, PlayerData d, double quality) {
-        RebornCore.get().api().addStat(p.getUniqueId(), StatType.MANA, 2 * quality, "meditate");
+        RebornCore.get().api().addStat(p.getUniqueId(),
+                StatType.MANA, 2 * quality, "meditate");
+        // 모든 학파 마스터리 +0.3
+        for (School s : School.values()) addMastery(p, s, 0.3 * quality);
+    }
+
+    /** 외부 호출 — 마법 시전. */
+    public void onSpellCast(Player p, School school) {
+        addMastery(p, school, 1.0);
+    }
+
+    /** 외부 호출 — 룬 수집. */
+    public void onRuneCollect(Player p, String runeId) {
+        ensureLoaded(p.getUniqueId());
+        Set<String> set = runes.computeIfAbsent(p.getUniqueId(), k -> new HashSet<>());
+        if (set.add(runeId)) {
+            RebornCore.get().kv().put(NS, p.getUniqueId(), "runes", String.join(",", set));
+            addMastery(p, School.RUNE, 5);
+            RebornCore.get().api().addStat(p.getUniqueId(), StatType.MANA, 50, "rune-collect");
+            Msg.send(p, "&5룬 수집: " + runeId + " §7(총 " + set.size() + ")");
+            if (set.size() % 10 == 0) {
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.INTELLIGENCE, 5, "rune-10");
+                Msg.send(p, "&5룬 10종 수집 — 지능 +5");
+            }
+        }
+    }
+
+    /** 외부 호출 — 종족 설정 (영구). */
+    public void setRace(Player p, Race r) {
+        ensureLoaded(p.getUniqueId());
+        Race prev = race.put(p.getUniqueId(), r);
+        if (prev == r) return;
+        RebornCore.get().kv().put(NS, p.getUniqueId(), "race", r.name());
+        if (prev != null) revertRaceBonus(p, prev);
+        applyInitialRaceBonus(p, r);
+        Msg.send(p, "&6종족: " + r);
+    }
+
+    private void addMastery(Player p, School school, double v) {
+        ensureLoaded(p.getUniqueId());
+        Map<School, Double> map = mastery.computeIfAbsent(p.getUniqueId(),
+                k -> new java.util.EnumMap<>(School.class));
+        double next = Math.min(1000, map.getOrDefault(school, 0.0) + v);
+        map.put(school, next);
+        RebornCore.get().kv().putDouble(NS, p.getUniqueId(), "mast." + school.name(), next);
+        Set<School> titles = masterTitles.computeIfAbsent(p.getUniqueId(), k -> new HashSet<>());
+        if (next >= 1000 && !titles.contains(school)) {
+            titles.add(school);
+            RebornCore.get().kv().putInt(NS, p.getUniqueId(), "title." + school.name(), 1);
+            Bukkit.broadcastMessage("§5§l[대마법사] §f" + p.getName()
+                    + " §7가 " + school + " 학파의 대마법사가 되었다!");
+            RebornCore.get().api().addStat(p.getUniqueId(),
+                    StatType.INTELLIGENCE, 30, "school-master");
+            RebornCore.get().api().addStat(p.getUniqueId(),
+                    StatType.MANA, 200, "school-master");
+        } else if (next >= 500 && next - v < 500) {
+            Msg.send(p, "&5" + school + " 마스터리 500 — 마법사 칭호");
+            RebornCore.get().api().addStat(p.getUniqueId(),
+                    StatType.INTELLIGENCE, 10, "school-mastery-500");
+        }
+    }
+
+    private void applyInitialRaceBonus(Player p, Race r) {
+        switch (r) {
+            case ELF -> {
+                double cur = RebornCore.get().api().getStat(p.getUniqueId(), StatType.MANA);
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.MANA, cur * 0.5, "race:ELF");
+            }
+            case DWARF -> {
+                double cur = RebornCore.get().api().getStat(p.getUniqueId(), StatType.ENDURANCE);
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.ENDURANCE, cur * 0.2, "race:DWARF");
+            }
+            case HALFLING -> {
+                RebornCore.get().api().addStat(p.getUniqueId(), StatType.LUCK, 10, "race:HALFLING");
+            }
+            case HUMAN -> { /* 균형 — 영구 보너스 없음 */ }
+        }
+    }
+
+    private void applyRaceBonus(Player p, double v) {
+        ensureLoaded(p.getUniqueId());
+        Race r = race.get(p.getUniqueId());
+        if (r == null) return;
+        switch (r) {
+            case ELF -> RebornCore.get().api().addStat(p.getUniqueId(), StatType.MANA, v * 2, "elf-mob");
+            case DWARF -> RebornCore.get().api().addStat(p.getUniqueId(), StatType.STRENGTH, v, "dwarf-mob");
+            case HALFLING -> RebornCore.get().api().addStat(p.getUniqueId(), StatType.AGILITY, v, "halfling-mob");
+            case HUMAN -> RebornCore.get().api().addStat(p.getUniqueId(),
+                    StatType.values()[Rand.range(0, 7)], v, "human-mob");
+        }
+    }
+
+    private void revertRaceBonus(Player p, Race r) {
+        // 종족 초기 보너스 회수 — 누적 폭주 방지 (이전엔 stub)
+        switch (r) {
+            case ELF -> {
+                // ELF는 cur*0.5를 더했지만 cur가 그때그때 다르므로 정확 회수 불가.
+                // 대안: MANA 100 회수 (평균 보너스 근사). HUMAN으로 환원 시에만 호출됨.
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.MANA, -100, "race-revoke:ELF");
+            }
+            case DWARF -> {
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.ENDURANCE, -20, "race-revoke:DWARF");
+            }
+            case HALFLING -> {
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.LUCK, -10, "race-revoke:HALFLING");
+            }
+            case HUMAN -> { /* 균형 — 회수 없음 */ }
+        }
+    }
+
+    public double masteryOf(UUID p, School s) {
+        ensureLoaded(p);
+        Map<School, Double> map = mastery.get(p);
+        if (map == null) return 0;
+        return map.getOrDefault(s, 0.0);
+    }
+
+    public Race raceOf(UUID p) { ensureLoaded(p); return race.get(p); }
+    public int runesCollected(UUID p) {
+        ensureLoaded(p);
+        Set<String> set = runes.get(p);
+        return set == null ? 0 : set.size();
     }
 }

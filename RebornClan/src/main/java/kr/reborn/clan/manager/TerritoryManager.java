@@ -15,7 +15,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -27,8 +26,10 @@ public final class TerritoryManager implements Listener {
     private final Map<String, Territory> claims = new ConcurrentHashMap<>();
     /** territoryKey → 전쟁 정보 */
     private final Map<String, War> activeWars = new ConcurrentHashMap<>();
-    /** PvP 활성 (영토 전쟁 중) 플레이어 UUID */
-    private final Set<UUID> pvpActive = new HashSet<>();
+    /** PvP 활성 (영토 전쟁 중) 플레이어 UUID — tick + Listener에서 동시 접근 */
+    private final Set<UUID> pvpActive = ConcurrentHashMap.newKeySet();
+    /** 전쟁 최대 지속 시간(ticks): 시작 후 2시간 무승부 시 방어자 자동 승리 */
+    private static final long WAR_MAX_DURATION_TICKS = 144000L;
 
     public TerritoryManager(RebornClan p) {
         this.plugin = p;
@@ -47,12 +48,31 @@ public final class TerritoryManager implements Listener {
         Chunk c = p.getLocation().getChunk();
         Territory existing = at(c);
         if (existing != null) { Msg.error(p, "이미 점령된 영토."); return false; }
+        // 개인 한도 — 가문 없으면 5, 가문 있으면 가문주 50/장로 20/일반 10
+        int maxOwn = maxOwnedFor(p);
+        int owned = 0;
+        for (Territory te : claims.values()) {
+            if (te.owner.equals(p.getUniqueId())) owned++;
+        }
+        if (owned >= maxOwn) {
+            Msg.error(p, "개인 영토 한도 도달 (" + owned + "/" + maxOwn + "). /territory unclaim 으로 정리하세요.");
+            return false;
+        }
         Territory t = new Territory(c.getWorld().getName(), c.getX(), c.getZ(), p.getUniqueId());
         var clan = plugin.clans().ofPlayer(p.getUniqueId());
         if (clan != null) t.clanId = clan.id;
         claims.put(t.key(), t);
-        Msg.send(p, "&a영토 점령: " + c.getX() + "," + c.getZ());
+        Msg.send(p, "&a영토 점령: " + c.getX() + "," + c.getZ()
+                + " &7(" + (owned + 1) + "/" + maxOwn + ")");
         return true;
+    }
+
+    private int maxOwnedFor(Player p) {
+        var clan = plugin.clans().ofPlayer(p.getUniqueId());
+        if (clan == null) return 5;
+        if (p.getUniqueId().equals(clan.leader)) return 50;
+        if (clan.elders.contains(p.getUniqueId())) return 20;
+        return 10;
     }
 
     public boolean unclaim(Player p) {
@@ -69,6 +89,11 @@ public final class TerritoryManager implements Listener {
 
     /** 영토 전쟁 선포 — 1시간 준비 후 PvP 활성, 깃발 점거 5분 시 이전. */
     public void declareWar(Player attacker, Territory target) {
+        if (target == null) { Msg.error(attacker, "대상 영토 없음."); return; }
+        if (attacker.getUniqueId().equals(target.owner)) {
+            Msg.error(attacker, "자기 영토에는 선전포고 불가.");
+            return;
+        }
         if (activeWars.containsKey(target.key())) {
             Msg.error(attacker, "이미 전쟁 중인 영토.");
             return;
@@ -80,7 +105,13 @@ public final class TerritoryManager implements Listener {
                 + "이(가) " + target.world + " (" + target.chunkX + "," + target.chunkZ + ") 점령 시도");
         // 준비 1시간 후 PvP 활성
         RebornCore.get().scheduler().runTaskLater(() -> {
+            // 그 사이 양도·해제 등으로 영토 사라지면 전쟁 취소
+            if (claims.get(w.territoryKey) == null) {
+                activeWars.remove(w.territoryKey);
+                return;
+            }
             w.pvpActive = true;
+            w.pvpActivatedAt = System.currentTimeMillis();
             pvpActive.add(w.attacker);
             pvpActive.add(w.defender);
             Bukkit.broadcastMessage("§4§l[전쟁 시작] §f영토 전투 개시. 깃발 5분 점거 시 승리.");
@@ -88,28 +119,45 @@ public final class TerritoryManager implements Listener {
     }
 
     private void tickWars() {
-        for (War w : activeWars.values()) {
+        long now = System.currentTimeMillis();
+        for (War w : new java.util.ArrayList<>(activeWars.values())) {
             if (!w.pvpActive) continue;
+            Territory t = claims.get(w.territoryKey);
+            // 영토가 사라졌으면 전쟁도 종료 (해제 등)
+            if (t == null) {
+                activeWars.remove(w.territoryKey);
+                pvpActive.remove(w.attacker); pvpActive.remove(w.defender);
+                continue;
+            }
+            // 2시간 무승부 시 방어자 자동 승리 — 메모리 누수 방지
+            if (now - w.pvpActivatedAt > 2 * 3600_000L) {
+                finishWar(w, false);
+                continue;
+            }
             Player atk = Bukkit.getPlayer(w.attacker);
             Player def = Bukkit.getPlayer(w.defender);
-            // 공격자가 깃발(영토 청크 중심) 5분 점거 = 승리
-            Territory t = claims.get(w.territoryKey);
-            if (t == null) continue;
             int cx = (t.chunkX << 4) + 8, cz = (t.chunkZ << 4) + 8;
-            if (atk != null) {
+            if (atk != null && atk.getWorld().getName().equalsIgnoreCase(t.world)) {
                 int dx = atk.getLocation().getBlockX() - cx;
                 int dz = atk.getLocation().getBlockZ() - cz;
                 if (dx * dx + dz * dz < 64) {
                     w.attackerHoldTicks += 20;
-                    if (w.attackerHoldTicks >= 6000) { // 5분
+                    if (w.attackerHoldTicks >= 6000) {  // 5분
                         finishWar(w, true);
+                        continue;
                     }
                 } else {
                     w.attackerHoldTicks = Math.max(0, w.attackerHoldTicks - 10);
                 }
+            } else {
+                // 공격자 오프라인·다른 월드 — hold 감소 (방어 유리)
+                w.attackerHoldTicks = Math.max(0, w.attackerHoldTicks - 5);
             }
-            if (def != null && def.getLocation().distance(atk == null ? def.getLocation() : atk.getLocation()) < 8) {
-                // 방어자가 공격자 근처 — hold 카운트 감소
+            // 방어자가 공격자 근처일 때만 hold 빠르게 감소 (이전엔 atk null이면
+            // distance(def, def)=0으로 항상 참 → AFK 공격자도 hold 자동 감소).
+            if (atk != null && def != null
+                    && def.getWorld() == atk.getWorld()
+                    && def.getLocation().distance(atk.getLocation()) < 8) {
                 w.attackerHoldTicks = Math.max(0, w.attackerHoldTicks - 40);
             }
         }
@@ -188,9 +236,31 @@ public final class TerritoryManager implements Listener {
         final UUID attacker;
         final long startAt;
         boolean pvpActive = false;
+        /** pvp 활성 전환 시각 — 최대 지속 타임아웃 측정용. */
+        long pvpActivatedAt = 0;
         long attackerHoldTicks = 0;
         War(String key, UUID def, UUID atk, long start) {
             territoryKey = key; defender = def; attacker = atk; startAt = start;
         }
+    }
+
+    /** ClanWarManager가 패전 영토 이양 시 사용. */
+    public java.util.Collection<kr.reborn.clan.data.Territory> ofClan(String clanId) {
+        if (clanId == null || clanId.isEmpty()) return java.util.Collections.emptyList();
+        java.util.List<kr.reborn.clan.data.Territory> list = new java.util.ArrayList<>();
+        for (kr.reborn.clan.data.Territory t : claims.values()) {
+            if (clanId.equals(t.clanId)) list.add(t);
+        }
+        return list;
+    }
+
+    /** 영토를 다른 가문으로 이양. */
+    public boolean transferTo(kr.reborn.clan.data.Territory t, String newClanId) {
+        if (t == null || newClanId == null) return false;
+        t.clanId = newClanId;
+        // owner도 새 가문의 가주로
+        kr.reborn.clan.data.Clan newClan = plugin.clans().get(newClanId);
+        if (newClan != null) t.owner = newClan.leader;
+        return true;
     }
 }

@@ -3,15 +3,17 @@ package kr.reborn.skill.def;
 import kr.reborn.core.data.StatType;
 import kr.reborn.core.data.WorldKey;
 import kr.reborn.skill.RebornSkill;
+import kr.reborn.skill.school.MartialSchool;
 import org.bukkit.configuration.ConfigurationSection;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class SkillRegistry {
 
     private final RebornSkill plugin;
-    private final Map<String, SkillDef> defs = new HashMap<>();
+    /** 런타임 동적 등록 (스킬 창조 시스템) 가능 — 동시성 보장. */
+    private final Map<String, SkillDef> defs = new ConcurrentHashMap<>();
 
     public SkillRegistry(RebornSkill p) { this.plugin = p; }
 
@@ -33,21 +35,43 @@ public final class SkillRegistry {
                 catch (Exception e) { ct = StatType.MANA; }
                 ca = cost.getDouble("amount", 0);
             }
+            String name = s.getString("name", id);
+            String category = s.getString("category", "MISC");
+            String damage = s.getString("damage", null);
+            String element = s.getString("element", "PHYSICAL");
+            // 반경: aoe-radius(기존) 또는 radius 둘 다 인정
+            double radius = s.getDouble("aoe-radius", s.getDouble("radius", 0));
+            double range = s.getDouble("range", 0);
+            double projSpeed = s.getDouble("projectile-speed", 0);
+            int duration = s.getInt("duration-ticks", 0);
+            String summon = s.getString("summon-mob", null);
+            // type: 명시값이 있으면 사용, 없으면 기존 필드에서 자동 추론
+            kr.reborn.skill.effect.SkillType type = kr.reborn.skill.effect.SkillType.infer(
+                    s.getString("type", null), damage, radius, category, id, name);
+            // 학파 제한: config의 school 필드 (ORTHODOX/UNORTHODOX/DEMON_CULT/IMPERIAL/HERMIT)
+            MartialSchool requiredSchool = null;
+            String schoolStr = s.getString("school", null);
+            if (schoolStr != null) {
+                try { requiredSchool = MartialSchool.valueOf(schoolStr.toUpperCase()); }
+                catch (Throwable ignored) {}
+            }
             defs.put(id, new SkillDef(
-                    id,
-                    s.getString("name", id),
-                    w,
-                    s.getString("category", "MISC"),
+                    id, name, w, category,
                     ct, ca,
                     s.getDouble("cooldown-seconds", 1),
                     s.getDouble("cast-seconds", 0),
-                    s.getString("damage", null),
-                    s.getString("element", "PHYSICAL"),
-                    s.getString("learn", "AUTO")
+                    damage, element,
+                    s.getString("learn", "AUTO"),
+                    type, radius, range, projSpeed, duration, summon,
+                    requiredSchool
             ));
         }
     }
 
     public SkillDef get(String id) { return defs.get(id); }
     public java.util.Collection<SkillDef> all() { return defs.values(); }
+
+    /** 런타임 동적 등록 (스킬 창조 시스템). */
+    public void register(SkillDef def) { defs.put(def.id, def); }
+    public boolean exists(String id) { return defs.containsKey(id); }
 }

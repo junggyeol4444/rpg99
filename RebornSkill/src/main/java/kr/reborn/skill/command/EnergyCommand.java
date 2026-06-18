@@ -20,6 +20,7 @@ public final class EnergyCommand implements CommandExecutor {
                              @NotNull String l, @NotNull String[] a) {
         if (!(s instanceof Player p)) return true;
         PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+        if (d == null) { Msg.error(p, "플레이어 데이터 로드 실패."); return true; }
         Msg.send(p, "&6에너지 (현재 세계: " + d.worldKey() + ")");
         for (StatType t : new StatType[]{
                 StatType.MANA, StatType.AURA, StatType.DEMON_KI, StatType.HEAVEN_KI,

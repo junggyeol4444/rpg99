@@ -1,7 +1,7 @@
 growth:
   fantasy:
     monster-kill-mult: 1.0
-    quest-mult: 1.5
+    quest-mult: 2.0                    # 1.5 → 2.0 (퀘스트 보상 강화)
   martial:
     monster-kill: false  # 몬스터 사냥 스탯 0
     blood-magic-allowed: false
@@ -25,6 +25,35 @@ growth:
     chamber-ratio: 10
   apocalypse:
     radiation-bonus: 1.2
+
+# ============================================================
+# 코프·제국 점령전 균형 — 영향력 누적/점령 임계점.
+# 낮을수록 점령전 회전 빠름 (방어전 더 잦아짐).
+# ============================================================
+takeover:
+  district-threshold: 1000              # 사이버 구역 점령 임계 영향력
+  port-threshold: 1000                  # 항구 점령 임계
+  max-influence: 5000                   # 영향력 상한
+  takeover-decay-pct: 50                # 점령 직후 50% 감쇠 — 방어전 쿨다운
+
+# ============================================================
+# 메가코프·해양제국 평판 보상 — /corp join, mission 보상 base.
+# rival 감소는 항상 절반.
+# ============================================================
+faction-reward:
+  join-amount: 25
+  rival-loss-pct: 50
+  mission:
+    minor: 25
+    major: 75
+    legend: 200
+    betray: -150
+  empire-mission:
+    escort: 20
+    naval: 60
+    explore: 35
+    pirate: 100
+    betray: -150
 
 # ============================================================
 # 정령계 12 소정령 숲 + 13번째 혼돈 숲 + 4대 정령왕 영역
@@ -177,3 +206,95 @@ minigame:
   enlightenment:
     clone-stat-mult: 1.2
     questions: 3
+
+# ============================================================
+# 기연(奇緣) — 기획서 5장 각 세계의 기연. 탐험/사냥/채굴/운기 중 극히 낮은 확률로 발견.
+# trigger: MINE(채굴)/KILL(사냥)/EXPLORE(탐험-청크진입)/MEDITATE(운기). param 비우면 무관.
+# ============================================================
+fortunes:
+  # ── 판타지계 ──
+  worldtree_tears:    { name: "&a세계수의 눈물", world: FANTASY, trigger: EXPLORE, chance: 0.002, broadcast: true, message: "세계수가 백 년에 한 번 흘리는 수액. 마나가 영구히 차오른다.", stats: { MANA: 500 } }
+  ancient_dragon_scale: { name: "&c고룡의 역린", world: FANTASY, trigger: KILL, param: fantasy_red_dragon, chance: 0.3, broadcast: true, skill: breath_basic, message: "고룡의 역린에 용의 힘이 각인된다.", stats: { AURA: 300 } }
+  mage_tower_depths:  { name: "&5대마탑 최심층 기억 결정", world: FANTASY, trigger: EXPLORE, chance: 0.0015, message: "고대 마법사의 기억이 흘러든다.", stats: { MANA: 300, INTELLIGENCE: 50 } }
+  meteor_core:        { name: "&e운석 핵심", world: FANTASY, trigger: MINE, param: ANCIENT_DEBRIS, chance: 0.02, broadcast: true, message: "떨어진 운석의 핵심. 모든 힘이 폭증한다.", stats: { ENDURANCE: 100, STRENGTH: 100, AGILITY: 100, INTELLIGENCE: 100, MENTAL: 100, LUCK: 100, CHARISMA: 100, CHARM: 100 } }
+  spirit_king_blessing: { name: "&b정령왕의 축복", world: FANTASY, trigger: MEDITATE, chance: 0.01, skill: element_bullet, message: "세계수 뿌리에서 정령왕의 축복이 깃든다.", stats: { SPIRIT_POWER: 100 } }
+  # ── 마계 ──
+  demon_throne_shard: { name: "&8마왕의 왕좌 파편", world: DEMON, trigger: EXPLORE, chance: 0.0015, broadcast: true, message: "고대 마왕의 왕좌 파편. 마기가 들끓는다.", stats: { DEMON_KI: 500 } }
+  soul_well:          { name: "&4영혼의 우물", world: DEMON, trigger: EXPLORE, chance: 0.002, message: "영혼이 모이는 우물을 견뎌냈다.", stats: { MENTAL: 300 } }
+  fallen_angel_feather: { name: "&f타락 천사의 날개깃", world: DEMON, trigger: KILL, chance: 0.01, message: "천기와 마기가 한 몸에 깃든다.", stats: { HEAVEN_KI: 100, DEMON_KI: 100 } }
+  # ── 천계 ──
+  god_feather:        { name: "&e천신의 깃털", world: HEAVEN, trigger: EXPLORE, chance: 0.0015, broadcast: true, message: "9층에서 떨어진 천신의 깃털. 축복 그 자체.", stats: { HEAVEN_KI: 500 } }
+  light_crystal:      { name: "&f빛의 결정", world: HEAVEN, trigger: MINE, param: AMETHYST_CLUSTER, chance: 0.03, message: "정화된 영혼의 결정.", stats: { MENTAL: 100, CHARISMA: 100 } }
+  # ── 정령계 ──
+  elemental_king_core: { name: "&3정령왕의 핵 파편", world: SPIRIT, trigger: KILL, chance: 0.01, broadcast: true, message: "소멸한 정령왕의 핵. 원소 친화가 극대화된다.", stats: { SPIRIT_POWER: 500 } }
+  harmony_spring:     { name: "&a조화의 샘", world: SPIRIT, trigger: EXPLORE, chance: 0.003, message: "모든 원소가 조화를 이루는 샘.", stats: { SPIRIT_POWER: 200 } }
+  # 기획서 5-4: 13번째 숨겨진 숲 — 카오스 정령과의 접촉. 발견 자체가 기연.
+  chaos_forest_discovery: { name: "&5&l숨겨진 13번째 숲 (혼돈)", world: SPIRIT, trigger: EXPLORE, chance: 0.0001, broadcast: true, special: "chaos_element_unlock", message: "혼돈의 정령 카오스와 접촉. 모든 원소 친화가 동시에 일어난다 — 정신력이 부족하면 정령체가 폭주하여 소멸.", stats: { SPIRIT_POWER: 1000, MENTAL: 100 } }
+  # ── 무협계 ──
+  hermit_cave:        { name: "&6무명 고수의 동굴", world: MARTIAL, trigger: EXPLORE, chance: 0.002, broadcast: true, skill: dokgo_gugeom, message: "폭포 뒤 동굴에서 은둔고수의 비급과 내공을 얻었다.", stats: { INNER_KI: 500 } }
+  lightning_body:     { name: "&e뇌격 체질", world: MARTIAL, trigger: EXPLORE, chance: 0.001, message: "낙뢰를 맞고 살아남아 뇌전 속성이 각성했다.", stats: { ENDURANCE: 100, STRENGTH: 100, AGILITY: 100, INTELLIGENCE: 100, MENTAL: 100, LUCK: 100, CHARISMA: 100, CHARM: 100 } }
+  dragon_pearl:       { name: "&b용의 여의주", world: MARTIAL, trigger: KILL, chance: 0.05, broadcast: true, message: "이무기의 여의주. 내공이 폭증한다.", stats: { INNER_KI: 1000 } }
+  heavenly_demon_blood: { name: "&4천마의 잔혈", world: MARTIAL, trigger: EXPLORE, chance: 0.0015, message: "고대 천마의 응축된 피. 마기 내공이 깃든다.", stats: { DEMON_KI: 800 } }
+  # ── 선계 ──
+  ownerless_caveheaven: { name: "&5주인 없는 동천", world: IMMORTAL, trigger: EXPLORE, chance: 0.001, broadcast: true, message: "봉인된 동천의 주인이 되었다.", stats: { IMMORTAL_KI: 400 } }
+  ancient_immortal_memory: { name: "&3고대 선인의 기억 결정", world: IMMORTAL, trigger: EXPLORE, chance: 0.002, skill: yeongi_basic, message: "경천지 심층, 고대 선인의 기억이 흘러든다.", stats: { IMMORTAL_KI: 300 } }
+  tribulation_lightning: { name: "&e천겁뇌해 뇌전", world: IMMORTAL, trigger: MEDITATE, chance: 0.005, message: "천겁의 뇌전을 흡수하고 살아남았다.", stats: { ENDURANCE: 200, STRENGTH: 200, AGILITY: 200, INTELLIGENCE: 200, MENTAL: 200, LUCK: 200, CHARISMA: 200, CHARM: 200 } }
+  # ── 요계 ──
+  moon_lake_training: { name: "&b월영담 보름달 수련", world: YOKAI, trigger: MEDITATE, chance: 0.02, message: "보름달 아래 월영담에서 요기를 흡수했다.", stats: { YOKAI_KI: 300 } }
+  gumiho_pearl:       { name: "&d구미호의 여의주", world: YOKAI, trigger: KILL, chance: 0.02, broadcast: true, skill: fox_fire, message: "초대 구미호의 여의주. 변신과 매혹이 극대화된다.", stats: { YOKAI_KI: 400, CHARM: 100 } }
+  goblin_club:        { name: "&6도깨비 방망이", world: YOKAI, trigger: MINE, chance: 0.01, message: "도깨비 광산의 전설의 방망이.", stats: { LUCK: 100 } }
+  # ── 지구 ──
+  gate_relic:         { name: "&9게이트 내부 유물", world: EARTH, trigger: KILL, chance: 0.01, message: "S급 게이트의 다른 세계 유물.", stats: { STRENGTH: 50, INTELLIGENCE: 50 } }
+  awakening_stone:    { name: "&e각성석", world: EARTH, trigger: KILL, chance: 0.02, message: "잠재 능력이 각성한다.", stats: { ENDURANCE: 100, STRENGTH: 100, AGILITY: 100, INTELLIGENCE: 100, MENTAL: 100, LUCK: 100, CHARISMA: 100, CHARM: 100 } }
+  # ── 그 외 세계 ──
+  ancient_dragon_heart: { name: "&c고대 용의 심장", world: DRAGON, trigger: KILL, chance: 0.05, broadcast: true, message: "고룡의 드래곤 하트. 용력이 폭증한다.", stats: { DRAGON_POWER: 500 } }
+  deep_palace_treasure: { name: "&3심해 궁전의 보물", world: OCEAN, trigger: EXPLORE, chance: 0.002, broadcast: true, message: "해왕의 보물이 잠든 심해 궁전.", stats: { OCEAN_POWER: 300 } }
+  lost_magitech_core: { name: "&b잃어버린 마도 코어", world: MAGITECH, trigger: MINE, chance: 0.02, message: "폐연구소의 고대 마도 코어.", stats: { MAGITECH_ENERGY: 300 } }
+  mutation_serum:     { name: "&2변이 혈청", world: APOCALYPSE, trigger: KILL, chance: 0.02, message: "변종의 정수가 담긴 혈청.", stats: { ENDURANCE: 50, STRENGTH: 50 } }
+  legendary_chip:     { name: "&d전설의 데이터 칩", world: CYBERPUNK, trigger: EXPLORE, chance: 0.003, message: "전설의 넷러너가 남긴 칩.", stats: { CYBER_ADAPTATION: 200 } }
+  # ── 숨겨진 6세계 (히든 엔드게임) — 기획서 4장 ──
+  # ABYSS 심연 — 공허 저항·정신
+  abyss_void_pearl:   { name: "&8심연의 공허 진주", world: ABYSS, trigger: EXPLORE, chance: 0.0012, broadcast: true, message: "심연 바닥에서 건진 공허의 진주. 무(無)에 대한 저항이 새겨진다.", stats: { ABYSS_RESISTANCE: 400, MENTAL: 100 } }
+  abyss_madness_gaze: { name: "&5심연을 들여다본 자", world: ABYSS, trigger: MEDITATE, chance: 0.004, message: "심연이 너를 마주 본다. 광기를 견딘 정신이 단단해진다.", stats: { MENTAL: 250, ABYSS_RESISTANCE: 150 } }
+  # UNDERWORLD 명계 — 명계력
+  underworld_obol:    { name: "&2삼도천 노잣돈", world: UNDERWORLD, trigger: EXPLORE, chance: 0.0015, broadcast: true, message: "삼도천을 건너는 망자의 노잣돈. 명계의 힘이 깃든다.", stats: { UNDERWORLD_KI: 400 } }
+  reaper_scythe_shard: { name: "&8사신의 낫 파편", world: UNDERWORLD, trigger: KILL, chance: 0.015, message: "부서진 사신의 낫 조각. 죽음의 무게가 실린다.", stats: { UNDERWORLD_KI: 200, STRENGTH: 80 } }
+  # TIME_REALM 시간의 틈 — 전 스탯 (시간 숙련)
+  time_sand_hourglass: { name: "&e역류하는 모래시계", world: TIME_REALM, trigger: EXPLORE, chance: 0.001, broadcast: true, message: "시간이 역류하는 모래시계. 잃었던 모든 가능성이 되돌아온다.", stats: { INTELLIGENCE: 150, MENTAL: 150, LUCK: 100 } }
+  chronos_fragment:   { name: "&6&l크로노스의 파편", world: TIME_REALM, trigger: MEDITATE, chance: 0.0008, broadcast: true, message: "시간의 신 크로노스의 파편. 찰나에 영겁을 수련한다.", stats: { ENDURANCE: 150, STRENGTH: 150, AGILITY: 150, INTELLIGENCE: 150, MENTAL: 150, LUCK: 150, CHARISMA: 150, CHARM: 150 } }
+  # DREAM 꿈의 세계 — 정신
+  dream_lucid_pearl:  { name: "&d자각몽의 진주", world: DREAM, trigger: MEDITATE, chance: 0.005, message: "꿈을 지배한 자에게 주어지는 진주. 정신이 무한히 확장된다.", stats: { MENTAL: 300 } }
+  nightmare_conquered: { name: "&5악몽을 정복한 자", world: DREAM, trigger: EXPLORE, chance: 0.002, broadcast: true, message: "가장 깊은 악몽을 정복했다. 정신과 매혹이 함께 깨어난다.", stats: { MENTAL: 200, CHARM: 100 } }
+  # VOID 공허 — 공허 저항 + 전 스탯 (무에서 유)
+  void_null_crystal:  { name: "&0&l공허의 무(無) 결정", world: VOID, trigger: EXPLORE, chance: 0.0006, broadcast: true, message: "존재를 지우는 공허에서 홀로 빛나는 결정. 무에서 모든 것이 태어난다.", stats: { ABYSS_RESISTANCE: 300, ENDURANCE: 120, STRENGTH: 120, AGILITY: 120, INTELLIGENCE: 120, MENTAL: 120, LUCK: 120, CHARISMA: 120, CHARM: 120 } }
+  # GOD 신계 — 신격
+  divine_spark:       { name: "&f신격의 불씨", world: GOD, trigger: EXPLORE, chance: 0.001, broadcast: true, message: "신의 영역에서 얻은 신격의 불씨. 인간을 넘어선 격이 깃든다.", stats: { DIVINITY: 400 } }
+  creator_fragment:   { name: "&e&l창세의 파편", world: GOD, trigger: MEDITATE, chance: 0.0005, broadcast: true, special: "genesis_touch", message: "창세신이 세계를 빚은 힘의 파편. 신격과 모든 능력이 동시에 폭증한다.", stats: { DIVINITY: 1000, ENDURANCE: 200, STRENGTH: 200, AGILITY: 200, INTELLIGENCE: 200, MENTAL: 200, LUCK: 200, CHARISMA: 200, CHARM: 200 } }
+
+# ============================================================
+# 사이버시티 7대 구역 물리 좌표 (자동 진입 감지)
+# world 이름은 실제 서버 cyberpunk 월드 이름으로 어드민이 교체.
+# 좌표는 origin 기준 정팔각형 배치 디폴트 — radius 80블록.
+# 모든 구역 비활성화하려면 district-bounds: {} 로 비우면 됨.
+# ============================================================
+district-bounds:
+  NIGHT_MARKET:     { world: cyberpunk, x: 200,  z: 0,    radius: 80 }
+  CORPORATE_PLAZA:  { world: cyberpunk, x: 141,  z: 141,  radius: 80 }
+  TECH_SLUMS:       { world: cyberpunk, x: 0,    z: 200,  radius: 80 }
+  DATA_CORE:        { world: cyberpunk, x: -141, z: 141,  radius: 60 }
+  BIOTECH_LABS:     { world: cyberpunk, x: -200, z: 0,    radius: 80 }
+  NEON_DOCKS:       { world: cyberpunk, x: -141, z: -141, radius: 100 }
+  SKYBRIDGE:        { world: cyberpunk, x: 0,    z: -200, radius: 80 }
+
+# ============================================================
+# 해양 7대 항구 물리 좌표 (자동 정박 감지) — 동일 규칙.
+# 항구는 반경 100블록 디폴트 — 바다 위 입항 여유.
+# ============================================================
+port-bounds:
+  ATLANTIS_HARBOR:    { world: ocean, x: 0,    z: 0,    radius: 120 }
+  CORAL_TRADE_PORT:   { world: ocean, x: 300,  z: 200,  radius: 100 }
+  ABYSS_TEMPLE_DOCK:  { world: ocean, x: -300, z: 200,  radius: 100 }
+  PEARL_LAGOON:       { world: ocean, x: 200,  z: -200, radius: 100 }
+  FREEPORT_HAVEN:     { world: ocean, x: -200, z: -200, radius: 100 }
+  STORM_FORTRESS:     { world: ocean, x: 400,  z: 0,    radius: 100 }
+  GHOST_GRAVEYARD:    { world: ocean, x: -400, z: 0,    radius: 100 }

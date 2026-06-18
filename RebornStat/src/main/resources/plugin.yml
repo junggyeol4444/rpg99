@@ -6,6 +6,7 @@ folia-supported: true
 authors: [ReincarnationWorld]
 description: 스탯·경지·성장·미니게임
 depend: [RebornCore]
+softdepend: [RebornCurse, RebornNPC, RebornSkill, RebornEconomy, RebornHiddenClass, RebornQuest, RebornMob]
 load: POSTWORLD
 commands:
   stats:
@@ -16,6 +17,41 @@ commands:
     description: 운기조식 (무협)
   answer:
     description: 깨달음 미니게임 답변
+  fortune:
+    description: 기연 목록·획득 확인
+  transform:
+    description: 요계 변신 (요기 100 소모, 30초)
+  moonritual:
+    description: 요계 보름달 의식 (요기 대량 누적)
+  pray:
+    description: 천계 신전 기도
+    usage: /pray [npcId]
+  petition:
+    description: 정령계 원소왕 청원
+    usage: /petition <FIRE|WATER|EARTH|WIND|LIGHT|DARK>
+  stabilize:
+    description: 마계 마기 안정화 (마기 -30%, 정신 +5)
+  arraymeditate:
+    description: 무협 진법·선계 도반 합동 양생 (30블록 내 같은 세계 동료)
+    aliases: [array, dao]
+  element:
+    description: 정령계 주 속성 선택 (4대 + 12소원소; 빛/어둠은 시험 필요)
+    usage: /element [FIRE|WATER|EARTH|WIND|LIGHT|DARK|LIGHTNING|ICE|POISON|METAL|CRYSTAL|LAVA|MIST|SAND|WOOD|SOUND]
+  corp:
+    description: 7대 메가코프 평판 (사이버펑크)
+    usage: /corp [join <CORP> | mission <CORP> <minor|major|legend|betray>]
+  empire:
+    description: 7대 해양 제국 평판 (해양)
+    usage: /empire [join <EMPIRE> | mission <EMPIRE> <escort|naval|explore|pirate|betray>]
+  district:
+    description: 사이버시티 7대 구역 점령전 (사이버펑크)
+    usage: /district [enter <ID> | exit]
+  port:
+    description: 해양 7대 항구 점령전 (해양)
+    usage: /port [enter <ID> | exit]
 permissions:
   rebornstat.use:
     default: true
+  rebornstat.admin:
+    default: op
+    description: 기연 grant 등 관리 명령 권한

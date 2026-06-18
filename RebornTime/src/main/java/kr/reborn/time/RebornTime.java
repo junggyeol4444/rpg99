@@ -15,6 +15,7 @@ public final class RebornTime extends JavaPlugin {
     private RealtimeSync sync;
     private WorldTravelManager travel;
     private TimeChamber chamber;
+    private kr.reborn.time.calendar.Calendar calendar;
 
     public static RebornTime get() { return instance; }
 
@@ -25,10 +26,14 @@ public final class RebornTime extends JavaPlugin {
         this.sync = new RealtimeSync(this);
         this.travel = new WorldTravelManager(this);
         this.chamber = new TimeChamber(this);
+        this.calendar = new kr.reborn.time.calendar.Calendar(this);
 
         getCommand("worldtravel").setExecutor(new WorldTravelCommand(this));
         getCommand("time").setExecutor(new TimeCommand(this));
         getCommand("chamber").setExecutor(new ChamberCommand(this));
+        if (getCommand("dragonpermit") != null) {
+            getCommand("dragonpermit").setExecutor(new kr.reborn.time.command.DragonPermitCommand(this));
+        }
 
         long interval = getConfig().getLong("sync-interval-seconds", 60) * 20L;
         RebornCore.get().scheduler().runTimer(sync::syncAll, interval, interval);
@@ -39,4 +44,5 @@ public final class RebornTime extends JavaPlugin {
     public RealtimeSync sync() { return sync; }
     public WorldTravelManager travel() { return travel; }
     public TimeChamber chamber() { return chamber; }
+    public kr.reborn.time.calendar.Calendar calendar() { return calendar; }
 }

@@ -6,7 +6,7 @@ folia-supported: true
 authors: [ReincarnationWorld]
 description: 13세계 화폐·환전·상점·경매·거래
 depend: [RebornCore]
-softdepend: [RebornNPC, RebornCraft, RebornWorldAI]
+softdepend: [RebornNPC, RebornCraft, RebornWorldAI, RebornHiddenClass]
 load: POSTWORLD
 commands:
   money:
@@ -29,6 +29,12 @@ commands:
   mailbox:
     description: 우편함 GUI
     aliases: [mail]
+  bank:
+    description: 은행 — 예금/인출/대출/상환/이자
+    usage: /bank open|deposit|withdraw|maturity|loan|repay|status
+  insurance:
+    description: 보험 - 3 등급 (BASIC/PREMIUM/VIP) 사망 보장
+    usage: /insurance subscribe|cancel|status|list
 permissions:
   reborneconomy.use:
     default: true

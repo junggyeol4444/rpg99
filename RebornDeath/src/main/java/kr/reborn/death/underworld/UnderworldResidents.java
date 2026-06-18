@@ -38,8 +38,13 @@ public final class UnderworldResidents implements Listener {
     public void onMobKill(EntityDeathEvent e) {
         Player killer = e.getEntity().getKiller();
         if (killer == null) return;
-        if (!killer.getWorld().getName().equalsIgnoreCase("underworld")) return;
-        // 명계 내 모든 킬은 명기 +1 (몬스터 차별 안 함, 기획서 단순)
+        // 명계 월드명은 config로 변경 가능 — 하드코딩 "underworld" 대신
+        // PlayerData.worldKey == UNDERWORLD로 판정 (실제 거주 상태 기준)
+        PlayerData d = RebornCore.get().api().getPlayerData(killer.getUniqueId());
+        if (d == null || d.worldKey() != WorldKey.UNDERWORLD) return;
         RebornCore.get().api().addStat(killer.getUniqueId(), StatType.UNDERWORLD_KI, 1, "underworld-kill");
+        // 의뢰 진행 (collect_bone)
+        try { plugin.underworldQuests().progress(killer, "collect_bone", 1); }
+        catch (Throwable ignored) {}
     }
 }

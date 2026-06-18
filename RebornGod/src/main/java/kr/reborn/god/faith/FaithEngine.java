@@ -1,0 +1,216 @@
+package kr.reborn.god.faith;
+
+import kr.reborn.god.RebornGod;
+import kr.reborn.god.data.God;
+import kr.reborn.god.data.Religion;
+
+/**
+ * 신앙 누적 → 신성 변환 엔진.
+ *
+ * 매 주기:
+ *  1) 각 교단이 신도 수에 비례해 신앙(faith)을 얻는다 (NPC 자동 기도 가정).
+ *  2) 교단의 신앙은 일정 비율로 신성(divinity)으로 변환되어 섬기는 신에게 흐른다.
+ *  3) 시간 경과로 신앙이 천천히 감쇠 (망각).
+ *  4) 적대 교단의 신도가 신앙을 깎는 효과도 반영.
+ *
+ * 이게 진짜 "신앙으로 신이 강해진다"의 핵심 루프.
+ */
+public final class FaithEngine {
+
+    /** 교단 신앙 → 신성 변환 비율 (신앙 100 → 신성 1). */
+    private static final double FAITH_TO_DIVINITY = 0.01;
+    /** 시간당 신앙 자연 감쇠율. */
+    private static final double FAITH_DECAY_PER_CYCLE = 0.001;
+    /** 적대 교단이 깎는 추가 신앙 비율. */
+    private static final double ANTI_DRAIN = 0.005;
+
+    private final RebornGod plugin;
+
+    public FaithEngine(RebornGod plugin) { this.plugin = plugin; }
+
+    /** 교단별 마지막 milestone 마크 — 중복 broadcast 방지. */
+    private final java.util.Map<String, Integer> lastMilestone = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final int[] FAITH_MILESTONES = {1000, 5000, 10000, 50000, 100000};
+
+    /** 한 주기 — 모든 교단에 적용. RebornGod 스케줄러가 주기적으로 호출. */
+    public void tick() {
+        for (Religion r : plugin.religions().all()) {
+            // 1) 신앙 축적
+            r.faith += r.faithGainPerCycle();
+            // 2) 신앙 자연 감쇠
+            r.faith *= (1.0 - FAITH_DECAY_PER_CYCLE);
+            // 3) 적대 교단이 있으면 추가 감쇠
+            if (!r.antiReligion.isEmpty()) {
+                Religion anti = plugin.religions().get(r.antiReligion);
+                if (anti != null) {
+                    double drain = anti.totalFollowers() * ANTI_DRAIN;
+                    r.faith = Math.max(0, r.faith - drain);
+                }
+            }
+            // 4) 신앙 → 신성 변환 (섬기는 신에게)
+            God g = resolveGod(r.godIdentifier);
+            if (g != null && !g.sealed) {
+                double convert = r.faith * FAITH_TO_DIVINITY;
+                if (convert > 0.1) {
+                    r.faith -= convert;
+                    g.divinity += convert;
+                    g.influence = computeInfluence(g);
+                }
+            }
+            // 5) 신앙 milestone broadcast — 큰 종교 성장 이벤트.
+            int prev = lastMilestone.getOrDefault(r.id, 0);
+            int curMile = currentMilestone((int) r.faith);
+            if (curMile > prev) {
+                lastMilestone.put(r.id, curMile);
+                org.bukkit.Bukkit.broadcastMessage("§6§l[교단 융성] §f" + r.name
+                        + " §7이(가) 신앙 §6" + curMile + " §7돌파 (신도 "
+                        + r.totalFollowers() + "명).");
+                // 모든 신도에게 luck 임시 +1
+                for (java.util.UUID uuid : r.followers) {
+                    org.bukkit.entity.Player fp = org.bukkit.Bukkit.getPlayer(uuid);
+                    if (fp != null) {
+                        try { fp.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                                org.bukkit.potion.PotionEffectType.LUCK,
+                                12000, 0, true, false)); }
+                        catch (Throwable ignored) {}
+                    }
+                }
+            }
+        }
+    }
+
+    private static int currentMilestone(int faith) {
+        int best = 0;
+        for (int m : FAITH_MILESTONES) if (faith >= m) best = m;
+        return best;
+    }
+
+    /** 플레이어별 마지막 기도 시각 — 스팸 방지. */
+    private final java.util.Map<java.util.UUID, Long> lastPrayer = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final long PRAY_COOLDOWN_MS = 60_000L;  // 1분
+
+    /** 플레이어 기도 — 신앙 즉시 가산 + 작은 축복. 1분 쿨다운. */
+    public boolean pray(org.bukkit.entity.Player p, String religionId) {
+        Religion r = plugin.religions().get(religionId);
+        if (r == null) return false;
+        long now = System.currentTimeMillis();
+        Long last = lastPrayer.get(p.getUniqueId());
+        if (last != null && now - last < PRAY_COOLDOWN_MS) {
+            // 쿨다운 — 이전엔 스팸으로 무한 신앙/신성 부여 가능했음
+            return false;
+        }
+        lastPrayer.put(p.getUniqueId(), now);
+        // 신도 등록
+        r.followers.add(p.getUniqueId());
+        r.faith += 5;  // 한 번 기도 = +5 신앙
+        // 신에게 즉시 1 신성 흐름
+        God g = resolveGod(r.godIdentifier);
+        if (g != null && !g.sealed) g.divinity += 0.5;
+        // 작은 축복 — 행운+1 임시 (RebornCurse 연동 필요 시 추후)
+        p.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                org.bukkit.potion.PotionEffectType.LUCK, 1200, 0, false, false));
+        return true;
+    }
+
+    /** 의식 집전 — config ritual.radius 내 같은 교단 신도 모두 +기도 효과. config ritual.cooldown-hours 쿨다운. */
+    private final java.util.Map<java.util.UUID, Long> lastRitual = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final long DEFAULT_RITUAL_COOLDOWN_MS = 8L * 3600_000L;
+
+    private long ritualCooldownMs() {
+        try {
+            long h = plugin.getConfig().getLong("ritual.cooldown-hours", 8L);
+            return Math.max(1L, h) * 3600_000L;
+        } catch (Throwable t) { return DEFAULT_RITUAL_COOLDOWN_MS; }
+    }
+    private double ritualRadius() {
+        try { return Math.max(5.0, plugin.getConfig().getDouble("ritual.radius", 30.0)); }
+        catch (Throwable t) { return 30.0; }
+    }
+    private int ritualDurationMin() {
+        try { return Math.max(1, plugin.getConfig().getInt("ritual.duration-min", 30)); }
+        catch (Throwable t) { return 30; }
+    }
+
+    public boolean performRitual(org.bukkit.entity.Player p, String religionId) {
+        Religion r = plugin.religions().get(religionId);
+        if (r == null) {
+            kr.reborn.core.util.Msg.error(p, "교단 없음."); return false;
+        }
+        if (!r.followers.contains(p.getUniqueId())) {
+            kr.reborn.core.util.Msg.error(p, "이 교단 신도가 아닙니다 — /god religion join 먼저."); return false;
+        }
+        long now = System.currentTimeMillis();
+        long cooldown = ritualCooldownMs();
+        Long last = lastRitual.get(p.getUniqueId());
+        if (last != null && now - last < cooldown) {
+            long h = (cooldown - (now - last)) / 3600_000L;
+            kr.reborn.core.util.Msg.warn(p, "다음 의식까지 " + Math.max(1, h) + "시간 남음.");
+            return false;
+        }
+        lastRitual.put(p.getUniqueId(), now);
+
+        // 주변 같은 교단 신도 카운트 + LUCK 효과.
+        double radius = ritualRadius();
+        int durationTicks = ritualDurationMin() * 60 * 20;
+        int participants = 1;
+        for (org.bukkit.entity.Player nearby : p.getLocation().getWorld().getPlayers()) {
+            if (nearby == p) continue;
+            if (nearby.getLocation().distance(p.getLocation()) > radius) continue;
+            if (!r.followers.contains(nearby.getUniqueId())) continue;
+            try {
+                nearby.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                        org.bukkit.potion.PotionEffectType.LUCK, durationTicks, 1, true, false));
+                nearby.sendMessage("§6[" + r.name + " 의식] §f" + p.getName()
+                        + " §7의 집전 — LUCK II " + ritualDurationMin() + "분.");
+            } catch (Throwable ignored) {}
+            participants++;
+        }
+        // 신앙 = 참가자 수 × 20.
+        double gain = participants * 20.0;
+        r.faith += gain;
+        // 신에게 즉시 흐름 = 참가자 × 2.
+        God g = resolveGod(r.godIdentifier);
+        if (g != null && !g.sealed) g.divinity += participants * 2.0;
+
+        // 집전자 본인에게 더 강한 효과
+        p.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                org.bukkit.potion.PotionEffectType.LUCK, durationTicks, 2, true, false));
+        p.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                org.bukkit.potion.PotionEffectType.REGENERATION, durationTicks / 3, 0, true, false));
+        org.bukkit.Bukkit.broadcastMessage("§6§l[" + r.name + " 의식] §f" + p.getName()
+                + " §7집전 — 참가자 " + participants + "명, 신앙 +" + (int) gain);
+        // 시각 효과
+        p.getWorld().spawnParticle(org.bukkit.Particle.TOTEM,
+                p.getLocation().add(0, 1, 0), 60, 2, 1, 2);
+        p.getWorld().playSound(p.getLocation(),
+                org.bukkit.Sound.BLOCK_BEACON_ACTIVATE, 1.5f, 0.8f);
+        return true;
+    }
+
+    /** 신 식별자(npc:xxx 또는 player:UUID) → 실제 신 인스턴스. */
+    private God resolveGod(String identifier) {
+        if (identifier == null || identifier.isEmpty()) return null;
+        if (identifier.startsWith("npc:")) {
+            String npcId = identifier.substring(4);
+            for (God g : plugin.gods().npcAll()) {
+                if (npcId.equals(g.npcId)) return g;
+            }
+            return null;
+        }
+        if (identifier.startsWith("player:")) {
+            try {
+                java.util.UUID u = java.util.UUID.fromString(identifier.substring(7));
+                return plugin.gods().of(u);
+            } catch (IllegalArgumentException e) { return null; }
+        }
+        // identifier가 그냥 npc id인 경우
+        for (God g : plugin.gods().npcAll()) {
+            if (identifier.equals(g.npcId)) return g;
+        }
+        return null;
+    }
+
+    private double computeInfluence(God g) {
+        return g.followers.size() * 1.0 + g.allies.size() * 5.0 + Math.log10(Math.max(1, g.divinity));
+    }
+}

@@ -18,6 +18,9 @@ public final class RebornCore extends JavaPlugin {
     private TierManager tierManager;
     private RebornScheduler scheduler;
     private RebornAPI api;
+    private kr.reborn.core.data.KVStore kv;
+    private kr.reborn.core.reincarnation.ReincarnationMemory reincarnationMemory;
+    private kr.reborn.core.discovery.HiddenWorldUnlock hiddenWorld;
 
     public static RebornCore get() {
         return instance;
@@ -46,10 +49,34 @@ public final class RebornCore extends JavaPlugin {
         this.dataManager = new DataManager(this, database);
         this.tierManager = new TierManager(this);
         this.api = new RebornAPI(this);
+        this.kv = new kr.reborn.core.data.KVStore(this, database);
+        this.reincarnationMemory = new kr.reborn.core.reincarnation.ReincarnationMemory(this);
+        this.hiddenWorld = new kr.reborn.core.discovery.HiddenWorldUnlock(this);
+
+        // 다국어 — lang/ko.yml, lang/en.yml 로드 + 서버 기본 언어 설정.
+        kr.reborn.core.util.Lang.init(this);
 
         getServer().getPluginManager().registerEvents(new PlayerDataListener(dataManager), this);
 
         getCommand("reborncore").setExecutor(new CoreCommand(this));
+        if (getCommand("dashboard") != null) {
+            getCommand("dashboard").setExecutor(new kr.reborn.core.command.DashboardCommand(this));
+        }
+        if (getCommand("pastlife") != null) {
+            getCommand("pastlife").setExecutor(new kr.reborn.core.command.PastLifeCommand(this));
+        }
+        if (getCommand("hidden") != null) {
+            getCommand("hidden").setExecutor(new kr.reborn.core.command.HiddenWorldCommand(this));
+        }
+        if (getCommand("guide") != null) {
+            getCommand("guide").setExecutor(new kr.reborn.core.command.GuideCommand(this));
+        }
+        if (getCommand("lang") != null) {
+            getCommand("lang").setExecutor(new kr.reborn.core.command.LangCommand(this));
+        }
+        if (getCommand("serverstat") != null) {
+            getCommand("serverstat").setExecutor(new kr.reborn.core.command.ServerStatCommand(this));
+        }
 
         long interval = getConfig().getLong("auto-save-interval", 300L) * 20L;
         scheduler.runTimerAsync(() -> dataManager.flushAll(), interval, interval);
@@ -64,8 +91,13 @@ public final class RebornCore extends JavaPlugin {
     }
 
     public Database database() { return database; }
+    public kr.reborn.core.data.KVStore kv() { return kv; }
     public DataManager dataManager() { return dataManager; }
     public TierManager tierManager() { return tierManager; }
     public RebornScheduler scheduler() { return scheduler; }
     public RebornAPI api() { return api; }
+    public kr.reborn.core.reincarnation.ReincarnationMemory reincarnationMemory() {
+        return reincarnationMemory;
+    }
+    public kr.reborn.core.discovery.HiddenWorldUnlock hiddenWorld() { return hiddenWorld; }
 }

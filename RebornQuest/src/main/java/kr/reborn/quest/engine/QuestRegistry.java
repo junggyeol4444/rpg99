@@ -10,7 +10,7 @@ import java.util.Map;
 public final class QuestRegistry {
 
     private final RebornQuest plugin;
-    private final Map<String, Quest> defs = new HashMap<>();
+    private final Map<String, Quest> defs = new java.util.concurrent.ConcurrentHashMap<>();
 
     public QuestRegistry(RebornQuest p) { this.plugin = p; }
 
@@ -44,4 +44,8 @@ public final class QuestRegistry {
 
     public Quest get(String id) { return defs.get(id); }
     public java.util.Collection<Quest> all() { return defs.values(); }
+
+    /** 런타임 동적 등록 — 자기 생성 퀘스트 / NPC 자율 의뢰 / WorldAI 발행. */
+    public void register(Quest q) { defs.put(q.id, q); }
+    public boolean has(String id) { return defs.containsKey(id); }
 }

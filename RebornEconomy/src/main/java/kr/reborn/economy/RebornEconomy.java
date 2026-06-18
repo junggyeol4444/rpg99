@@ -15,6 +15,7 @@ import kr.reborn.economy.manager.ExchangeManager;
 import kr.reborn.economy.manager.MailboxManager;
 import kr.reborn.economy.manager.ShopManager;
 import kr.reborn.economy.manager.TradeManager;
+import kr.reborn.economy.price.PriceController;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class RebornEconomy extends JavaPlugin {
@@ -27,6 +28,9 @@ public final class RebornEconomy extends JavaPlugin {
     private AuctionManager auctions;
     private TradeManager trades;
     private MailboxManager mailbox;
+    private PriceController priceController;
+    private kr.reborn.economy.bank.BankManager bank;
+    private kr.reborn.economy.insurance.InsuranceManager insurance;
     private Gui gui;
 
     public static RebornEconomy get() { return instance; }
@@ -45,10 +49,13 @@ public final class RebornEconomy extends JavaPlugin {
         this.gui = new Gui(this);
         this.currencies = new CurrencyManager(this);
         this.exchange = new ExchangeManager(this);
+        this.priceController = new PriceController(this);
         this.shops = new ShopManager(this);
         this.auctions = new AuctionManager(this);
         this.trades = new TradeManager(this);
         this.mailbox = new MailboxManager(this);
+        this.bank = new kr.reborn.economy.bank.BankManager(this);
+        this.insurance = new kr.reborn.economy.insurance.InsuranceManager(this);
 
         getCommand("money").setExecutor(new MoneyCommand(this));
         getCommand("pay").setExecutor(new PayCommand(this));
@@ -57,9 +64,18 @@ public final class RebornEconomy extends JavaPlugin {
         getCommand("auction").setExecutor(new AuctionCommand(this));
         getCommand("trade").setExecutor(new TradeCommand(this));
         getCommand("mailbox").setExecutor(new MailboxCommand(this));
+        if (getCommand("bank") != null) {
+            getCommand("bank").setExecutor(new kr.reborn.economy.command.BankCommand(this));
+        }
+        if (getCommand("insurance") != null) {
+            getCommand("insurance").setExecutor(new kr.reborn.economy.command.InsuranceCommand(this));
+        }
 
         // 경매 만료 체크: 1분마다
         RebornCore.get().scheduler().runTimerAsync(() -> auctions.tickExpire(), 1200L, 1200L);
+
+        getServer().getPluginManager().registerEvents(
+                new kr.reborn.economy.listener.EconomyWorldImpactListener(this), this);
 
         getLogger().info("RebornEconomy 활성화: 통화 " + currencies.all().size() + "종");
     }
@@ -69,6 +85,7 @@ public final class RebornEconomy extends JavaPlugin {
         if (auctions != null) auctions.flush();
         if (mailbox != null) mailbox.flush();
         if (currencies != null) currencies.flush();
+        if (bank != null) bank.flush();
         if (gui != null) gui.shutdown();
     }
 
@@ -78,5 +95,8 @@ public final class RebornEconomy extends JavaPlugin {
     public AuctionManager auctions() { return auctions; }
     public TradeManager trades() { return trades; }
     public MailboxManager mailbox() { return mailbox; }
+    public PriceController priceController() { return priceController; }
+    public kr.reborn.economy.bank.BankManager bank() { return bank; }
+    public kr.reborn.economy.insurance.InsuranceManager insurance() { return insurance; }
     public Gui gui() { return gui; }
 }

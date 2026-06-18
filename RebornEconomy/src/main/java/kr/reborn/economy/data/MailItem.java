@@ -12,7 +12,8 @@ public final class MailItem {
     public final ItemStack item;
     public final String currencyId;  // null이면 화폐 첨부 없음
     public final long currencyAmount;
-    public final long sentAt;
+    /** 발송 시각 — 영속화 로드 시 원본 시각으로 복원되도록 non-final. */
+    public long sentAt;
 
     public MailItem(UUID id, UUID owner, String subject, ItemStack item,
                     String currencyId, long currencyAmount) {

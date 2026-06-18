@@ -83,6 +83,21 @@ public final class ItemRegistry {
                     catch (IllegalArgumentException ignored) { ci.consumeType = CustomItem.ConsumeType.CUSTOM; }
                     ci.consumeValue = cons.get("value");
                     ci.consumeCooldownSeconds = cons.getInt("cooldown", 0);
+                    String statName = cons.getString("stat", null);
+                    if (statName != null) {
+                        try { ci.consumeStat = StatType.valueOf(statName.toUpperCase()); }
+                        catch (IllegalArgumentException ignored) {}
+                    }
+                    ConfigurationSection multiSec = cons.getConfigurationSection("stats");
+                    if (multiSec != null) {
+                        for (String k : multiSec.getKeys(false)) {
+                            try { ci.consumeMultiStats.put(StatType.valueOf(k.toUpperCase()), multiSec.getDouble(k)); }
+                            catch (IllegalArgumentException ignored) {}
+                        }
+                    }
+                    ci.consumeDuration = cons.getInt("duration", 0);
+                    ci.consumeMin = cons.getDouble("min", 0.0);
+                    ci.consumeMax = cons.getDouble("max", 0.0);
                 }
                 defs.put(id, ci);
             } catch (Exception e) {

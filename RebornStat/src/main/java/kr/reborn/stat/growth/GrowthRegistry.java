@@ -72,5 +72,6 @@ public final class GrowthRegistry implements Listener {
         }
         s.onMeditate(p, d, quality);
         RebornCore.get().tierManager().checkAndAdvance(p, d);
+        if (plugin.fortuneManager() != null) plugin.fortuneManager().rollMeditate(p);  // 운기 중 기연
     }
 }

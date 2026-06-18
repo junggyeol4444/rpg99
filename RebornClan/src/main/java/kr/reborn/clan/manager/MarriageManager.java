@@ -23,7 +23,12 @@ public final class MarriageManager implements Listener {
 
     private final RebornClan plugin;
     private final Map<UUID, Marriage> marriages = new ConcurrentHashMap<>();
-    private final Map<UUID, UUID> proposals = new HashMap<>();
+    /** target → proposer. Folia 동시성 위해 ConcurrentHashMap. */
+    private final Map<UUID, UUID> proposals = new ConcurrentHashMap<>();
+    /** uuid → 현재 적용 중인 부부 보너스 (스탯별 양). 다음 tick에 정확히 차감 후 재적용. */
+    private final Map<UUID, java.util.EnumMap<StatType, Double>> lastCoupleBonus = new ConcurrentHashMap<>();
+    /** 이번 tick에서 buff 받은 uuid set — tick 종료 후 미수신 자에게서 회수. */
+    private final java.util.Set<UUID> boostedThisTick = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     public MarriageManager(RebornClan p) {
         this.plugin = p;
@@ -49,6 +54,11 @@ public final class MarriageManager implements Listener {
     public void accept(Player b) {
         UUID aId = proposals.remove(b.getUniqueId());
         if (aId == null) { Msg.warn(b, "청혼이 없다."); return; }
+        // 청혼 발급 후 양쪽 중 누군가 다른 결혼을 했을 가능성 차단.
+        if (marriages.containsKey(b.getUniqueId()) || marriages.containsKey(aId)) {
+            Msg.error(b, "한쪽이 이미 결혼한 상태 — 청혼 만료.");
+            return;
+        }
         Marriage m = new Marriage(aId, b.getUniqueId(), "", System.currentTimeMillis());
         marriages.put(aId, m);
         marriages.put(b.getUniqueId(), m);
@@ -59,6 +69,15 @@ public final class MarriageManager implements Listener {
     }
 
     public void marryNpc(Player p, String npcId) {
+        // 중복 결혼 차단 — 이미 결혼한 상태면 거부 (Marriage 객체가 덮어쓰기로 분실되던 결함).
+        if (marriages.containsKey(p.getUniqueId())) {
+            Msg.error(p, "이미 결혼한 상태. 먼저 /divorce 하세요.");
+            return;
+        }
+        if (npcId == null || npcId.isEmpty()) {
+            Msg.error(p, "NPC ID 필요.");
+            return;
+        }
         Marriage m = new Marriage(p.getUniqueId(), UUID.randomUUID(), npcId, System.currentTimeMillis());
         marriages.put(p.getUniqueId(), m);
         Msg.send(p, "&6NPC와 결혼: " + npcId);
@@ -70,8 +89,10 @@ public final class MarriageManager implements Listener {
         if (m == null) { Msg.warn(p, "결혼하지 않았다."); return; }
         marriages.remove(m.a);
         marriages.remove(m.b);
+        // 양쪽 부부 보너스 즉시 회수
+        revokeCoupleBoost(m.a);
+        revokeCoupleBoost(m.b);
         Msg.send(p, "&7이혼이 성립되었다.");
-        // 부부 NPC 상대 호감도 급락 (RebornNPC 연동)
         save();
     }
 
@@ -79,6 +100,7 @@ public final class MarriageManager implements Listener {
     private void tickCoupleBuff() {
         double radius = plugin.getConfig().getDouble("marriage.buff-radius", 30);
         double percent = plugin.getConfig().getDouble("marriage.buff-stat-percent", 5) / 100.0;
+        boostedThisTick.clear();
         for (Marriage m : marriages.values()) {
             if (!m.npcId.isEmpty()) continue; // NPC 결혼은 거리 체크 안 함
             Player pa = Bukkit.getPlayer(m.a);
@@ -86,15 +108,61 @@ public final class MarriageManager implements Listener {
             if (pa == null || pb == null) continue;
             if (pa.getWorld() != pb.getWorld()) continue;
             if (pa.getLocation().distance(pb.getLocation()) > radius) continue;
-            // 일시 buff — 30초간 stat boost (실제로는 CurseEffect 시스템에 위임하는게 좋지만 간이로)
             applyCoupleBoost(pa, percent);
             applyCoupleBoost(pb, percent);
+            boostedThisTick.add(pa.getUniqueId());
+            boostedThisTick.add(pb.getUniqueId());
+        }
+        // 이전엔 받았지만 이번 tick엔 못 받은 사람 — 보너스 회수 (거리 벗어남)
+        for (UUID id : new java.util.HashSet<>(lastCoupleBonus.keySet())) {
+            if (!boostedThisTick.contains(id)) revokeCoupleBoost(id);
         }
     }
 
+    /** 이전 보너스를 정확히 차감 후 새 보너스 적용 — 누적·잔여 폭주 방지. */
     private void applyCoupleBoost(Player p, double percent) {
-        // 가벼운 표시 — 실제 stat 보정은 별도 효과 시스템에서. 여기선 메시지만.
-        // 더 깊은 구현시 RebornCurse "couple_buff" 효과를 30초 부여하면 됨.
+        var d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+        if (d == null) return;
+
+        var prev = lastCoupleBonus.computeIfAbsent(p.getUniqueId(),
+                k -> new java.util.EnumMap<>(StatType.class));
+        var fresh = new java.util.EnumMap<StatType, Double>(StatType.class);
+
+        for (var st : StatType.COMMON_8) {
+            double base = d.getStat(st);
+            double prevBonus = prev.getOrDefault(st, 0.0);
+            // base에는 이전 보너스가 포함됨 → 자연 base 추출
+            double naturalBase = Math.max(0, base - prevBonus);
+            if (naturalBase <= 0) continue;
+            double newBonus = naturalBase * percent;
+            double delta = newBonus - prevBonus;
+            if (Math.abs(delta) > 0.01) {
+                RebornCore.get().api().addStat(p.getUniqueId(), st, delta, "couple-buff");
+            }
+            fresh.put(st, newBonus);
+        }
+        lastCoupleBonus.put(p.getUniqueId(), fresh);
+
+        // 시각 효과
+        try {
+            p.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                    org.bukkit.potion.PotionEffectType.INCREASE_DAMAGE, 700, 0, true, false));
+            p.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                    org.bukkit.potion.PotionEffectType.SPEED, 700, 0, true, false));
+            p.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                    org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE, 700, 0, true, false));
+        } catch (Throwable ignored) {}
+    }
+
+    /** 거리 벗어남·이혼·오프라인 시 보너스 회수. */
+    public void revokeCoupleBoost(UUID uuid) {
+        var prev = lastCoupleBonus.remove(uuid);
+        if (prev == null) return;
+        for (var e : prev.entrySet()) {
+            if (e.getValue() != 0) {
+                RebornCore.get().api().addStat(uuid, e.getKey(), -e.getValue(), "couple-buff-revoke");
+            }
+        }
     }
 
     private File file() {

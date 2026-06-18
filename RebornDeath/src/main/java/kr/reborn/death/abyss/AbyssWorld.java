@@ -16,25 +16,72 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 심연계 진입·체류 처리.
- * - 진입 시 모든 스탯 50% 즉시 감소
+ * - 진입 시 모든 스탯 50% 즉시 감소 (delta 기록)
  * - 체류 중 매 분마다 심연 내성 -1, 0이 되면 영혼 소멸
- * - 모든 에너지 오염 (-30%)
+ * - 퇴장 시 진입 때 기록한 delta만큼 정확히 환원 (×2 인플레이션 차단)
  */
 public final class AbyssWorld implements Listener {
 
+    private static final String NS = "RebornDeath.abyss";
+
     private final RebornDeath plugin;
-    private final Set<UUID> insideAbyss = new HashSet<>();
+    /** 심연 체류 중인 플레이어 — tick + 이동 이벤트 동시 접근, ConcurrentHashSet. */
+    private final Set<UUID> insideAbyss = ConcurrentHashMap.newKeySet();
+    /** 진입 시 차감한 스탯 양 기록 — 퇴장 시 동일 양만 복원. ×2 인플레이션 익스플로잇 차단. */
+    private final java.util.Map<UUID, java.util.EnumMap<StatType, Double>> appliedPenalty
+            = new ConcurrentHashMap<>();
 
     public AbyssWorld(RebornDeath p) {
         this.plugin = p;
         // 1분마다 체류자 정신 잠식
         RebornCore.get().scheduler().runTimer(this::tickAbyssResidents, 1200L, 1200L);
+    }
+
+    /** 플레이어 join 시 — 심연 월드에 있으면 자동으로 insideAbyss에 등록 + KV에서 페널티 복원. */
+    @EventHandler
+    public void onJoin(org.bukkit.event.player.PlayerJoinEvent e) {
+        Player p = e.getPlayer();
+        if (isAbyss(p.getWorld())) {
+            insideAbyss.add(p.getUniqueId());
+            // 재시작 후 페널티가 휘발되면 exit 시 스탯 복원 불가 → KV에서 복원.
+            loadPenaltyFromKV(p.getUniqueId());
+        }
+    }
+
+    /** 진입 시 KV에 페널티 저장 — 재시작 후에도 exit 정확 환원 가능. */
+    private void persistPenalty(UUID id, java.util.EnumMap<StatType, Double> penalty) {
+        try {
+            StringBuilder sb = new StringBuilder();
+            for (var e : penalty.entrySet()) {
+                if (sb.length() > 0) sb.append(',');
+                sb.append(e.getKey().name()).append(':').append(e.getValue());
+            }
+            RebornCore.get().kv().put(NS, id, "penalty", sb.toString());
+        } catch (Throwable ignored) {}
+    }
+
+    private void loadPenaltyFromKV(UUID id) {
+        try {
+            String enc = RebornCore.get().kv().get(NS, id, "penalty");
+            if (enc == null || enc.isEmpty()) return;
+            java.util.EnumMap<StatType, Double> map = new java.util.EnumMap<>(StatType.class);
+            for (String pair : enc.split(",")) {
+                int colon = pair.indexOf(':');
+                if (colon <= 0) continue;
+                try {
+                    StatType t = StatType.valueOf(pair.substring(0, colon));
+                    double v = Double.parseDouble(pair.substring(colon + 1));
+                    map.put(t, v);
+                } catch (Throwable ignored) {}
+            }
+            if (!map.isEmpty()) appliedPenalty.put(id, map);
+        } catch (Throwable ignored) {}
     }
 
     @EventHandler
@@ -60,14 +107,21 @@ public final class AbyssWorld implements Listener {
     }
 
     private void onEnter(Player p) {
-        insideAbyss.add(p.getUniqueId());
+        // 이미 심연 set에 있으면 페널티 중복 적용 안 함
+        if (!insideAbyss.add(p.getUniqueId())) return;
         PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
         if (d == null) return;
-        // 모든 공통 스탯 50% 즉시 감소 (영구 아닌 buff로 처리하면 좋지만 간이로는 즉시 감소)
+        // 각 스탯의 50% 차감량을 정확히 기록 — 퇴장 시 동일량 환원.
+        // (이전엔 ×0.5 / ×2.0 패턴이라 체류 중 스탯 획득 시 인플레이션 발생했음.)
+        java.util.EnumMap<StatType, Double> penalty = new java.util.EnumMap<>(StatType.class);
         for (StatType t : StatType.COMMON_8) {
             double cur = d.getStat(t);
-            d.setStat(t, cur * 0.5);
+            double cut = cur * 0.5;
+            d.setStat(t, cur - cut);
+            penalty.put(t, cut);
         }
+        appliedPenalty.put(p.getUniqueId(), penalty);
+        persistPenalty(p.getUniqueId(), penalty);  // 재시작 후에도 복원 가능
         // 심연 내성 초기 100 부여
         if (d.getStat(StatType.ABYSS_RESISTANCE) <= 0) {
             d.setStat(StatType.ABYSS_RESISTANCE, 100);
@@ -78,13 +132,18 @@ public final class AbyssWorld implements Listener {
     }
 
     private void onExit(Player p) {
-        insideAbyss.remove(p.getUniqueId());
+        // 심연 set에서 제거 — 없었으면 페널티도 없었던 것이므로 복원 안 함
+        if (!insideAbyss.remove(p.getUniqueId())) return;
         PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
         if (d == null) return;
-        // 스탯 복원 (50% 다시 더해 = 원복)
-        for (StatType t : StatType.COMMON_8) {
-            d.setStat(t, d.getStat(t) * 2.0);
+        // 진입 시 기록한 정확한 차감량을 다시 더함 (×2.0 인플레이션 차단).
+        java.util.EnumMap<StatType, Double> penalty = appliedPenalty.remove(p.getUniqueId());
+        if (penalty != null) {
+            for (var e : penalty.entrySet()) {
+                d.setStat(e.getKey(), d.getStat(e.getKey()) + e.getValue());
+            }
         }
+        try { RebornCore.get().kv().remove(NS, p.getUniqueId(), "penalty"); } catch (Throwable ignored) {}
         Msg.send(p, "&7심연을 벗어났다. 스탯 복원.");
     }
 

@@ -9,9 +9,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 플레이어 간 거래 — 단순 구현.
@@ -35,8 +35,8 @@ public final class TradeManager {
         }
     }
 
-    /** 양쪽 키로 동일한 세션 가리킴. */
-    private final Map<UUID, Session> sessions = new HashMap<>();
+    /** 양쪽 키로 동일한 세션 가리킴. Folia 멀티스레드 대비 동시성 맵. */
+    private final Map<UUID, Session> sessions = new ConcurrentHashMap<>();
 
     public TradeManager(RebornEconomy plugin) {
         this.plugin = plugin;
@@ -67,6 +67,17 @@ public final class TradeManager {
         sessions.remove(s.b);
         Player a = Bukkit.getPlayer(s.a);
         Player b = Bukkit.getPlayer(s.b);
+        // 제안한 아이템 복귀 — 오프라인이면 우편함
+        if (s.itemA != null) {
+            if (a != null) a.getInventory().addItem(s.itemA);
+            else plugin.mailbox().enqueue(new kr.reborn.economy.data.MailItem(
+                    UUID.randomUUID(), s.a, "거래 취소 반환", s.itemA, null, 0));
+        }
+        if (s.itemB != null) {
+            if (b != null) b.getInventory().addItem(s.itemB);
+            else plugin.mailbox().enqueue(new kr.reborn.economy.data.MailItem(
+                    UUID.randomUUID(), s.b, "거래 취소 반환", s.itemB, null, 0));
+        }
         if (a != null) Msg.warn(a, "거래 취소됨.");
         if (b != null) Msg.warn(b, "거래 취소됨.");
     }
@@ -78,6 +89,48 @@ public final class TradeManager {
         else s.readyB = true;
         Msg.send(p, "&7준비 완료.");
         if (s.readyA && s.readyB) startCountdown(s);
+    }
+
+    /** 손에 든 아이템 제안. 직전 제안이 있으면 인벤토리로 복귀. */
+    public void offerItem(Player p) {
+        Session s = sessions.get(p.getUniqueId());
+        if (s == null) { Msg.error(p, "진행 중인 거래가 없습니다."); return; }
+        ItemStack hand = p.getInventory().getItemInMainHand();
+        if (hand == null || hand.getType() == org.bukkit.Material.AIR) {
+            Msg.error(p, "손에 아이템이 없습니다."); return;
+        }
+        boolean isA = p.getUniqueId().equals(s.a);
+        // 직전 제안 복귀
+        ItemStack prev = isA ? s.itemA : s.itemB;
+        if (prev != null) p.getInventory().addItem(prev);
+        // 손에 든 아이템 제거 후 제안 set — 누적·복제 방지
+        ItemStack offered = hand.clone();
+        p.getInventory().setItemInMainHand(null);
+        if (isA) s.itemA = offered; else s.itemB = offered;
+        // ready 상태 리셋 (제안 변경 후 다시 확인 필요)
+        s.readyA = false; s.readyB = false;
+        Msg.send(p, "&a제안 갱신: &f" + offered.getType() + " ×" + offered.getAmount()
+                + " &7(상대방 다시 /trade ready 필요)");
+        Player other = Bukkit.getPlayer(isA ? s.b : s.a);
+        if (other != null) Msg.send(other, "&7상대가 아이템을 제안했다: " + offered.getType());
+    }
+
+    /** 화폐 제안. 직전 제안이 있으면 환불. 차감은 finalize에서. */
+    public void offerCurrency(Player p, String currency, long amount) {
+        Session s = sessions.get(p.getUniqueId());
+        if (s == null) { Msg.error(p, "진행 중인 거래가 없습니다."); return; }
+        if (amount < 0) { Msg.error(p, "금액은 0 이상"); return; }
+        if (amount > 0 && !plugin.currencies().has(p.getUniqueId(), currency, amount)) {
+            Msg.error(p, "잔액 부족"); return;
+        }
+        boolean isA = p.getUniqueId().equals(s.a);
+        if (isA) { s.currencyA = amount; s.currencyAId = currency; }
+        else     { s.currencyB = amount; s.currencyBId = currency; }
+        s.readyA = false; s.readyB = false;
+        Msg.send(p, "&a화폐 제안: &f" + amount + " " + currency
+                + " &7(상대방 다시 /trade ready 필요)");
+        Player other = Bukkit.getPlayer(isA ? s.b : s.a);
+        if (other != null) Msg.send(other, "&7상대가 " + amount + " " + currency + " 제안.");
     }
 
     private void startCountdown(Session s) {
@@ -95,7 +148,16 @@ public final class TradeManager {
         sessions.remove(s.b);
         Player a = Bukkit.getPlayer(s.a);
         Player b = Bukkit.getPlayer(s.b);
-        if (a == null || b == null) return;
+        if (a == null || b == null) {
+            // 한쪽이 오프라인 — 우편함으로 제안 아이템 반환 (분실 방지)
+            if (s.itemA != null && a != null) a.getInventory().addItem(s.itemA);
+            else if (s.itemA != null) plugin.mailbox().enqueue(new kr.reborn.economy.data.MailItem(
+                    java.util.UUID.randomUUID(), s.a, "거래 취소(상대 오프라인)", s.itemA, null, 0));
+            if (s.itemB != null && b != null) b.getInventory().addItem(s.itemB);
+            else if (s.itemB != null) plugin.mailbox().enqueue(new kr.reborn.economy.data.MailItem(
+                    java.util.UUID.randomUUID(), s.b, "거래 취소(상대 오프라인)", s.itemB, null, 0));
+            return;
+        }
 
         // 아포칼립스 = 물물교환만
         boolean apocBarter = plugin.getConfig().getBoolean("trade.apocalypse-barter-only", true);
@@ -105,17 +167,21 @@ public final class TradeManager {
             if (s.currencyA > 0 || s.currencyB > 0) {
                 Msg.error(a, "아포칼립스에서는 물물교환만 가능합니다.");
                 Msg.error(b, "아포칼립스에서는 물물교환만 가능합니다.");
+                returnItems(a, b, s);
                 return;
             }
         }
 
         // 화폐 차감 / 입금
         if (s.currencyA > 0 && !plugin.currencies().withdraw(s.a, s.currencyAId, s.currencyA)) {
-            Msg.error(a, "잔액 부족."); return;
+            Msg.error(a, "잔액 부족.");
+            returnItems(a, b, s);
+            return;
         }
         if (s.currencyB > 0 && !plugin.currencies().withdraw(s.b, s.currencyBId, s.currencyB)) {
             Msg.error(b, "잔액 부족.");
             if (s.currencyA > 0) plugin.currencies().deposit(s.a, s.currencyAId, s.currencyA);
+            returnItems(a, b, s);
             return;
         }
         if (s.currencyA > 0) plugin.currencies().deposit(s.b, s.currencyAId, s.currencyA);
@@ -126,6 +192,12 @@ public final class TradeManager {
         Bukkit.getPluginManager().callEvent(new RebornTradeCompleteEvent(a, b, s));
         Msg.send(a, "&a거래 완료.");
         Msg.send(b, "&a거래 완료.");
+    }
+
+    /** 거래 실패 시 제안 아이템 원주인에게 반환. */
+    private void returnItems(Player a, Player b, Session s) {
+        if (s.itemA != null && a != null) a.getInventory().addItem(s.itemA);
+        if (s.itemB != null && b != null) b.getInventory().addItem(s.itemB);
     }
 
     private void cancelSession(Session s) {

@@ -21,6 +21,17 @@ public final class Roulette {
     public Roulette(RebornSpawn p) { this.plugin = p; }
 
     public void spin(Player p) {
+        // 중복 환생 차단 — 이미 세계가 결정된 플레이어는 룰렛 재돌 불가.
+        // (여신 NPC 클릭 스팸 시 child-start 누적 익스플로잇 차단)
+        // 다시 환생하려면 죽음→명계→윤회 정상 경로를 거쳐야 함.
+        var existingData = RebornCore.get().api().getPlayerData(p.getUniqueId());
+        if (existingData != null) {
+            WorldKey cur = existingData.worldKey();
+            if (cur != null && cur != WorldKey.LOBBY && cur != WorldKey.TUTORIAL) {
+                Msg.error(p, "이미 " + cur + " 세계의 영혼이다. 재환생은 죽음의 의식이 필요하다.");
+                return;
+            }
+        }
         var c = plugin.getConfig();
         List<String> raw = c.getStringList("roulette.worlds");
         List<WorldKey> worlds = new ArrayList<>();
@@ -54,11 +65,16 @@ public final class Roulette {
         WorldKey result = Rand.weighted(worlds, w -> 1.0 + luck * bias);
 
         d.worldKey(result);
-        d.visited().add(result);
+        d.visit(result);  // markDirty 자동 — 환생 룰렛 결과는 반드시 영속화
 
         applyInitialStats(d, result);
 
         Bukkit.getPluginManager().callEvent(new RebornRouletteResultEvent(p, result));
+
+        // 종족 자동 배정
+        try {
+            plugin.races().assignRandom(p, result);
+        } catch (Throwable ignored) {}
 
         // RebornHiddenClass INITIAL 클래스 후보 굴림 (있으면)
         try {
@@ -70,7 +86,19 @@ public final class Roulette {
                         .invoke(engine, p, result);
             }
         } catch (Throwable ignored) {}
+        // 세계별 고유 환생 메시지
+        String worldFlavor = worldFlavorOf(result);
         p.sendTitle("§6운명이 결정되었다", "§f→ " + result, 5, 60, 20);
+        p.sendMessage("");
+        p.sendMessage("§5§l═══ 환생 ═══");
+        p.sendMessage("§7" + worldFlavor);
+        p.sendMessage("");
+        try {
+            org.bukkit.Sound s = worldSoundOf(result);
+            org.bukkit.Particle pp = worldParticleOf(result);
+            if (s != null) p.getWorld().playSound(p.getLocation(), s, 1.5f, 1.0f);
+            if (pp != null) p.getWorld().spawnParticle(pp, p.getLocation().add(0, 1.5, 0), 80, 1.5, 2, 1.5, 0.1);
+        } catch (Throwable ignored) {}
 
         int cd = plugin.getConfig().getInt("roulette.count-down-seconds", 30);
         for (int i = 0; i <= cd; i++) {
@@ -138,6 +166,8 @@ public final class Roulette {
     }
 
     private void rollChildStart(Player p, PlayerData d, WorldKey w) {
+        // 이미 자녀 시작 받은 경우 재호출되어도 스탯 누적 안 함.
+        if (d.childStart()) return;
         var c = plugin.getConfig();
         double base = c.getDouble("child-start.base-chance", 0.005);
         double max = c.getDouble("child-start.max-chance", 0.02);
@@ -158,5 +188,63 @@ public final class Roulette {
         d.lineage(lineage);
         d.childStart(true);
         Msg.send(p, "&d[NPC 자녀 시작] &f" + clan.get("name") + "의 자녀로 태어났다.");
+    }
+
+    /** 세계별 환생 플레이버 텍스트. */
+    private String worldFlavorOf(WorldKey w) {
+        switch (w) {
+            case FANTASY:    return "마법과 검의 땅 — 학파를 선택하고 종족의 운명을 살아라.";
+            case DEMON:      return "마기가 흐르는 어둠의 세계 — 너의 영혼이 마기에 잠긴다.";
+            case HEAVEN:     return "신성한 빛의 세계 — 살생을 금하고 신의 길을 따르라.";
+            case SPIRIT:     return "원소가 살아 숨쉬는 정령의 세계 — 정령왕의 호의를 얻어라.";
+            case MARTIAL:    return "무공이 천하를 움직이는 무림 — 정사대전이 너를 기다린다.";
+            case IMMORTAL:   return "선계 — 천기를 모으고 천겁을 넘어 선인이 되어라.";
+            case YOKAI:      return "요계의 밤 — 보름달이 너의 요기를 일깨운다.";
+            case EARTH:      return "지구 — 게이트가 열린 현대. 헌터의 길을 가라.";
+            case MAGITECH:   return "마도공학의 세계 — 마법과 기계가 융합한다.";
+            case APOCALYPSE: return "폐허의 세상 — 방사능 속에서 살아남아라.";
+            case CYBERPUNK:  return "네온이 흐르는 메가코프의 세계 — 임플란트로 무장하라.";
+            case DRAGON:     return "용의 세계 — 잠과 보물 속에서 나이를 먹어가라.";
+            case OCEAN:      return "끝없는 바다 — 해적인가, 해왕의 신민인가?";
+            default:         return "운명이 너를 이 땅으로 인도했다.";
+        }
+    }
+
+    private org.bukkit.Sound worldSoundOf(WorldKey w) {
+        switch (w) {
+            case FANTASY: return org.bukkit.Sound.BLOCK_ENCHANTMENT_TABLE_USE;
+            case DEMON: return org.bukkit.Sound.ENTITY_WITHER_AMBIENT;
+            case HEAVEN: return org.bukkit.Sound.BLOCK_BELL_RESONATE;
+            case SPIRIT: return org.bukkit.Sound.BLOCK_AMETHYST_BLOCK_CHIME;
+            case MARTIAL: return org.bukkit.Sound.ITEM_TRIDENT_THUNDER;
+            case IMMORTAL: return org.bukkit.Sound.BLOCK_BEACON_AMBIENT;
+            case YOKAI: return org.bukkit.Sound.ENTITY_FOX_AGGRO;
+            case EARTH: return org.bukkit.Sound.BLOCK_PISTON_EXTEND;
+            case MAGITECH: return org.bukkit.Sound.BLOCK_END_PORTAL_FRAME_FILL;
+            case APOCALYPSE: return org.bukkit.Sound.ENTITY_RAVAGER_ROAR;
+            case CYBERPUNK: return org.bukkit.Sound.BLOCK_BEACON_POWER_SELECT;
+            case DRAGON: return org.bukkit.Sound.ENTITY_ENDER_DRAGON_GROWL;
+            case OCEAN: return org.bukkit.Sound.BLOCK_CONDUIT_AMBIENT;
+            default: return org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE;
+        }
+    }
+
+    private org.bukkit.Particle worldParticleOf(WorldKey w) {
+        switch (w) {
+            case FANTASY: return org.bukkit.Particle.SPELL_INSTANT;
+            case DEMON: return org.bukkit.Particle.SQUID_INK;
+            case HEAVEN: return org.bukkit.Particle.END_ROD;
+            case SPIRIT: return org.bukkit.Particle.SPELL_MOB_AMBIENT;
+            case MARTIAL: return org.bukkit.Particle.CRIT;
+            case IMMORTAL: return org.bukkit.Particle.SOUL_FIRE_FLAME;
+            case YOKAI: return org.bukkit.Particle.SPELL_WITCH;
+            case EARTH: return org.bukkit.Particle.PORTAL;
+            case MAGITECH: return org.bukkit.Particle.ELECTRIC_SPARK;
+            case APOCALYPSE: return org.bukkit.Particle.SMOKE_LARGE;
+            case CYBERPUNK: return org.bukkit.Particle.REDSTONE;
+            case DRAGON: return org.bukkit.Particle.DRAGON_BREATH;
+            case OCEAN: return org.bukkit.Particle.WATER_BUBBLE;
+            default: return org.bukkit.Particle.TOTEM;
+        }
     }
 }

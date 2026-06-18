@@ -24,6 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class TitleManager {
 
+    private static final String NS = "RebornTitle.player";
+
     private final RebornTitle plugin;
     private final Map<String, Title> titles = new HashMap<>();
     /** uuid → 보유 칭호 id 집합 */
@@ -32,10 +34,27 @@ public final class TitleManager {
     private final Map<UUID, String> active = new ConcurrentHashMap<>();
     /** uuid → 누적 킬 카운트 */
     private final Map<UUID, Integer> kills = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> loaded = ConcurrentHashMap.newKeySet();
 
     public TitleManager(RebornTitle plugin) {
         this.plugin = plugin;
         load();
+    }
+
+    private void ensureLoaded(UUID p) {
+        if (loaded.add(p)) {
+            var all = RebornCore.get().kv().loadAll(NS, p);
+            String og = all.get("owned");
+            if (og != null && !og.isEmpty()) {
+                Set<String> s = new HashSet<>();
+                for (String c : og.split(",")) if (!c.isEmpty()) s.add(c);
+                owned.put(p, s);
+            }
+            String ac = all.get("active");
+            if (ac != null && !ac.isEmpty()) active.put(p, ac);
+            String k = all.get("kills");
+            if (k != null) try { kills.put(p, Integer.parseInt(k)); } catch (Throwable ignored) {}
+        }
     }
 
     private void load() {
@@ -54,10 +73,11 @@ public final class TitleManager {
     public Title get(String id) { return titles.get(id); }
 
     public Set<String> owned(UUID p) {
+        ensureLoaded(p);
         return owned.computeIfAbsent(p, k -> new HashSet<>());
     }
 
-    public String active(UUID p) { return active.get(p); }
+    public String active(UUID p) { ensureLoaded(p); return active.get(p); }
 
     public boolean grant(Player p, String id) {
         Title t = titles.get(id);
@@ -65,15 +85,78 @@ public final class TitleManager {
         Set<String> s = owned(p.getUniqueId());
         if (s.contains(id)) return false;
         s.add(id);
+        RebornCore.get().kv().put(NS, p.getUniqueId(), "owned", String.join(",", s));
         Bukkit.getPluginManager().callEvent(new RebornTitleGrantEvent(p, t));
-        Msg.send(p, "&6&l[칭호 획득] " + t.name);
+        // Title 종류별 고유 연출
+        renderGrant(p, t);
         return true;
+    }
+
+    private void renderGrant(Player p, Title t) {
+        org.bukkit.Sound sound;
+        org.bukkit.Particle particle;
+        String prefix;
+        boolean broadcast = false;
+        switch (t.type) {
+            case TIER -> {
+                sound = org.bukkit.Sound.BLOCK_BEACON_POWER_SELECT;
+                particle = org.bukkit.Particle.END_ROD;
+                prefix = "&5&l✦ 경지 칭호 ✦ &r";
+            }
+            case ACHIEVEMENT -> {
+                sound = org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE;
+                particle = org.bukkit.Particle.TOTEM;
+                prefix = "&6&l[업적] ";
+            }
+            case CLAN -> {
+                sound = org.bukkit.Sound.BLOCK_BELL_USE;
+                particle = org.bukkit.Particle.CRIT_MAGIC;
+                prefix = "&3&l[가문 명예] ";
+            }
+            case NPC -> {
+                sound = org.bukkit.Sound.ENTITY_VILLAGER_TRADE;
+                particle = org.bukkit.Particle.HEART;
+                prefix = "&d&l[인연] ";
+            }
+            case WORLD_QUEST -> {
+                sound = org.bukkit.Sound.BLOCK_BELL_RESONATE;
+                particle = org.bukkit.Particle.PORTAL;
+                prefix = "&6&l[세계의 영웅] ";
+                broadcast = true;
+            }
+            case AI -> {
+                sound = org.bukkit.Sound.BLOCK_AMETHYST_BLOCK_CHIME;
+                particle = org.bukkit.Particle.SPELL_INSTANT;
+                prefix = "&7&l[행적의 증거] ";
+            }
+            default -> {
+                sound = org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE;
+                particle = org.bukkit.Particle.TOTEM;
+                prefix = "&6&l[칭호 획득] ";
+            }
+        }
+        Msg.send(p, prefix + t.name);
+        try {
+            p.playSound(p.getLocation(), sound, 1.0f, 1.2f);
+            p.getWorld().spawnParticle(particle, p.getLocation().add(0, 1.5, 0), 40, 0.5, 0.8, 0.5, 0.1);
+            p.sendTitle("§6✦ 칭호 ✦", "§f" + t.name, 10, 50, 20);
+        } catch (Throwable ignored) {}
+        if (broadcast) {
+            Bukkit.broadcastMessage(Msg.PREFIX + Msg.c(prefix + p.getName() + " §7가 " + t.name + " §7칭호 획득!"));
+        }
     }
 
     public void revoke(Player p, String id) {
         Set<String> s = owned(p.getUniqueId());
         if (!s.remove(id)) return;
-        if (id.equals(active.get(p.getUniqueId()))) active.remove(p.getUniqueId());
+        RebornCore.get().kv().put(NS, p.getUniqueId(), "owned", String.join(",", s));
+        if (id.equals(active.get(p.getUniqueId()))) {
+            // 활성 칭호였으면 스탯 회수도 (이전엔 active만 비우고 stat 회수 안 함)
+            Title t = titles.get(id);
+            if (t != null) removeEffects(p, t);
+            active.remove(p.getUniqueId());
+            RebornCore.get().kv().remove(NS, p.getUniqueId(), "active");
+        }
         Msg.warn(p, "&7칭호 회수: " + id);
     }
 
@@ -84,7 +167,20 @@ public final class TitleManager {
         }
         Title t = titles.get(id);
         if (t == null) return;
+        String prevCheck = active.get(p.getUniqueId());
+        if (id.equals(prevCheck)) {
+            // 같은 칭호 재장착 — applyEffects 또 호출하면 스탯 무한 누적.
+            Msg.warn(p, "이미 대표 칭호: " + t.name);
+            return;
+        }
         String prev = active.put(p.getUniqueId(), id);
+        RebornCore.get().kv().put(NS, p.getUniqueId(), "active", id);
+        // 이전 칭호 효과 회수 — 누락 시 칭호 교체 시마다 스탯 누적
+        // (A 장착 +50, B 장착 +50 → STR +100 영구. 무한 사이클 가능했음)
+        if (prev != null) {
+            Title prevT = titles.get(prev);
+            if (prevT != null) removeEffects(p, prevT);
+        }
         applyEffects(p, t);
         Bukkit.getPluginManager().callEvent(new RebornTitleChangeEvent(p, prev, id));
         PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
@@ -102,9 +198,18 @@ public final class TitleManager {
         }
     }
 
+    /** 칭호 효과 회수 — 비활성화·revoke 시 호출. */
+    private void removeEffects(Player p, Title t) {
+        for (var e : t.statBonuses.entrySet()) {
+            RebornCore.get().api().addStat(p.getUniqueId(), e.getKey(), -e.getValue(), "TITLE-REVOKE:" + t.id);
+        }
+    }
+
     /** 킬 카운트 증가 — 칭호 진행 트리거. */
     public void incrementKill(Player p) {
+        ensureLoaded(p.getUniqueId());
         int n = kills.merge(p.getUniqueId(), 1, Integer::sum);
+        RebornCore.get().kv().putInt(NS, p.getUniqueId(), "kills", n);
         for (Title t : titles.values()) {
             if (t.reqType == Title.ReqType.KILL_COUNT && t.reqValue instanceof Number num) {
                 if (n >= num.intValue()) grant(p, t.id);

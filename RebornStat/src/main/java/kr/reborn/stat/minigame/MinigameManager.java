@@ -142,7 +142,7 @@ public final class MinigameManager {
         String tag = tierTag(tierName);
         int bolts = c.getInt("minigame.tribulation.bolts-by-tier." + tag, 10);
         double interval = Math.max(c.getDouble("minigame.tribulation.interval-min", 0.3),
-                2.0 - tag.equals("higher") ? 1.5 : (tag.equals("dragon") ? 1.7 : 1.0));
+                2.0 - (tag.equals("higher") ? 1.5 : tag.equals("dragon") ? 1.7 : 1.0));
         int simultaneous = "dragon".equals(tag) ? 5 : ("higher".equals(tag) ? 3 : 1);
 
         TribulationSession s = new TribulationSession(bolts, simultaneous, interval, tierName);

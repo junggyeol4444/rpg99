@@ -24,6 +24,8 @@ public final class RebornCraft extends JavaPlugin {
     private CraftingManager crafting;
     private ProficiencyManager proficiency;
     private AccessoryManager accessories;
+    private kr.reborn.craft.specialty.SpecialtyManager specialty;
+    private kr.reborn.craft.enchant.EnchantSystem enchant;
     private Gui gui;
 
     public static RebornCraft get() { return instance; }
@@ -45,14 +47,21 @@ public final class RebornCraft extends JavaPlugin {
         this.proficiency = new ProficiencyManager(this);
         this.crafting = new CraftingManager(this);
         this.accessories = new AccessoryManager(this);
+        this.specialty = new kr.reborn.craft.specialty.SpecialtyManager(this);
+        this.enchant = new kr.reborn.craft.enchant.EnchantSystem(this);
 
         getCommand("craft").setExecutor(new CraftCommand(this));
         getCommand("accessory").setExecutor(new AccessoryCommand(this));
         getCommand("repair").setExecutor(new RepairCommand(this));
         getCommand("enchant").setExecutor(new EnchantCommand(this));
         getCommand("craftitem").setExecutor(new CraftItemCommand(this));
+        if (getCommand("specialty") != null) {
+            getCommand("specialty").setExecutor(new kr.reborn.craft.command.SpecialtyCommand(this));
+        }
 
         getServer().getPluginManager().registerEvents(new ConsumeListener(this), this);
+        getServer().getPluginManager().registerEvents(
+                new kr.reborn.craft.enchant.EnchantEquipListener(this), this);
 
         getLogger().info("RebornCraft 활성화: 아이템 " + items.all().size() + "종 / 레시피 " + recipes.all().size() + "종");
     }
@@ -67,5 +76,7 @@ public final class RebornCraft extends JavaPlugin {
     public CraftingManager crafting() { return crafting; }
     public ProficiencyManager proficiency() { return proficiency; }
     public AccessoryManager accessories() { return accessories; }
+    public kr.reborn.craft.specialty.SpecialtyManager specialty() { return specialty; }
+    public kr.reborn.craft.enchant.EnchantSystem enchant() { return enchant; }
     public Gui gui() { return gui; }
 }

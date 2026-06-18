@@ -25,11 +25,17 @@ public final class ShopManager {
         public final long buy, sell;
         public int stock;       // -1 = 무한
         public final int restockMin;
+        /** 초기 stock (restock 시 회복 목표) */
+        public final int maxStock;
+        /** 마지막 restock 시각 (ms) — 0이면 아직 한 번도 restock 안 됨 */
+        public long lastRestockAt;
 
         public ShopItem(String id, Material material, String currency, long buy, long sell,
                         int stock, int restockMin) {
             this.id = id; this.material = material; this.currency = currency;
             this.buy = buy; this.sell = sell; this.stock = stock; this.restockMin = restockMin;
+            this.maxStock = stock;
+            this.lastRestockAt = System.currentTimeMillis();
         }
     }
 
@@ -49,6 +55,22 @@ public final class ShopManager {
     public ShopManager(RebornEconomy plugin) {
         this.plugin = plugin;
         load();
+        // 1분마다 모든 상점 restock 체크 — restock_minutes 경과 시 maxStock으로 회복
+        kr.reborn.core.RebornCore.get().scheduler().runTimer(this::tickRestock, 1200L, 1200L);
+    }
+
+    /** 매 분 호출 — 한정 stock 아이템이 restock_minutes 경과 시 maxStock으로 회복. */
+    private void tickRestock() {
+        long now = System.currentTimeMillis();
+        for (Shop shop : shops.values()) {
+            for (ShopItem it : shop.items) {
+                if (it.restockMin <= 0 || it.maxStock < 0) continue;
+                if (it.stock >= it.maxStock) continue;
+                if (now - it.lastRestockAt < it.restockMin * 60_000L) continue;
+                it.stock = it.maxStock;
+                it.lastRestockAt = now;
+            }
+        }
     }
 
     private void load() {
@@ -76,6 +98,18 @@ public final class ShopManager {
     }
 
     public Shop get(String id) { return shops.get(id); }
+    public java.util.Collection<Shop> all() { return shops.values(); }
+
+    /** NPC가 차린 상점 등록 (RebornNpcWorldImpactEvent 소비). 기본 잡화 매대 포함. */
+    public Shop registerNpc(String id, String name) {
+        Shop existing = shops.get(id);
+        if (existing != null) return existing;
+        Shop s = new Shop(id, name);
+        s.items.add(new ShopItem("bread", org.bukkit.Material.BREAD, "GOLD_COIN", 8, 2, -1, 0));
+        s.items.add(new ShopItem("torch", org.bukkit.Material.TORCH, "GOLD_COIN", 4, 1, -1, 0));
+        shops.put(id, s);
+        return s;
+    }
 
     public void open(Player p, String shopId) {
         Shop shop = shops.get(shopId);
@@ -104,24 +138,63 @@ public final class ShopManager {
     }
 
     private void buy(Player p, String shopId, ShopItem it) {
-        if (it.stock == 0) { Msg.error(p, "품절되었습니다."); return; }
-        if (!plugin.currencies().withdraw(p.getUniqueId(), it.currency, it.buy)) {
-            Msg.error(p, "화폐가 부족합니다.");
-            return;
+        // 재고 체크+감소를 원자화 — Folia 멀티스레드 환경에서 두 명이 마지막 1개를 동시에 사는 race 방지.
+        synchronized (it) {
+            if (it.stock == 0) { Msg.error(p, "품절되었습니다."); return; }
+            long finalPrice = scaledBuy(p, it);
+            if (!plugin.currencies().withdraw(p.getUniqueId(), it.currency, finalPrice)) {
+                Msg.error(p, "화폐가 부족합니다.");
+                return;
+            }
+            if (it.stock > 0) it.stock--;
+            // 화폐 차감 후 인벤 가득이면 결과물 분실 차단 — 발 밑에 떨군다.
+            var leftover = p.getInventory().addItem(new ItemStack(it.material, 1));
+            if (!leftover.isEmpty()) {
+                for (ItemStack lo : leftover.values()) {
+                    p.getWorld().dropItemNaturally(p.getLocation(), lo);
+                }
+                Msg.warn(p, "&7인벤 가득 — 발 밑에 떨궈 두었다.");
+            }
+            Bukkit.getPluginManager().callEvent(new RebornShopBuyEvent(p, shopId, it.id, 1, finalPrice));
+            Msg.send(p, "&a구매 완료: " + it.id + " &7(" + finalPrice + " "
+                    + it.currency + (finalPrice != it.buy ? " §6(시세 적용)" : "") + ")");
         }
-        if (it.stock > 0) it.stock--;
-        p.getInventory().addItem(new ItemStack(it.material, 1));
-        Bukkit.getPluginManager().callEvent(new RebornShopBuyEvent(p, shopId, it.id, 1, it.buy));
-        Msg.send(p, "&a구매 완료: " + it.id);
     }
 
     private void sell(Player p, String shopId, ShopItem it) {
-        if (!p.getInventory().contains(it.material)) {
+        long finalSell = scaledSell(p, it);
+        if (finalSell <= 0) {
+            Msg.error(p, "이 아이템은 판매할 수 없습니다 (가격 0).");
+            return;
+        }
+        // removeItem이 원자적으로 보유 수량을 보고 처리 — leftover 비어있으면 1개 제거 성공.
+        var leftover = p.getInventory().removeItem(new ItemStack(it.material, 1));
+        if (!leftover.isEmpty()) {
             Msg.error(p, "판매할 아이템이 없습니다.");
             return;
         }
-        p.getInventory().removeItem(new ItemStack(it.material, 1));
-        plugin.currencies().deposit(p.getUniqueId(), it.currency, it.sell);
-        Msg.send(p, "&a판매 완료: " + it.id + " (+" + it.sell + " " + it.currency + ")");
+        plugin.currencies().deposit(p.getUniqueId(), it.currency, finalSell);
+        Msg.send(p, "&a판매 완료: " + it.id + " (+" + finalSell + " " + it.currency
+                + (finalSell != it.sell ? " §6(시세 적용)" : "") + ")");
+    }
+
+    /** 플레이어 현재 세계의 시세를 적용한 구매가. */
+    private long scaledBuy(Player p, ShopItem it) {
+        try {
+            var data = kr.reborn.core.RebornCore.get().api().getPlayerData(p.getUniqueId());
+            if (data == null) return it.buy;
+            double m = plugin.priceController().multiplier(data.worldKey(), it.material);
+            return Math.max(1, Math.round(it.buy * m));
+        } catch (Throwable t) { return it.buy; }
+    }
+
+    /** 시세 적용 판매가 (판매는 보통 구매가의 25% 정도 — 시세 영향 동일). */
+    private long scaledSell(Player p, ShopItem it) {
+        try {
+            var data = kr.reborn.core.RebornCore.get().api().getPlayerData(p.getUniqueId());
+            if (data == null) return it.sell;
+            double m = plugin.priceController().multiplier(data.worldKey(), it.material);
+            return Math.max(0, Math.round(it.sell * m));
+        } catch (Throwable t) { return it.sell; }
     }
 }

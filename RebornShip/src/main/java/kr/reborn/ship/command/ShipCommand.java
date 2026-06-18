@@ -41,11 +41,50 @@ public final class ShipCommand implements CommandExecutor {
                 Ship si = pickByName(p, a, 1);
                 if (si != null) plugin.movement().sink(si);
                 break;
-            case "dismantle":
-                Msg.warn(p, "해체 (TODO: 블록 환수)");
+            case "dismantle": {
+                Ship sd = pickByName(p, a, 1);
+                if (sd == null) break;
+                org.bukkit.World w = sd.helm.getWorld();
+                if (w == null) { Msg.error(p, "월드 없음"); break; }
+                // 블록 환수 — 각 블록을 AIR로 제거하고 환수 아이템 인벤에 추가
+                int returned = 0;
+                for (var entry : sd.blocks.entrySet()) {
+                    String[] coords = entry.getKey().split(",");
+                    if (coords.length != 3) continue;
+                    try {
+                        int x = Integer.parseInt(coords[0]);
+                        int y = Integer.parseInt(coords[1]);
+                        int z = Integer.parseInt(coords[2]);
+                        var block = w.getBlockAt(x, y, z);
+                        org.bukkit.Material mat = entry.getValue().getMaterial();
+                        block.setType(org.bukkit.Material.AIR, false);
+                        if (mat != null && mat.isItem()) {
+                            p.getInventory().addItem(new org.bukkit.inventory.ItemStack(mat));
+                            returned++;
+                        }
+                    } catch (Throwable ignored) {}
+                }
+                sd.blocks.clear();
+                plugin.ships().unregister(sd);
+                Msg.send(p, "&7" + sd.name + " 해체 — 환수 §f" + returned + " §7블록.");
                 break;
+            }
             case "join":
                 Msg.send(p, "&7선원으로 승선");
+                break;
+            case "fire":
+                Ship sf = pickByName(p, a, 1);
+                if (sf != null) plugin.combat().fireCannon(p, sf);
+                break;
+            case "status":
+                Ship st = pickByName(p, a, 1);
+                if (st != null) {
+                    Msg.send(p, "&6=== " + st.name + " ===");
+                    p.sendMessage("§7등급: §f" + st.grade
+                            + " §7HP: §c" + (int) st.hp + "/" + (int) st.maxHp);
+                    p.sendMessage("§7상태: §f" + st.state
+                            + " §7블록: §f" + st.blockCount);
+                }
                 break;
         }
         return true;
@@ -68,6 +107,10 @@ public final class ShipCommand implements CommandExecutor {
         Ship s = pickByName(p, a, 2);
         if (s == null) return;
         int n = a.length > 2 ? safeInt(a[2], 1) : 1;
+        // 거리 가드 — 1칸=block translate 한 번. n=1M 같은 값 던지면 서버 lag/crash 위험.
+        // 한 명령당 최대 64칸 (게임플레이상 자연스러움). 더 가려면 명령 반복.
+        if (n < 1) { Msg.error(p, "이동 칸수는 1 이상."); return; }
+        if (n > 64) { Msg.warn(p, "한 명령당 최대 64칸 — 64로 제한."); n = 64; }
         // 플레이어 시선 방향 기준
         int dx = 0, dz = 0;
         float yaw = p.getLocation().getYaw();

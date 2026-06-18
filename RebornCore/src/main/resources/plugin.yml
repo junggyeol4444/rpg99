@@ -11,6 +11,25 @@ commands:
     description: RebornCore 관리 명령어
     aliases: [rcore, rc]
     permission: reborncore.admin
+  dashboard:
+    description: 통합 대시보드 - 모든 플러그인 상태 한 화면
+    aliases: [db, status]
+  pastlife:
+    description: 전생 회상 - 모든 전생 기록 + 잔존 효과
+    aliases: [past, reincarnation]
+  hidden:
+    description: 6 히든 월드 발견 상태 + 해금 조건
+    aliases: [hiddenworld]
+  guide:
+    description: 현재 세계의 시스템·명령어 안내
+    aliases: [g, help2]
+  lang:
+    description: 메시지 언어 전환 (ko/en)
+    aliases: [language]
+  serverstat:
+    description: 서버 전체 상태 메트릭 (admin)
+    aliases: [serverstats, sstat]
+    permission: reborncore.admin
 permissions:
   reborncore.admin:
     default: op

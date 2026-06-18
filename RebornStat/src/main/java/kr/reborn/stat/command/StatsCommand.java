@@ -16,6 +16,7 @@ public final class StatsCommand implements CommandExecutor {
                              @NotNull String label, @NotNull String[] args) {
         if (!(s instanceof Player p)) { Msg.error(s, "플레이어 전용"); return true; }
         PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+        if (d == null) { Msg.error(p, "플레이어 데이터 로드 실패."); return true; }
         Msg.send(p, "&6===== 스탯 =====");
         for (StatType t : StatType.COMMON_8) {
             p.sendMessage(" &e" + t.name() + ": &f" + d.getStat(t));

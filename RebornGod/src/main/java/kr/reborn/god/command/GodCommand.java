@@ -3,6 +3,8 @@ package kr.reborn.god.command;
 import kr.reborn.core.util.Msg;
 import kr.reborn.god.RebornGod;
 import kr.reborn.god.data.God;
+import kr.reborn.god.miracle.Miracle;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -18,32 +20,256 @@ public final class GodCommand implements CommandExecutor {
                              @NotNull String l, @NotNull String[] a) {
         if (!(s instanceof Player p)) return true;
         if (a.length == 0) {
-            Msg.send(p, "&7/god ascend | challenge | domain create | enter | religion create <id> <name> | pray <religion>");
+            Msg.send(p, "&7/god trial start | status | riddle | answer <단어> | conviction");
+            Msg.send(p, "&7     ascend | info | tier | tier list");
+            Msg.send(p, "&7     domain create | enter | invite <p> | kick <p> | rule <k> <v>");
+            Msg.send(p, "&7     religion create <id> <name> | list | pray <id>");
+            Msg.send(p, "&7     miracle list | cast <type> [target]");
+            Msg.send(p, "&7     war declare <godId> | list");
             return true;
         }
         switch (a[0].toLowerCase()) {
-            case "ascend":
-                plugin.gods().ascend(p);
+            case "trial": {
+                if (a.length < 2) { Msg.send(p, "&7/god trial start|status|conviction"); break; }
+                String sub = a[1].toLowerCase();
+                if ("start".equals(sub))           plugin.trials().startTrial(p);
+                else if ("status".equals(sub))     plugin.trials().status(p);
+                else if ("conviction".equals(sub)) plugin.trials().startConviction(p);
                 break;
-            case "challenge":
-                Msg.send(p, "&7신 도전 — 시련의 장 (TODO: 3시련 미니게임)");
+            }
+            case "riddle":  plugin.trials().askRiddle(p); break;
+            case "answer":
+                if (a.length < 2) return true;
+                plugin.trials().answerRiddle(p, a[1]);
                 break;
-            case "domain":
-                if (a.length >= 2 && "create".equalsIgnoreCase(a[1])) plugin.domains().create(p);
-                else plugin.domains().enter(p);
-                break;
-            case "religion":
-                if (a.length >= 4 && "create".equalsIgnoreCase(a[1])) plugin.religions().create(p, a[2], a[3]);
-                break;
-            case "pray":
-                if (a.length >= 2) plugin.religions().pray(p, a[1]);
-                break;
-            case "info":
+
+            case "ascend": plugin.gods().ascend(p); break;
+            case "info": {
                 God g = plugin.gods().of(p.getUniqueId());
                 if (g == null) { Msg.warn(p, "필멸자"); return true; }
-                Msg.send(p, "&6신성: " + g.divinity + "  신도: " + g.followers.size());
+                String tier = plugin.gods().tierOf(g);
+                Msg.send(p, "&6=== " + g.name + " ===");
+                Msg.send(p, "&7신성: §f" + (int) g.divinity + " §7등급: §6" + tier);
+                Msg.send(p, "&7신도: §f" + g.followers.size() + " §7동맹: §f" + g.allies.size());
+                Msg.send(p, "&7신역: §f" + (g.domainWorld.isEmpty() ? "없음" : g.domainWorld));
+                Msg.send(p, "&7전쟁: §f" + (g.atWar() ? "vs " + g.warOpponent : "평화"));
                 break;
+            }
+            case "tier": {
+                if (a.length >= 2 && "list".equalsIgnoreCase(a[1])) {
+                    Msg.send(p, "&6신성 등급 표:");
+                    for (var e : plugin.getConfig().getMapList("tiers")) {
+                        p.sendMessage("§7• §f" + e.get("name") + " §8(min " + e.get("min") + ")");
+                    }
+                } else {
+                    God g = plugin.gods().of(p.getUniqueId());
+                    Msg.send(p, g == null ? "&7필멸자" : "&6현재 등급: " + plugin.gods().tierOf(g));
+                }
+                break;
+            }
+
+            case "domain": {
+                if (a.length < 2) { plugin.domains().enter(p); break; }
+                String sub = a[1].toLowerCase();
+                if ("create".equals(sub)) plugin.domains().create(p);
+                else if ("enter".equals(sub)) plugin.domains().enter(p);
+                else if ("invite".equals(sub) && a.length >= 3) {
+                    Player g = p.getServer().getPlayerExact(a[2]);
+                    if (g != null) plugin.domains().invite(p, g);
+                } else if ("kick".equals(sub) && a.length >= 3) {
+                    Player g = p.getServer().getPlayerExact(a[2]);
+                    if (g != null) plugin.domains().kick(p, g);
+                } else if ("rule".equals(sub) && a.length >= 4) {
+                    plugin.domains().setRule(p, a[2], a[3]);
+                }
+                break;
+            }
+
+            case "religion": {
+                if (a.length < 2) {
+                    Msg.send(p, "&7/god religion create <id> <name> | list | gui | info <id> | mine | join <id> | leave <id>");
+                    break;
+                }
+                String sub = a[1].toLowerCase();
+                if ("gui".equals(sub)) {
+                    openReligionGui(p);
+                } else if ("create".equals(sub) && a.length >= 4) {
+                    plugin.religions().create(p, a[2], a[3]);
+                } else if ("list".equals(sub)) {
+                    Msg.send(p, "&6=== 교단 목록 (" + plugin.religions().all().size() + ") ===");
+                    int shown = 0;
+                    for (var r : plugin.religions().all()) {
+                        if (shown++ >= 20) { p.sendMessage("§7…"); break; }
+                        boolean iam = r.followers.contains(p.getUniqueId());
+                        String mark = iam ? "§a✦ " : "§7";
+                        p.sendMessage(mark + "§e" + r.id + " §7- " + r.name + " §8신앙:" + (int) r.faith
+                                + " 신도:" + r.totalFollowers());
+                    }
+                } else if ("info".equals(sub) && a.length >= 3) {
+                    var r = plugin.religions().get(a[2]);
+                    if (r == null) { Msg.error(p, "교단 없음: " + a[2]); break; }
+                    Msg.send(p, "&6=== " + r.name + " ===");
+                    p.sendMessage("§7ID: §f" + r.id);
+                    p.sendMessage("§7섬기는 신: §f" + r.godIdentifier);
+                    if (r.doctrine != null && !r.doctrine.isEmpty())
+                        p.sendMessage("§7교리: §f" + r.doctrine);
+                    p.sendMessage("§7신앙: §f" + (int) r.faith + " §7누적 신도: §f"
+                            + r.totalFollowers() + " §7(인간 " + r.followers.size()
+                            + " + NPC " + r.npcFollowerCount + ")");
+                    if (!r.antiReligion.isEmpty())
+                        p.sendMessage("§c적대 교단: §f" + r.antiReligion);
+                    if (!r.allyReligions.isEmpty())
+                        p.sendMessage("§a동맹 교단: §f" + r.allyReligions);
+                    if (r.forbidden) p.sendMessage("§8금지된 교단");
+                    if (r.protective) p.sendMessage("§b보호받는 교단");
+                    boolean iam = r.followers.contains(p.getUniqueId());
+                    p.sendMessage(iam ? "§a당신은 이 교단의 신도입니다."
+                                      : "§7가입: /god religion join " + r.id);
+                } else if ("mine".equals(sub)) {
+                    Msg.send(p, "&6=== 내 신앙 ===");
+                    int count = 0;
+                    for (var r : plugin.religions().all()) {
+                        if (r.followers.contains(p.getUniqueId())) {
+                            p.sendMessage("§a✦ §f" + r.name + " §7(" + r.id + ") §8섬기는 신: " + r.godIdentifier);
+                            count++;
+                        }
+                    }
+                    if (count == 0) p.sendMessage("§7섬기는 교단 없음. /god religion list 로 둘러보고 /god pray <id> 또는 /god religion join <id>.");
+                } else if ("join".equals(sub) && a.length >= 3) {
+                    var r = plugin.religions().get(a[2]);
+                    if (r == null) { Msg.error(p, "교단 없음: " + a[2]); break; }
+                    if (r.followers.contains(p.getUniqueId())) {
+                        Msg.warn(p, "이미 신도입니다."); break;
+                    }
+                    r.followers.add(p.getUniqueId());
+                    Msg.send(p, "&a" + r.name + " §a신도로 등록되었다. §7/god pray "
+                            + r.id + " 로 신앙을 바치세요.");
+                    Bukkit.broadcastMessage("§6[" + r.name + "] §f" + p.getName()
+                            + " §7이(가) 새 신도가 되었다 (총 " + r.totalFollowers() + ").");
+                } else if ("leave".equals(sub) && a.length >= 3) {
+                    var r = plugin.religions().get(a[2]);
+                    if (r == null) { Msg.error(p, "교단 없음: " + a[2]); break; }
+                    if (!r.followers.remove(p.getUniqueId())) {
+                        Msg.warn(p, "신도가 아닙니다."); break;
+                    }
+                    Msg.send(p, "&7" + r.name + " 신도 탈퇴.");
+                } else if ("ritual".equals(sub) && a.length >= 3) {
+                    // 의식 집전 — 신도 본인 + 주변 같은 교단 신도 모두 받는 집단 신앙 부스트.
+                    plugin.faith().performRitual(p, a[2]);
+                }
+                break;
+            }
+            case "pray":
+                if (a.length < 2) return true;
+                if (plugin.religions().pray(p, a[1])) Msg.send(p, "&a기도 — 신앙 +5");
+                else Msg.error(p, "기도 실패 — 교단 없음 또는 쿨다운 (1분).");
+                break;
+
+            case "miracle": {
+                if (a.length < 2) { Msg.send(p, "&7/god miracle list | cast <type> [target]"); break; }
+                String sub = a[1].toLowerCase();
+                if ("list".equals(sub)) {
+                    God g = plugin.gods().of(p.getUniqueId());
+                    String myTier = g == null ? "" : plugin.gods().tierOf(g);
+                    Msg.send(p, "&6=== 기적 (현 등급: " + myTier + ") ===");
+                    for (Miracle m : Miracle.values()) {
+                        String mark = g != null && Miracle.tierOf(myTier) >= m.tierIndex() ? "§a✔" : "§7";
+                        p.sendMessage(mark + " §f" + m.name() + " §7(" + m.requiredTier
+                                + ", 신성 " + (int) m.cost + ") " + m.description);
+                    }
+                } else if ("cast".equals(sub) && a.length >= 3) {
+                    try {
+                        Miracle m = Miracle.valueOf(a[2].toUpperCase());
+                        String target = a.length >= 4 ? a[3] : "";
+                        plugin.miracles().cast(p, m, target);
+                    } catch (IllegalArgumentException e) {
+                        Msg.error(p, "그런 기적 없음: " + a[2]);
+                    }
+                }
+                break;
+            }
+
+            case "war": {
+                if (a.length < 2) { Msg.send(p, "&7/god war declare <godId> | list"); break; }
+                String sub = a[1].toLowerCase();
+                if ("declare".equals(sub) && a.length >= 3) {
+                    plugin.wars().declareWar(p, a[2]);
+                } else if ("list".equals(sub)) {
+                    var active = plugin.wars().activeWars();
+                    Msg.send(p, "&6=== 활성 신 전쟁 (" + active.size() + ") ===");
+                    for (var w : active) {
+                        p.sendMessage("§c⚔ §f" + w.challengerGodId + " §c vs §f" + w.defenderGodId
+                                + " §7점수 " + (int) w.challengerScore + " : " + (int) w.defenderScore);
+                    }
+                }
+                break;
+            }
         }
         return true;
+    }
+
+    /**
+     * 교단 목록 GUI — 신앙·신도 수 기준 정렬, 내 소속 교단 ★ 표시.
+     * 좌클릭 → 정보 보기, Shift-좌클릭 → 가입, Shift-우클릭 → 탈퇴, 우클릭 → 의식 집전(/god religion ritual).
+     */
+    private void openReligionGui(Player p) {
+        var all = new java.util.ArrayList<>(plugin.religions().all());
+        // 인기순(신앙 내림차) 정렬 — 상위 53개만 (6행 GUI 마지막 행 빼고 채움).
+        all.sort((x, y) -> Double.compare(y.faith, x.faith));
+        int rows = 6;
+        var b = plugin.gui().builder("&6교단 (" + all.size() + ")", rows);
+        int slot = 0;
+        for (var r : all) {
+            if (slot >= 45) break;
+            final String rid = r.id;
+            boolean iam = r.followers.contains(p.getUniqueId());
+            // 보호/금지/일반에 따라 아이콘 변형.
+            org.bukkit.Material mat = r.forbidden ? org.bukkit.Material.WITHER_SKELETON_SKULL
+                    : r.protective ? org.bukkit.Material.BEACON
+                    : org.bukkit.Material.BOOK;
+            String prefix = iam ? "&a✦ " : r.forbidden ? "&8" : r.protective ? "&b" : "&e";
+            var item = kr.reborn.core.util.Items.of(
+                    mat,
+                    prefix + r.name,
+                    "&7ID: &f" + r.id,
+                    "&7섬기는 신: &f" + r.godIdentifier,
+                    "&7신앙: &f" + (int) r.faith,
+                    "&7신도: &f" + r.totalFollowers() + " &8(인 " + r.followers.size() + " + NPC " + r.npcFollowerCount + ")",
+                    r.doctrine != null && !r.doctrine.isEmpty() ? "&7교리: &f" + r.doctrine : "",
+                    iam ? "&a당신은 신도입니다." : "",
+                    "",
+                    iam ? "&7Shift-우클릭 — 탈퇴" : "&7Shift-좌클릭 — 가입",
+                    "&a좌클릭 — 정보",
+                    iam ? "&6우클릭 — 의식 집전 (8h)" : "");
+            b.set(slot, item, e -> {
+                p.closeInventory();
+                if (e.isShiftClick() && e.isRightClick()) {
+                    p.performCommand("god religion leave " + rid);
+                } else if (e.isShiftClick()) {
+                    p.performCommand("god religion join " + rid);
+                } else if (e.isRightClick()) {
+                    if (iam) plugin.faith().performRitual(p, rid);
+                    else Msg.warn(p, "신도가 아니면 의식 집전 불가.");
+                } else {
+                    p.performCommand("god religion info " + rid);
+                }
+            });
+            slot++;
+        }
+        // 하단 — 내 신앙 요약 + 교단 창설 안내.
+        int mineCount = 0;
+        double myFaith = 0;
+        for (var r : plugin.religions().all()) {
+            if (r.followers.contains(p.getUniqueId())) { mineCount++; myFaith += r.faith; }
+        }
+        var mine = kr.reborn.core.util.Items.of(
+                org.bukkit.Material.GOLDEN_APPLE,
+                "&e내 신앙",
+                "&7소속 교단: &f" + mineCount,
+                "&7기여 신앙: &f" + (int) myFaith,
+                "",
+                "&7교단 창설: /god religion create <id> <name>");
+        b.set(49, mine, e -> p.closeInventory());
+        b.open(p);
     }
 }

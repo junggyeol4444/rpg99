@@ -10,7 +10,8 @@ softdepend: [RebornNPC, RebornSkill, RebornDeath]
 load: POSTWORLD
 commands:
   rtut:
-    description: 튜토리얼 관리
-    permission: reborntutorial.admin
+    description: 튜토리얼 (시작·수련·힌트 등)
+    permission: reborntutorial.use
 permissions:
+  reborntutorial.use: { default: true }
   reborntutorial.admin: { default: op }

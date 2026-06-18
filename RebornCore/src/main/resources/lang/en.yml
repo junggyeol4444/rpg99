@@ -1,0 +1,64 @@
+# Reincarnation World — English message bundle.
+# Missing keys fall back to ko.yml, then the raw key.
+# {0}, {1} are positional arguments.
+
+common:
+  no-permission: "&cYou don't have permission."
+  player-only: "&cPlayers only."
+  not-found: "&cTarget not found."
+  not-online: "&c{0} is not online."
+  unknown-arg: "&cUnknown argument: {0}"
+  cooldown: "&eCooldown — {0}s remaining."
+  success: "&aDone."
+  error: "&cError: {0}"
+  insufficient-funds: "&cInsufficient funds."
+  reload-done: "&aConfig reloaded."
+
+lang:
+  set: "&aLanguage set to {0}."
+  set-default: "&aServer default language is now {0}."
+  invalid: "&cUnsupported language code: {0}"
+  available: "&7Available: {0}"
+  current: "&7Current language: &f{0}"
+
+stat:
+  up: "&a{0} +{1}"
+  breakthrough-success: "&6Tier breakthrough! &f{0}"
+  breakthrough-fail: "&cTier breakthrough failed."
+
+skill:
+  learned: "&aSkill learned — &f{0}"
+  not-learned: "&cSkill not learned."
+  out-of-energy: "&cOut of energy."
+
+clan:
+  joined: "&aJoined clan {0}."
+  left: "&7Left clan {0}."
+  not-member: "&cNot a clan member."
+  no-clan: "&cNo clan."
+
+kingdom:
+  founded: "&6Kingdom &f{0} &7founded."
+  joined: "&aJoined kingdom {0}."
+  tax: "&6[Kingdom Tax] &f{0} &7→ &6{1} GOLD &7collected."
+
+god:
+  prayed: "&ePrayed — &f{0}"
+  faith-gained: "&7Faith +{0}"
+  ritual-started: "&6{0} ritual begun."
+  ritual-cooldown: "&eNext ritual in {0}h."
+
+corp:
+  joined: "&aJoined {0} — reputation +{1}"
+  mission-complete: "&aMission complete: {0}."
+
+empire:
+  joined: "&aJoined {0} — reputation +{1}"
+  mission-complete: "&aNaval mission complete: {0}."
+
+server-stat:
+  header: "&6&l=== Server Status ==="
+  players: "&7Online: &f{0} &7/ &f{1}"
+  tps: "&7TPS: &f{0}"
+  memory: "&7Memory: &f{0} &7/ &f{1} MB"
+  plugin: "&7{0}: &f{1}"

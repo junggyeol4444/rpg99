@@ -150,6 +150,35 @@ public final class DataManager {
                 }
                 ps.executeBatch();
             }
+            // 방문 세계 — INSERT IGNORE (이미 있으면 중복 회피)
+            try (PreparedStatement ps = c.prepareStatement(
+                    "INSERT IGNORE INTO reborn_visited_worlds (uuid, world_key) VALUES (?,?)")) {
+                for (WorldKey w : d.visited()) {
+                    ps.setString(1, d.uuid().toString());
+                    ps.setString(2, w.name());
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+            }
+            // 상태 효과 — 기존 다 삭제 후 일괄 INSERT (단순화)
+            try (PreparedStatement del = c.prepareStatement(
+                    "DELETE FROM reborn_status WHERE uuid=?")) {
+                del.setString(1, d.uuid().toString());
+                del.executeUpdate();
+            }
+            try (PreparedStatement ps = c.prepareStatement(
+                    "INSERT INTO reborn_status (uuid, id, type, remaining, stacks) VALUES (?,?,?,?,?)")) {
+                for (var e : d.status().entrySet()) {
+                    PlayerData.StatusEffect se = e.getValue();
+                    ps.setString(1, d.uuid().toString());
+                    ps.setString(2, se.id);
+                    ps.setString(3, se.type);
+                    ps.setLong(4, se.remainingTicks);
+                    ps.setInt(5, se.stacks);
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+            }
         } catch (Exception ex) {
             plugin.getLogger().log(Level.SEVERE, "PlayerData 저장 실패: " + d.uuid(), ex);
         }

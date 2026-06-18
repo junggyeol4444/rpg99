@@ -12,8 +12,15 @@ commands:
   buff:
     description: 현재 축복·저주 목록 GUI
   curse:
-    description: 축복/저주 부여·해제 (관리자)
-    usage: /curse apply|cure <player> <id>
+    description: 축복/저주 시스템 (관리자 일부 + 조회)
+    usage: |
+      /curse apply <p> <id>      - 효과 부여 (관리자)
+      /curse cure <p> <id>       - 효과 해제 (관리자)
+      /curse list [player]       - 활성 효과 + 광폭화 + 봉인 스쿨
+      /curse berserk <p>         - 강제 광폭화 (관리자)
+      /curse info <id>           - 효과 정의 상세
+      /curse catalog [B|C]       - 전체 효과 카탈로그
+      /curse mechanic <p> <id>   - 매커니즘 cure 트리거 (관리자)
 permissions:
   reborncurse.use:
     default: true

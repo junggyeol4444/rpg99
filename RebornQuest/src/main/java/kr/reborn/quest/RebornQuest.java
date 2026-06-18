@@ -6,6 +6,7 @@ import kr.reborn.quest.command.QuestCommand;
 import kr.reborn.quest.contrib.ContributionTracker;
 import kr.reborn.quest.engine.QuestEngine;
 import kr.reborn.quest.engine.QuestRegistry;
+import kr.reborn.core.RebornCore;
 import kr.reborn.quest.event.EventTree;
 import kr.reborn.quest.listener.QuestListener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -34,6 +35,9 @@ public final class RebornQuest extends JavaPlugin {
         getCommand("event").setExecutor(new EventStartCommand(this));
         getCommand("eventchoice").setExecutor(new EventChoiceCommand(this));
         getServer().getPluginManager().registerEvents(new QuestListener(this), this);
+
+        // 생존(SURVIVE) 퀘스트 — 1초마다 진행
+        RebornCore.get().scheduler().runTimer(engine::tickSurvive, 20L, 20L);
 
         getLogger().info("RebornQuest 활성화 — " + registry.all().size() + "개");
     }

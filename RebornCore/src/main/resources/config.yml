@@ -1,3 +1,7 @@
+# 서버 기본 언어. 플레이어는 /lang <ko|en> 로 개별 override 가능.
+lang:
+  default: ko
+
 database:
   type: mysql        # mysql | sqlite
   host: localhost

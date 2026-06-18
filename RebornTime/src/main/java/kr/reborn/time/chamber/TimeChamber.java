@@ -9,27 +9,86 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class TimeChamber {
 
-    private final RebornTime plugin;
-    private final Map<UUID, Long> lastExit = new HashMap<>();
-    private final Map<UUID, Long> entryAt = new HashMap<>();
+    /** 화이트리스트 — chamberId가 이 셋에 없고 config ratios에도 없으면 진입 거부.
+     *  드래곤 5가문 + caveheaven_1~36 (선계 36동천) + bless_1~72 (72복지)를 모두 인정.
+     */
+    private static final Set<String> KNOWN_CHAMBERS;
+    static {
+        java.util.HashSet<String> s = new java.util.HashSet<>();
+        s.add("dragon_chamber");
+        s.add("dragon_chamber_aurelius");
+        s.add("dragon_chamber_ignifer");
+        s.add("dragon_chamber_nocterna");
+        s.add("dragon_chamber_cerylis");
+        s.add("dragon_chamber_silvarex");
+        // 36동천
+        for (int i = 1; i <= 36; i++) s.add("caveheaven_" + i);
+        // 72복지
+        for (int i = 1; i <= 72; i++) s.add("bless_" + i);
+        KNOWN_CHAMBERS = java.util.Collections.unmodifiableSet(s);
+    }
 
-    public TimeChamber(RebornTime p) { this.plugin = p; }
+    /** 선계 36동천·72복지 진척도 KV 네임스페이스. */
+    private static final String CAVE_NS = "RebornTime.cavehaven";
+
+    private final RebornTime plugin;
+    private final Map<UUID, Long> lastExit = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> entryAt = new ConcurrentHashMap<>();
+    /** uuid → 진입한 chamber 종류 (적용할 스탯 결정) */
+    private final Map<UUID, String> entryChamber = new ConcurrentHashMap<>();
+
+    public TimeChamber(RebornTime p) {
+        this.plugin = p;
+        // 매 1분마다 내부 인원에게 stat tick
+        RebornCore.get().scheduler().runTimer(this::tickInside, 1200L, 1200L);
+    }
 
     public boolean enter(Player p, String chamberId) {
-        PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
-        if (RebornCore.get().api().getTotalStats(p.getUniqueId())
-                < plugin.getConfig().getInt("time-chamber.enter-tier-stats", 200)) {
-            Msg.error(p, "중룡 이상이어야 진입 가능."); return false;
+        if (chamberId == null || chamberId.isEmpty()) {
+            Msg.error(p, "방 ID 필요."); return false;
         }
-        if (d.getStat(StatType.DRAGON_POWER)
-                < plugin.getConfig().getInt("time-chamber.enter-dragon-power", 500)) {
-            Msg.error(p, "용력 500 이상 필요."); return false;
+        // 화이트리스트 — 임의 월드 이름 통과 차단 (spawn 등을 챔버로 위장하던 익스플로잇)
+        if (!KNOWN_CHAMBERS.contains(chamberId)
+                && !plugin.getConfig().contains("time-chamber.ratios." + chamberId)) {
+            Msg.error(p, "등록되지 않은 시간의 방: " + chamberId);
+            return false;
+        }
+        PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+        // 기획서 5-12: 드래곤 가문 시간의 방은 강화된 진입 조건
+        boolean isDragonFamilyChamber = chamberId.startsWith("dragon_chamber_");
+        if (isDragonFamilyChamber) {
+            // 중룡 이상(총합 200+) + 용력 500+ 또는 드래곤 로드 가문 허가(PlayerData.status 마커)
+            int reqDragonPower = plugin.getConfig().getInt("time-chamber.enter-dragon-power", 500);
+            double dragonPower = d == null ? 0
+                    : RebornCore.get().api().getStat(p.getUniqueId(),
+                            kr.reborn.core.data.StatType.DRAGON_POWER);
+            boolean familyPermission = d != null
+                    && d.status().containsKey("dragon_chamber_permit:" + chamberId);
+            int reqTier = plugin.getConfig().getInt("time-chamber.enter-tier-stats", 200);
+            double total = RebornCore.get().api().getTotalStats(p.getUniqueId());
+            if (total < reqTier) {
+                Msg.error(p, "중룡 이상(총합 " + reqTier + "+) 필요. 현재 " + (int) total);
+                return false;
+            }
+            if (dragonPower < reqDragonPower && !familyPermission) {
+                Msg.error(p, "용력 " + reqDragonPower + " 이상 또는 가문 허가 필요. 현재 용력 "
+                        + (int) dragonPower);
+                Msg.warn(p, "&7가문 허가는 5대 드래곤 로드 가주에게 받을 수 있음.");
+                return false;
+            }
+        } else {
+            // 비-드래곤 챔버는 기존 단순 조건 유지
+            if (RebornCore.get().api().getTotalStats(p.getUniqueId())
+                    < plugin.getConfig().getInt("time-chamber.enter-tier-stats", 200)) {
+                Msg.error(p, "중룡 이상이어야 진입 가능."); return false;
+            }
         }
         long cd = plugin.getConfig().getLong("time-chamber.reentry-cooldown-real-hours", 24) * 3_600_000L;
         Long le = lastExit.get(p.getUniqueId());
@@ -40,22 +99,208 @@ public final class TimeChamber {
         if (w == null) { Msg.error(p, "방 없음."); return false; }
         p.teleport(w.getSpawnLocation());
         entryAt.put(p.getUniqueId(), System.currentTimeMillis());
-        Msg.send(p, "&5시간의 방 — 내부 10년 = 외부 1년.");
+        entryChamber.put(p.getUniqueId(), chamberId);
+        // 가문 허가 1회 사용 시 소비
+        if (d != null) d.status().remove("dragon_chamber_permit:" + chamberId);
+        Msg.send(p, "&5" + chamberLabel(chamberId) + " 진입 — 내부 " + ratioOf(chamberId) + "× 가속.");
         return true;
     }
 
     public void exit(Player p) {
         Long e = entryAt.remove(p.getUniqueId());
+        String chamber = entryChamber.remove(p.getUniqueId());
         if (e == null) return;
         long realMs = System.currentTimeMillis() - e;
-        int ratio = plugin.getConfig().getInt("time-chamber.ratio", 10);
+        int ratio = ratioOf(chamber);
         int internalYears = (int) ((realMs / 3_600_000.0) * ratio);
         PlayerData d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+        // chamber 종류별 출구 스탯
+        applyExitBonus(p, chamber, internalYears);
         d.dragonAge(d.dragonAge() + internalYears);
         lastExit.put(p.getUniqueId(), System.currentTimeMillis());
-        // 본세계로
-        World w = Bukkit.getWorld("dragon");
+        // 36동천·72복지 진척도 KV 기록 — 진입한 동천/복지 개수 추적
+        if (chamber != null && (chamber.startsWith("caveheaven_") || chamber.startsWith("bless_"))) {
+            try {
+                long visitCount = RebornCore.get().kv().getLong(
+                        CAVE_NS, p.getUniqueId(), chamber + ".visits", 0) + 1;
+                RebornCore.get().kv().putLong(CAVE_NS, p.getUniqueId(),
+                        chamber + ".visits", visitCount);
+                long totalYears = RebornCore.get().kv().getLong(
+                        CAVE_NS, p.getUniqueId(), chamber + ".years", 0) + internalYears;
+                RebornCore.get().kv().putLong(CAVE_NS, p.getUniqueId(),
+                        chamber + ".years", totalYears);
+                // 첫 방문 broadcast
+                if (visitCount == 1 && chamber.startsWith("caveheaven_")) {
+                    Bukkit.broadcastMessage("§5§l[36동천] §f" + p.getName()
+                            + " §7이(가) §6" + chamber + " §7최초 진입.");
+                }
+            } catch (Throwable ignored) {}
+        }
+        World w = Bukkit.getWorld(exitWorldOf(chamber));
         if (w != null) p.teleport(w.getSpawnLocation());
-        Msg.send(p, "&5시간의 방 퇴장 — 내부 " + internalYears + "년 경과. 드래곤 나이: " + d.dragonAge());
+        Msg.send(p, "&5" + chamberLabel(chamber) + " 퇴장 — 내부 " + internalYears + "년 경과.");
+    }
+
+    /** 36동천·72복지 진척 조회용 외부 API. */
+    public int discoveredCaveheavens(UUID id) {
+        int count = 0;
+        for (int i = 1; i <= 36; i++) {
+            if (RebornCore.get().kv().getLong(CAVE_NS, id, "caveheaven_" + i + ".visits", 0) > 0) count++;
+        }
+        return count;
+    }
+    public int discoveredBlessedLands(UUID id) {
+        int count = 0;
+        for (int i = 1; i <= 72; i++) {
+            if (RebornCore.get().kv().getLong(CAVE_NS, id, "bless_" + i + ".visits", 0) > 0) count++;
+        }
+        return count;
+    }
+
+    /** 매 1분 = 내부 (ratio)분 = 스탯 미세 +. + 내부 100년 cap 강제 퇴장. */
+    private void tickInside() {
+        long now = System.currentTimeMillis();
+        int maxYears = plugin.getConfig().getInt("time-chamber.max-internal-years", 100);
+        for (var entry : new java.util.HashMap<>(entryAt).entrySet()) {
+            Player p = Bukkit.getPlayer(entry.getKey());
+            if (p == null) continue;
+            String chamber = entryChamber.get(entry.getKey());
+            int ratio = ratioOf(chamber);
+            // 내부 경과 시간(년) = realHours × ratio
+            double realHours = (now - entry.getValue()) / 3_600_000.0;
+            int internalYears = (int) (realHours * ratio);
+            if (internalYears >= maxYears) {
+                // 강제 퇴장 — 기획서 5-12
+                Msg.warn(p, "&5시간의 방 — 내부 " + maxYears + "년 도달, 강제 퇴장.");
+                exit(p);
+                continue;
+            }
+            try {
+                StatType primary = primaryStatOf(chamber);
+                RebornCore.get().api().addStat(p.getUniqueId(), primary, ratio * 0.5, "chamber:" + chamber);
+            } catch (Throwable ignored) {}
+        }
+    }
+
+    private int ratioOf(String chamberId) {
+        if (chamberId == null) return 10;
+        return plugin.getConfig().getInt("time-chamber.ratios." + chamberId,
+                plugin.getConfig().getInt("time-chamber.ratio", 10));
+    }
+
+    private String chamberLabel(String chamberId) {
+        return switch (chamberId) {
+            case "dragon_chamber" -> "용계 시간방";
+            // 기획서 5-12: 5대 드래곤 로드 가문 영역 시간의 방
+            case "dragon_chamber_aurelius" -> "아우렐리스 가문 시간의 방 (성광)";
+            case "dragon_chamber_ignifer"  -> "이그니페르 가문 시간의 방 (화염)";
+            case "dragon_chamber_nocterna" -> "녹테르나 가문 시간의 방 (산성)";
+            case "dragon_chamber_cerylis"  -> "세릴리스 가문 시간의 방 (뇌전)";
+            case "dragon_chamber_silvarex" -> "실바렉스 가문 시간의 방 (독)";
+            case "immortal_seclusion" -> "선계 폐관 동굴";
+            case "martial_cliff" -> "전설의 절벽";
+            case "demon_tower" -> "마계 마기탑";
+            case "mind_palace" -> "정신의 궁전";
+            case "spirit_grove" -> "정령의 숲";
+            default -> "시간의 방";
+        };
+    }
+
+    private String exitWorldOf(String chamberId) {
+        return switch (chamberId) {
+            case "immortal_seclusion" -> "immortal";
+            case "martial_cliff" -> "martial";
+            case "demon_tower" -> "demon";
+            case "spirit_grove" -> "spirit";
+            case "mind_palace" -> "lobby";
+            // 5대 드래곤 가문 시간의 방은 모두 dragon 세계로 복귀
+            case "dragon_chamber_aurelius", "dragon_chamber_ignifer",
+                 "dragon_chamber_nocterna", "dragon_chamber_cerylis",
+                 "dragon_chamber_silvarex" -> "dragon";
+            default -> "dragon";
+        };
+    }
+
+    private StatType primaryStatOf(String chamberId) {
+        return switch (chamberId) {
+            case "immortal_seclusion" -> StatType.IMMORTAL_KI;
+            case "martial_cliff" -> StatType.INNER_KI;
+            case "demon_tower" -> StatType.DEMON_KI;
+            case "spirit_grove" -> StatType.SPIRIT_POWER;
+            case "mind_palace" -> StatType.MENTAL;
+            // 5대 드래곤 가문 방은 모두 용력 누적, 환경은 추가 보너스 부여
+            case "dragon_chamber_aurelius", "dragon_chamber_ignifer",
+                 "dragon_chamber_nocterna", "dragon_chamber_cerylis",
+                 "dragon_chamber_silvarex" -> StatType.DRAGON_POWER;
+            default -> StatType.DRAGON_POWER;
+        };
+    }
+
+    private void applyExitBonus(Player p, String chamberId, int years) {
+        try {
+            StatType primary = primaryStatOf(chamberId);
+            RebornCore.get().api().addStat(p.getUniqueId(),
+                    primary, years * 10, "chamber-exit:" + chamberId);
+            if ("immortal_seclusion".equals(chamberId) && years >= 100) {
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.MENTAL, 20, "seclusion-100y");
+            }
+            if ("martial_cliff".equals(chamberId) && years >= 30) {
+                Bukkit.broadcastMessage("§5§l[절벽 수련] §f"
+                        + p.getName() + " §7이(가) 깨달음을 얻고 내려왔다.");
+            }
+            // 기획서 5-12: 5대 드래곤 가문 시간의 방 — 환경별 보조 보너스
+            applyDragonChamberEnvironmentBonus(p, chamberId, years);
+        } catch (Throwable ignored) {}
+    }
+
+    /** 5대 드래곤 가문 환경(HOLY/FIRE/ACID/LIGHTNING/POISON)별 추가 스탯. */
+    private void applyDragonChamberEnvironmentBonus(Player p, String chamberId, int years) {
+        if (chamberId == null || !chamberId.startsWith("dragon_chamber_")) return;
+        double secondary = years * 2;
+        switch (chamberId) {
+            case "dragon_chamber_aurelius" -> {
+                // 성광(HOLY) 환경 → 신성·정신
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.DIVINITY, secondary, "dragon-aurelius-holy");
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.MENTAL, secondary, "dragon-aurelius-holy");
+            }
+            case "dragon_chamber_ignifer" -> {
+                // 화염(FIRE) 환경 → 근력·지구력
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.STRENGTH, secondary, "dragon-ignifer-fire");
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.ENDURANCE, secondary, "dragon-ignifer-fire");
+            }
+            case "dragon_chamber_nocterna" -> {
+                // 산성(ACID) 환경 → 지구력·매력
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.ENDURANCE, secondary, "dragon-nocterna-acid");
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.CHARM, secondary, "dragon-nocterna-acid");
+            }
+            case "dragon_chamber_cerylis" -> {
+                // 뇌전(LIGHTNING) 환경 → 민첩·지능
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.AGILITY, secondary, "dragon-cerylis-lightning");
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.INTELLIGENCE, secondary, "dragon-cerylis-lightning");
+            }
+            case "dragon_chamber_silvarex" -> {
+                // 독(POISON) 환경 → 지구력·행운, 독 면역 마커
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.ENDURANCE, secondary, "dragon-silvarex-poison");
+                RebornCore.get().api().addStat(p.getUniqueId(),
+                        StatType.LUCK, secondary, "dragon-silvarex-poison");
+                try {
+                    var d = RebornCore.get().api().getPlayerData(p.getUniqueId());
+                    if (d != null) d.status().put("poison_resistance",
+                            new kr.reborn.core.data.PlayerData.StatusEffect(
+                                    "poison_resistance", "BLESSING", years * 1200L, 1));
+                } catch (Throwable ignored) {}
+            }
+            default -> {}
+        }
     }
 }

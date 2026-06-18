@@ -26,6 +26,8 @@ public final class EffectDef {
     public final Map<StatType, Double> staticStats = new EnumMap<>(StatType.class);
     /** tick 마다 적용 스탯 변동 */
     public final Map<StatType, Double> tickStats = new EnumMap<>(StatType.class);
+    /** tick 마다 적용 (낮 시간대 한정) */
+    public final Map<StatType, Double> tickStatsDayOnly = new EnumMap<>(StatType.class);
     /** 모든 8공통 스탯에 적용되는 tick 변동 */
     public final double tickStatsCommon;
     /** 광폭화 발동 확률 (0~1) */
@@ -34,16 +36,32 @@ public final class EffectDef {
     public final Map<StatType, Double> percentStats = new EnumMap<>(StatType.class);
     public final List<String> cureMethods = new ArrayList<>();
     public final String special;
+    /** tick 마다 HP 변동 (음수 = 데미지) */
+    public final double hpTick;
+    /** 배에서 떨어졌을 때 HP 드레인 (해적 저주) */
+    public final double outOfShipHpDrain;
+    /** 봉인할 스킬 스쿨 (예: HOLY) — 해당 스쿨 스킬 시전 불가 */
+    public final String lockSkillSchool;
+    /** 수련 효율 모디파이어 (-0.8 = 80% 감소) */
+    public final double trainEfficiency;
+    /** 광폭화 시 입는 데미지 가중 (1.0 = 정상) */
+    public final double damageTakenMult;
+    /** 호의적 NPC가 호의도 잃는 양 (저주 보유 시 매 tick 누적) */
+    public final double npcFavorTick;
 
     public EffectDef(String id, Kind kind, String name, String description,
                      long durationSeconds, int maxStacks, int tickIntervalSeconds,
                      WorldKey worldRestriction, double tickStatsCommon, double berserkChance,
-                     String special) {
+                     String special, double hpTick, double outOfShipHpDrain,
+                     String lockSkillSchool, double trainEfficiency,
+                     double damageTakenMult, double npcFavorTick) {
         this.id = id; this.kind = kind; this.name = name; this.description = description;
         this.durationSeconds = durationSeconds; this.maxStacks = maxStacks;
         this.tickIntervalSeconds = tickIntervalSeconds; this.worldRestriction = worldRestriction;
         this.tickStatsCommon = tickStatsCommon; this.berserkChance = berserkChance;
-        this.special = special;
+        this.special = special; this.hpTick = hpTick; this.outOfShipHpDrain = outOfShipHpDrain;
+        this.lockSkillSchool = lockSkillSchool; this.trainEfficiency = trainEfficiency;
+        this.damageTakenMult = damageTakenMult; this.npcFavorTick = npcFavorTick;
     }
 
     public boolean permanent() { return durationSeconds < 0; }
@@ -59,12 +77,20 @@ public final class EffectDef {
         double tickCommon = eff != null ? eff.getDouble("stats_tick_common", 0) : 0;
         double berserk = eff != null ? eff.getDouble("berserk_chance", 0) : 0;
         String special = eff != null ? eff.getString("special", null) : null;
+        double hpTick = eff != null ? eff.getDouble("hp_tick", 0) : 0;
+        double outOfShip = eff != null ? eff.getDouble("out_of_ship_hp_drain", 0) : 0;
+        String lockSchool = eff != null ? eff.getString("lock_skill_school", null) : null;
+        double trainEff = eff != null ? eff.getDouble("train_efficiency", 0) : 0;
+        double dmgMult = eff != null ? eff.getDouble("damage_taken_mult", 1.0) : 1.0;
+        double npcFavor = eff != null ? eff.getDouble("npc_favor_tick", 0) : 0;
         EffectDef d = new EffectDef(id, kind, s.getString("name", id),
                 s.getString("description", ""), dur, maxStacks, tick, w,
-                tickCommon, berserk, special);
+                tickCommon, berserk, special, hpTick, outOfShip, lockSchool, trainEff,
+                dmgMult, npcFavor);
         if (eff != null) {
             mapInto(eff.getConfigurationSection("stats"), d.staticStats);
             mapInto(eff.getConfigurationSection("stats_tick"), d.tickStats);
+            mapInto(eff.getConfigurationSection("stats_tick_day_only"), d.tickStatsDayOnly);
             mapInto(eff.getConfigurationSection("stats_percent"), d.percentStats);
         }
         d.cureMethods.addAll(s.getStringList("cure_methods"));

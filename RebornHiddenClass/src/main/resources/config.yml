@@ -218,6 +218,26 @@ classes:
       - { type: TIER_REACHED, tier: "합체기" }
     effects:
       passive: LEGENDARY_PILL_RECIPES
+  caveheaven_master:
+    type: ACHIEVEMENT
+    name: "&5&l36동천 마스터"
+    description: "선계 36동천을 모두 발견"
+    conditions:
+      - { type: STAT_MIN, stat: IMMORTAL_KI, value: 1000 }
+      - { type: WORLD, world: IMMORTAL }
+    effects:
+      stats: { IMMORTAL_KI: 500, MENTAL: 30 }
+      passive: CAVEHEAVEN_MASTERY
+  blessed_pilgrim:
+    type: ACHIEVEMENT
+    name: "&6&l72복지 순례자"
+    description: "선계 72복지를 모두 방문"
+    conditions:
+      - { type: STAT_MIN, stat: IMMORTAL_KI, value: 500 }
+      - { type: WORLD, world: IMMORTAL }
+    effects:
+      stats: { LUCK: 50, IMMORTAL_KI: 300 }
+      passive: BLESSED_PRESENCE
   demon_lord_candidate:
     type: ACHIEVEMENT
     name: "&4마왕 후보"
@@ -307,6 +327,26 @@ classes:
     effects:
       stats: { CHARISMA: 300 }
       passive: APOCALYPSE_RULER
+  mutant_adapter:
+    type: ACHIEVEMENT
+    name: "&a&l변종 적응자"
+    description: "방사능에 적응하여 신체가 변이한 자 (기획서 5-10 변종 적응자)"
+    conditions:
+      - { type: STAT_MIN, stat: ENDURANCE, value: 1500 }
+      - { type: WORLD, world: APOCALYPSE }
+    effects:
+      stats: { STRENGTH: 100, ENDURANCE: 100, MENTAL: -30 }
+      passive: RADIATION_IMMUNITY
+  wasteland_warlord:
+    type: ACHIEVEMENT
+    name: "&8&l폐허 군주"
+    description: "약탈자 무리·생존자 연합을 모두 정복한 자"
+    conditions:
+      - { type: TIER_REACHED, tier: "군주급" }
+      - { type: WORLD, world: APOCALYPSE }
+    effects:
+      stats: { STRENGTH: 80, CHARISMA: 60 }
+      passive: PLUNDER_COMMAND
   tech_god:
     type: ACHIEVEMENT
     name: "&b기술 신"

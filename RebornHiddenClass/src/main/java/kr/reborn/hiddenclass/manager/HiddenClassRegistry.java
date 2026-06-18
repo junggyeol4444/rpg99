@@ -78,7 +78,15 @@ public final class HiddenClassRegistry {
             }
             String tier = String.valueOf(raw.getOrDefault("tier", ""));
             double value = raw.get("value") instanceof Number n ? n.doubleValue() : 0;
-            hc.conditions.add(new Condition(ct, stat, tier, value));
+            // WORLD 조건은 'world' 필드를 stringValue로, CRAFT_MASTERY는 'fields'를 numericValue로 받는다.
+            String stringValue = tier;
+            if (ct == Condition.Type.WORLD && raw.get("world") != null) {
+                stringValue = String.valueOf(raw.get("world"));
+            }
+            if (ct == Condition.Type.CRAFT_MASTERY && raw.get("fields") instanceof Number n2) {
+                value = n2.doubleValue();
+            }
+            hc.conditions.add(new Condition(ct, stat, stringValue, value));
         }
         return hc;
     }

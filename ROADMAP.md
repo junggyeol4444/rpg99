@@ -1,0 +1,139 @@
+# 환생의 월드 — 진짜 운영 가능 수준 ROADMAP
+
+기획서 ver.17.0 전부를 실제 동작 가능한 수준까지 단계별로 완성.
+
+## 운영 결함 일제 정리 (Audit Pass)
+
+전체 플러그인 코드 감사 후 발견·수정된 핵심 결함:
+
+**영속화 누락 (재시작 시 데이터 손실)** — 28개 시스템 KV 영속화:
+- ✓ 13개 세계 성장 strategy (Demon/Heaven/Yokai/Dragon/Martial/Immortal
+  /Ocean/Spirit/Earth/Cyber/Magitech/Fantasy/Apocalypse는 휘발성 유지)
+- ✓ 핵심 진행 4종 (Crime/Proficiency/HiddenClass/Title)
+- ✓ 핵심 시스템 4종 (Manual.research/PastLives/Pet/Price)
+- ✓ 경제 3종 (Mailbox/Auction/Contribution) + ItemSerializer 인프라
+- ✓ 추가 3종 (Accessory/Specialty/Combo)
+- ✓ 명계 3종 (UnderworldManager/UnderworldQuests/FamousEncounter)
+- ✓ **PlayerSkillStore** — 가장 큰 결함, 모든 보유 스킬·숙련도·8슬롯
+- ✓ **AbilityEngine** — 1회 한정 능력·IMMORTAL_REVIVE
+- ✓ **QuestEngine** — 다단계 36 WORLD 퀘스트의 count·phase
+
+**Folia·Async 안전성** — sync-only API를 async timer에서 호출하던 3 버그:
+- WorldAI.tickAll (callEvent + broadcast)
+- PetCombat.tickPassives (PotionEffect, entity scheduler)
+- BountyManager.tickAutoBounty (broadcastMessage)
+
+**실제 버그**:
+- LABYRINTH_TELEPORT 추락 (getHighestBlockYAt + SLOW_FALLING)
+- EnchantStone 등급별 Material 매핑 누락
+- Quest "item:" 보상이 실제 ItemStack을 지급하지 않던 버그
+- CurrencyManager.flush() = empty TODO (전 통화 손실)
+- Famous NPC가 자동 spawn되지 않던 결함
+- Reflection 타깃 메서드 7건 누락 → 구현
+
+**기획서 ver.17.0 정합성 결함** (전수 감사 2차):
+- ✓ 5-4: 정령계 17 원소 (FIRE/WATER/EARTH/WIND + 12소원소 + CHAOS)
+- ✓ 5-4: 13번째 숨겨진 숲 — 혼돈 정령 접촉 (정신력 부족 시 폭주 사망)
+- ✓ 5-4: /element 명령 — 빛/어둠은 태초의 정령 시험 후 가능, 혼돈은 불가
+- ✓ 5-5/5-6: TAO_POWER (도력) 누적 — 무협/선계에서 데드 스탯이었음
+- ✓ 5-5: 비급 70종 (30 → 70 — 무협 30·선계 4·판타지 6 추가)
+- ✓ 5-5: 영약 40종 효과 실제 작동 (ConsumeType 7 → 25로 확장,
+       ADD_STAT/ADD_MULTI/BUFF/CURE_CURSE/ANTI_PARANOIA 등 처리)
+- ✓ 5-12: 5대 드래곤 가문 시간의 방 (aurelius/ignifer/nocterna/cerylis/silvarex)
+       + 환경별 보너스 (HOLY/FIRE/ACID/LIGHTNING/POISON) + 가문 허가증 시스템
+- ✓ 13장: 히든 월드 6개 실제 진입 — lazy world 생성, 해금 시 자유 이동
+- ✓ 15장: 환율 세계 AI 동적 조정 (5분마다 inflation 기반 갱신)
+- ✓ 23장: 부부 30블록 근접 시 공통 스탯 +5% (실제 PotionEffect + status 마커)
+- ✓ 월드 퀘스트 dead target 보강 (fantasy_hero_knight/cult_protector/alliance_head)
+
+
+## Phase 1 — 기반 시스템 깊이 (모든 세계 공통)
+
+### Step 1: 진짜 자율 NPC (sub-step으로 분할)
+
+지적: "단순 if문 8개 = 마크 빌리저 + α일 뿐"
+→ 진짜 NPC는 성격·기억·욕구·장기목표를 가지고 **스스로** 결정해야 함.
+
+- ✓ Step 1.0: Behavior 골격
+- ✓ Step 1.1: Personality + Memory + Needs
+- ✓ Step 1.2: Goals (장기 목표)
+- ✓ Step 1.3: Utility-based 의사결정
+- ✓ Step 1.4: Social Network (관계 그래프·소문 전파)
+- ✓ Step 1.5: Faction Dynamics (파벌 형성·정치·전쟁)
+- ✓ Step 1.6: World Impact (NPC가 진짜로 가게·종교·왕국 만들어냄)
+
+**→ Step 1 (진짜 자율 NPC) 전체 완료.**
+
+### ✓ Step 2: 스킬 효과 진짜 구현
+- ✓ SkillType 11종 + YAML 자동 추론 (136스킬 손 안 대고 종류별 분기)
+- ✓ 효과 9종: MELEE/PROJECTILE/AOE/HEAL/BUFF/DASH/BLINK/DOT/CHAIN/SUMMON
+- ✓ 투사체 (Snowball/SmallFireball + 메타데이터 + ProjectileHit 리스너)
+- ✓ AOE 반경 공격 + 파티클 링
+- ✓ 속성 상성 (FIRE/ICE/WATER/NATURE/HOLY/DARK… ×1.5/×0.66) + 몹 속성 추정 + 상태이상
+- ✓ 캐스팅 바(액션바 진행도)·피격 시전 중단
+- ✓ 파티클·사운드 이펙트
+
+### ✓ Step 3: 몬스터 AI 16종 진짜 동작
+- ✓ MobController: 활성 커스텀 몹을 매 주기(ai-tick-interval) 종류별 구동
+- ✓ PACK 협공 / RANGED 카이팅(사격) / SWARM 돌격 / FLEE 도주 / TERRITORIAL 둥지 복귀
+- ✓ BOSS HP% 페이즈(75/50/25%) 전환 + 패턴(충격파·소환·광폭화) + 브로드캐스트
+- ✓ 신규 6종: CASTER(마법)·TANK(저항)·SUPPORT(아군 회복)·BERSERKER(저HP 강화)·SUMMONER(소환)·AMBUSH(은신 기습)
+- ✓ 대표 몹 6종 재배정(골렘=TANK, 거미=AMBUSH, 고스트=CASTER 등)으로 즉시 검증 가능
+- ✓ 디스폰 누수 방지(5분 미관측 정리), `/rmob ai` 활성 수 조회
+
+**다음: Step 4 (퀘스트 엔진).**
+
+### ✓ Step 4: 퀘스트 엔진 (단계형 진행 + 이벤트 연동)
+- ✓ 통합 진행 엔진 progress() — 모든 타입·다단계가 하나의 정확한 경로로
+- ✓ **다단계 WORLD 퀘스트(36종) 실제 작동** — 단계 완료 시 다음 단계, 마지막에 완료
+- ✓ 이벤트 연동 6종: KILL·GATHER(획득)·CRAFT(제작)·TALK(NPC대화)·EXPLORE(월드입장)·SURVIVE(생존 타이머+사망 리셋)
+- ✓ CUSTOM API(custom()) — ESCORT/DEFEND/MOVE/DELIVER/SKILL_USE는 이 경로로 구동(차후 전용 연동)
+- ✓ ActionBar 단계 진행 표시, /quest accept|abandon|active, 후속 퀘스트 자동 수락
+- ✓ 기존 onKill→complete의 ConcurrentModification 잠재 버그 수정
+
+**다음: Step 5 (세계 디렉터 AI).**
+
+### Step 5: 세계 AI 실제 데이터 분석
+- RebornEconomy 실제 거래 로그 분석
+- RebornClan 실제 세력 관계 분석
+- RebornMob 실제 몬스터 카운트 분석
+- 결정 → 실제 NPC 군대 편성·이동
+
+### Step 6: 히든 클래스 40종 passive 효과 진짜 구현
+- DRAGON_GROW_X2, GATE_BOOST_20 등 실제 적용
+- 스킬 자동 해금
+- 면역 시스템 (cyber psychosis 등)
+
+## Phase 2 — 13세계 각자 깊이
+
+### Step 7: 판타지계 — 왕국·마법·검술·던전·마왕령
+### Step 8: 마계 — 7대 마왕령·72귀족·마기·영혼 거래
+### Step 9: 천계 — 9층·4대천사·신마전쟁
+### Step 10: 정령계 — 정령 플레이어·4정령왕·12소정령·계약
+### Step 11: 무협계 — 마교·정파·사파·비급 70종·도력
+### Step 12: 선계 — 36동천·72복지·천겁·인약사 트리
+### Step 13: 요계 — 백귀야행·보름달·변신·구미호
+### Step 14: 지구 — 게이트 등급·미궁 100층
+### Step 15: 마도공학계 — 7대 도시·마도 기기
+### Step 16: 아포칼립스계 — 3대 세력·생존
+### Step 17: 사이버펑크계 — 7대 메가코프·사이버네틱스
+### Step 18: 드래곤계 — 5대 가문·시간의 방·새끼용 성장
+### Step 19: 해양제국계 — 7대 제국·배·해전·심해
+
+## Phase 3 — 크로스 시스템
+
+### Step 20: 다세계 월드 퀘스트 (신마대전·대선마요 등)
+### Step 21: 히든 월드 6개 깊이 (명계·심연·시간·꿈·허공·신계)
+### Step 22: 결혼·자녀 깊이 (자녀 NPC 행동·혈통·전환)
+### Step 23: 가문·왕국 깊이 (전쟁·외교·정략)
+### Step 24: 신 시스템 깊이 (신앙·시련·신역·세계 창조)
+
+## Phase 4 — 마무리
+
+### Step 25: 패킷 NPC 진짜 구현
+### Step 26: 리소스팩 (실제 텍스처·모델)
+### Step 27: 부하 테스트·최적화
+
+---
+
+각 Step은 별도 커밋. 완료 시 ✓ 표시.

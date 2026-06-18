@@ -4,10 +4,14 @@ import kr.reborn.core.event.RebornNPCInteractEvent;
 import kr.reborn.npc.RebornNPC;
 import kr.reborn.npc.emotion.Emotion;
 import kr.reborn.npc.entity.RebornNpc;
+import kr.reborn.npc.soul.Memory;
+import kr.reborn.npc.soul.Needs;
+import kr.reborn.npc.soul.Personality;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 
 public final class NpcInteractListener implements Listener {
@@ -22,10 +26,61 @@ public final class NpcInteractListener implements Listener {
         if (npc == null) return;
         e.setCancelled(true);
         Bukkit.getPluginManager().callEvent(new RebornNPCInteractEvent(e.getPlayer(), npc.id));
-        // 호감도 상승
+
+        // 학파 반응 — 무협계 NPC는 플레이어 학파에 따라 호감도 가감 (기획서 5-5).
+        // 일회성 (상호작용 당) 가감으로 누적되지만 폭주 방지를 위해 작게.
+        applySchoolReaction(npc, e.getPlayer());
+
+        // 자율 의뢰 — NPC가 자신의 욕구로 만든 퀘스트를 안내 (기획서 7장 ①)
+        String pendingQuest = plugin.registry().questOffers().pendingOfferOf(npc);
+        if (pendingQuest != null) {
+            kr.reborn.core.util.Msg.send(e.getPlayer(),
+                    "&6&l[의뢰] §f" + npc.displayName + "이(가) 도움을 청한다.");
+            kr.reborn.core.util.Msg.send(e.getPlayer(),
+                    "&7수락: §a/quest accept " + pendingQuest);
+        }
+
+        // 호감도 + 호기심
         npc.relations.addPlayer(e.getPlayer().getUniqueId(), 0.5);
         npc.emotion.add(Emotion.Kind.CURIOSITY, 1.0);
-        e.getPlayer().sendMessage("§6[" + npc.displayName + "] §f무슨 일이오?");
+
+        // 영혼이 있으면 욕구·기억 갱신
+        if (npc.soul != null) {
+            npc.soul.needs.add(Needs.Kind.COMPANIONSHIP, +2);
+            // 선물 — 손에 든 아이템 있으면 기록
+            var item = e.getPlayer().getInventory().getItemInMainHand();
+            if (item != null && !item.getType().isAir()) {
+                npc.soul.memory.record(e.getPlayer().getUniqueId().toString(),
+                        Memory.Kind.GIFTED_ME, 15, item.getType().name());
+            }
+            // 매번 만나면 약한 우호 기억
+            npc.soul.memory.record(e.getPlayer().getUniqueId().toString(),
+                    Memory.Kind.HELPED_ME, 2, "대화");
+        }
+
+        // 성격 + 직업 기반 인사 — ResponseBank가 50+ 변형 중에서 무작위 선택
+        String greeting;
+        if (npc.soul != null) {
+            double sent = npc.soul.relationToward(e.getPlayer().getUniqueId().toString());
+            // 50% 확률로 직업별 인사, 50% 확률로 성격 기반
+            String jobLine = ResponseBank.jobGreeting(npc.job);
+            if (jobLine != null && kr.reborn.core.util.Rand.chance(0.5)) {
+                greeting = jobLine;
+            } else {
+                greeting = ResponseBank.pickGreeting(npc, sent);
+            }
+        } else {
+            String jobLine = ResponseBank.jobGreeting(npc.job);
+            greeting = jobLine != null ? jobLine : "무슨 일이오?";
+        }
+        e.getPlayer().sendMessage("§6[" + npc.displayName + "] §f" + greeting);
+
+        // 유명 NPC 첫 만남 — 특별 연출 (한 번만)
+        try { plugin.famousEncounter().tryFirstEncounter(e.getPlayer(), npc.id); }
+        catch (Throwable ignored) {}
+
+        // 대화 트리 열기 — 정의된 dialog이 있으면
+        try { plugin.dialogueManager().open(e.getPlayer(), npc); } catch (Throwable ignored) {}
 
         // 환생의 여신 클릭 시 룰렛 발동
         if ("reincarnation_goddess".equals(npc.id)) {
@@ -55,8 +110,119 @@ public final class NpcInteractListener implements Listener {
         if (npc == null) return;
         npc.emotion.add(Emotion.Kind.ANGER, 25);
         npc.emotion.add(Emotion.Kind.TRUST, -10);
+        npc.emotion.add(Emotion.Kind.FEAR, 15);
         if (e.getDamager() instanceof org.bukkit.entity.Player p) {
             npc.relations.addPlayer(p.getUniqueId(), -5);
+            // 영혼 — 공격 기억 기록
+            if (npc.soul != null) {
+                int intensity = (int) Math.min(50, e.getFinalDamage() * 3);
+                npc.soul.memory.record(p.getUniqueId().toString(),
+                        Memory.Kind.ATTACKED_ME, intensity, "피격");
+                npc.soul.reclassify(p.getUniqueId().toString());
+                // 안전 욕구 감소
+                npc.soul.needs.add(Needs.Kind.SAFETY, -10);
+            }
+            if (npc.relations.player(p.getUniqueId()) < -50) {
+                npc.aiData.put("revenge:target", p.getUniqueId());
+                npc.aiData.put("revenge:until", System.currentTimeMillis() + 1_800_000L);
+            }
+            // 큰 피해는 소문 — "X가 나를 공격했다더라"
+            if (e.getFinalDamage() >= 8 && npc.soul != null) {
+                plugin.registry().gossip().createRumor(
+                        npc, p.getUniqueId().toString(), npc.id,
+                        kr.reborn.npc.social.RumorContent.ATTACKED_BY,
+                        (int) Math.min(60, e.getFinalDamage() * 2));
+            }
         }
+    }
+
+    @EventHandler
+    public void onDeath(EntityDeathEvent e) {
+        var npc = plugin.registry().byEntity(e.getEntity().getUniqueId());
+        if (npc == null) return;
+        npc.dead = true;
+        npc.deathAt = System.currentTimeMillis();
+        if (e.getEntity().getKiller() != null) {
+            npc.killerId = e.getEntity().getKiller().getUniqueId();
+            String killerStr = npc.killerId.toString();
+            // 살해자에게 KILLED_TARGET 이벤트 발생 (자기 목표 AVENGE/DEFEAT_RIVAL 완료)
+            var killerNpc = plugin.registry().byEntity(npc.killerId);
+            if (killerNpc != null) {
+                plugin.registry().goalProgressor().onEvent(killerNpc,
+                        new kr.reborn.npc.soul.GoalProgressor.Event(
+                                kr.reborn.npc.soul.GoalProgressor.EventKind.KILLED_TARGET, npc.id));
+            }
+            for (RebornNpc other : plugin.registry().all()) {
+                if (other == npc || other.dead || other.soul == null) continue;
+                double rel = other.soul.relationToward(npc.id);
+                if (rel >= 70) {
+                    other.soul.memory.record(killerStr, Memory.Kind.KILLED_MY_FAMILY, 100, "가족 살해");
+                    other.emotion.add(Emotion.Kind.ANGER, 60);
+                    other.emotion.add(Emotion.Kind.SADNESS, 50);
+                    // PROTECT_FAMILY 목표 실패
+                    plugin.registry().goalProgressor().onEvent(other,
+                            new kr.reborn.npc.soul.GoalProgressor.Event(
+                                    kr.reborn.npc.soul.GoalProgressor.EventKind.FAMILY_LOST, npc.id));
+                } else if (rel >= 40) {
+                    other.soul.memory.record(killerStr, Memory.Kind.KILLED_MY_FRIEND, 80, "친구 살해");
+                    other.emotion.add(Emotion.Kind.ANGER, 40);
+                    other.emotion.add(Emotion.Kind.SADNESS, 30);
+                }
+                // 주군 사망 → SERVE_LORD 무효
+                plugin.registry().goalProgressor().onEvent(other,
+                        new kr.reborn.npc.soul.GoalProgressor.Event(
+                                kr.reborn.npc.soul.GoalProgressor.EventKind.LORD_DIED, npc.id));
+            }
+            // 소문 생성 — "살해자가 사람을 죽였다더라" (목격 NPC가 있으면)
+            RebornNpc nearestWitness = plugin.registry().nearest(npc.location, 20);
+            if (nearestWitness != null && !nearestWitness.dead) {
+                plugin.registry().gossip().createRumor(
+                        nearestWitness, killerStr, npc.id,
+                        kr.reborn.npc.social.RumorContent.MURDERED, 90);
+            }
+        }
+        // 사회망·세력에서 제거 (세력은 지도자 승계·와해 처리)
+        plugin.registry().socialNetwork().removeAllOf(npc.id);
+        plugin.registry().factions().onNpcDeath(npc);
+        Bukkit.broadcastMessage("§7§o[NPC 사망] §r" + npc.displayName + "이(가) 쓰러졌다.");
+    }
+
+    /**
+     * 무협계 NPC가 플레이어 학파를 인식하고 호감도 반응.
+     * 정파 NPC + 마교 플레이어 = 호감도 -3, 같은 학파 = +2.
+     * 짧은 호감도 변화로 누적 폭주 방지.
+     */
+    private void applySchoolReaction(RebornNpc npc, org.bukkit.entity.Player p) {
+        // 무협계 NPC만 학파 인식 (마계/천계는 별도 시스템)
+        if (npc.world != kr.reborn.core.data.WorldKey.MARTIAL) return;
+        // NPC의 학파는 faction 필드로 매핑 (예: "school:ORTHODOX")
+        if (npc.faction == null || !npc.faction.startsWith("school:")) return;
+        String npcSchool = npc.faction.substring(7);
+        try {
+            var sp = Bukkit.getPluginManager().getPlugin("RebornSkill");
+            if (sp == null) return;
+            Object schools = sp.getClass().getMethod("schools").invoke(sp);
+            if (schools == null) return;
+            Object playerSchool = schools.getClass().getMethod("of", java.util.UUID.class)
+                    .invoke(schools, p.getUniqueId());
+            if (playerSchool == null) return;
+            String playerSchoolName = playerSchool.toString();
+            if (npcSchool.equals(playerSchoolName)) {
+                npc.relations.addPlayer(p.getUniqueId(), 2);
+                npc.emotion.add(Emotion.Kind.TRUST, 3);
+            } else if (isRival(npcSchool, playerSchoolName)) {
+                npc.relations.addPlayer(p.getUniqueId(), -3);
+                npc.emotion.add(Emotion.Kind.ANGER, 5);
+                kr.reborn.core.util.Msg.warn(p, "&7" + npc.displayName + "이(가) 너를 적대시한다.");
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    private boolean isRival(String a, String b) {
+        if ("ORTHODOX".equals(a) && "DEMON_CULT".equals(b)) return true;
+        if ("DEMON_CULT".equals(a) && "ORTHODOX".equals(b)) return true;
+        if ("ORTHODOX".equals(a) && "UNORTHODOX".equals(b)) return true;
+        if ("UNORTHODOX".equals(a) && "ORTHODOX".equals(b)) return true;
+        return false;
     }
 }

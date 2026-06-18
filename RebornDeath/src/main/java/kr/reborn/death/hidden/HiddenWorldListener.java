@@ -33,10 +33,11 @@ import java.util.UUID;
 public final class HiddenWorldListener implements Listener {
 
     private final RebornDeath plugin;
-    private final Set<UUID> inTimeRealm = new HashSet<>();
-    private final Set<UUID> inDream = new HashSet<>();
-    private final Set<UUID> inVoid = new HashSet<>();
-    private final Set<UUID> inGodRealm = new HashSet<>();
+    // ConcurrentHashMap.newKeySet — tick + move 리스너가 동시 수정. HashSet은 race·CME 위험.
+    private final Set<UUID> inTimeRealm = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private final Set<UUID> inDream = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private final Set<UUID> inVoid = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private final Set<UUID> inGodRealm = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     public HiddenWorldListener(RebornDeath p) {
         this.plugin = p;
@@ -44,6 +45,21 @@ public final class HiddenWorldListener implements Listener {
         RebornCore.get().scheduler().runTimer(this::tickResidents, 20L, 20L);
         // 5분마다 시간계 틱 속도 변동
         RebornCore.get().scheduler().runTimer(this::scrambleTimeRealm, 6000L, 6000L);
+    }
+
+    /** 재시작 후 — 현재 월드 기준으로 set 자동 등록. */
+    @EventHandler
+    public void onJoin(org.bukkit.event.player.PlayerJoinEvent e) {
+        Player p = e.getPlayer();
+        WorldType type = classifyWorld(p.getWorld());
+        UUID id = p.getUniqueId();
+        switch (type) {
+            case TIME_REALM: inTimeRealm.add(id); break;
+            case DREAM:      inDream.add(id); break;
+            case VOID:       inVoid.add(id); break;
+            case GOD:        inGodRealm.add(id); break;
+            default: break;
+        }
     }
 
     @EventHandler

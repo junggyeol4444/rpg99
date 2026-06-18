@@ -22,16 +22,69 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /** 경매장. */
 public final class AuctionManager {
 
+    private static final String NS = "RebornEconomy.auction";
+
     private final RebornEconomy plugin;
     private final List<AuctionListing> active = new CopyOnWriteArrayList<>();
     private final java.util.Map<UUID, Integer> playerListingCount = new ConcurrentHashMap<>();
 
     public AuctionManager(RebornEconomy plugin) {
         this.plugin = plugin;
+        loadAll();
+    }
+
+    private void loadAll() {
+        // 전체 active 경매 로드 — owner=null (global)
+        try {
+            var all = kr.reborn.core.RebornCore.get().kv().loadAll(NS, null);
+            for (var e : all.entrySet()) {
+                AuctionListing l = decode(e.getKey(), e.getValue());
+                if (l != null) {
+                    active.add(l);
+                    playerListingCount.merge(l.seller, 1, Integer::sum);
+                }
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    private void persist(AuctionListing l) {
+        try {
+            String itemB64 = kr.reborn.core.util.ItemSerializer.toBase64(l.item);
+            String enc = l.seller + "|" + l.currency + "|" + l.startPrice + "|"
+                    + l.buyoutPrice + "|" + l.expiresAt + "|"
+                    + l.currentBid + "|" + (l.currentBidder == null ? "" : l.currentBidder) + "|"
+                    + (itemB64 == null ? "" : itemB64);
+            kr.reborn.core.RebornCore.get().kv().put(NS, null, l.id.toString(), enc);
+        } catch (Throwable ignored) {}
+    }
+
+    private AuctionListing decode(String idStr, String value) {
+        try {
+            UUID id = UUID.fromString(idStr);
+            String[] parts = value.split("\\|", 8);
+            if (parts.length < 8) return null;
+            UUID seller = UUID.fromString(parts[0]);
+            ItemStack item = kr.reborn.core.util.ItemSerializer.fromBase64(parts[7]);
+            AuctionListing l = new AuctionListing(id, seller, item, parts[1],
+                    Long.parseLong(parts[2]), Long.parseLong(parts[3]), Long.parseLong(parts[4]));
+            l.currentBid = Long.parseLong(parts[5]);
+            l.currentBidder = parts[6].isEmpty() ? null : UUID.fromString(parts[6]);
+            return l;
+        } catch (Throwable t) { return null; }
     }
 
     public boolean register(Player seller, ItemStack item, String currency,
                             long startPrice, long buyout, long durationHours) {
+        if (startPrice <= 0) { Msg.error(seller, "시작가는 양수여야 합니다."); return false; }
+        if (buyout < 0) { Msg.error(seller, "즉구가는 0 이상이어야 합니다."); return false; }
+        if (buyout > 0 && buyout < startPrice) {
+            Msg.error(seller, "즉구가는 시작가 이상이어야 합니다.");
+            return false;
+        }
+        if (durationHours <= 0 || durationHours > 24 * 7) {
+            Msg.error(seller, "경매 기간은 1~168시간(7일)이어야 합니다.");
+            return false;
+        }
         int max = plugin.getConfig().getInt("auction.max-listings-per-player", 10);
         int cur = playerListingCount.getOrDefault(seller.getUniqueId(), 0);
         if (cur >= max) {
@@ -50,6 +103,7 @@ public final class AuctionManager {
                 item.clone(), currency, startPrice, buyout, expires);
         active.add(listing);
         playerListingCount.merge(seller.getUniqueId(), 1, Integer::sum);
+        persist(listing);
         Bukkit.getPluginManager().callEvent(new RebornAuctionCreateEvent(seller, listing));
         Msg.send(seller, "&a경매 등록 완료. 시작가 &f" + startPrice + " " + currency);
         return true;
@@ -87,8 +141,12 @@ public final class AuctionManager {
     }
 
     public void bid(Player p, AuctionListing l, long amount) {
+        if (amount <= 0) { Msg.error(p, "입찰가는 양수여야 합니다."); return; }
         if (l.isExpired() || !active.contains(l)) { Msg.error(p, "만료된 매물입니다."); return; }
-        if (amount <= l.currentBid) { Msg.error(p, "현재가보다 높아야 합니다."); return; }
+        if (amount <= l.currentBid || amount < l.startPrice) {
+            Msg.error(p, "현재가/시작가보다 높아야 합니다.");
+            return;
+        }
         if (!plugin.currencies().withdraw(p.getUniqueId(), l.currency, amount)) {
             Msg.error(p, "잔액 부족.");
             return;
@@ -99,17 +157,21 @@ public final class AuctionManager {
         }
         l.currentBid = amount;
         l.currentBidder = p.getUniqueId();
+        persist(l);
         Msg.send(p, "&a입찰 성공: &f" + amount);
     }
 
     public void buyout(Player p, AuctionListing l) {
         if (l.buyoutPrice <= 0) return;
-        if (!active.remove(l)) return;
+        if (!active.contains(l)) { Msg.error(p, "매물이 만료되었습니다."); return; }
+        // 인출 먼저 시도 — 실패 시 active/KV에서 제거하지 않음
         if (!plugin.currencies().withdraw(p.getUniqueId(), l.currency, l.buyoutPrice)) {
             Msg.error(p, "잔액 부족.");
-            active.add(l);
             return;
         }
+        // 인출 성공 → 매물 제거 (원자성 확보)
+        active.remove(l);
+        kr.reborn.core.RebornCore.get().kv().remove(NS, null, l.id.toString());
         if (l.currentBidder != null) plugin.currencies().deposit(l.currentBidder, l.currency, l.currentBid);
         long fee = (long) Math.floor(l.buyoutPrice
                 * plugin.getConfig().getDouble("auction.sale-fee-percent", 3.0) / 100.0);
@@ -128,6 +190,7 @@ public final class AuctionManager {
             AuctionListing l = it.next();
             if (!l.isExpired()) continue;
             active.remove(l);
+            kr.reborn.core.RebornCore.get().kv().remove(NS, null, l.id.toString());
             if (l.currentBidder != null) {
                 // 낙찰
                 long fee = (long) Math.floor(l.currentBid
@@ -145,6 +208,8 @@ public final class AuctionManager {
     }
 
     public void flush() {
-        // TODO: 경매 매물 DB 저장
+        // 영속화는 register/bid/buyout/tickExpire에서 즉시 발생.
+        // 안전망: 활성 경매 전부 재저장.
+        for (AuctionListing l : active) persist(l);
     }
 }

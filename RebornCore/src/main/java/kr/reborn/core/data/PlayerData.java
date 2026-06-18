@@ -88,6 +88,24 @@ public final class PlayerData {
     public Set<WorldKey> visited() { return visited; }
     public Map<String, StatusEffect> status() { return status; }
 
+    /** 세계 방문 기록 — markDirty 자동 호출 (save에서 visited 누락 방지). */
+    public void visit(WorldKey w) {
+        if (w == null) return;
+        if (visited.add(w)) markDirty();
+    }
+
+    /** 상태 효과 추가 — markDirty 자동 호출. */
+    public void addStatus(StatusEffect e) {
+        if (e == null || e.id == null) return;
+        status.put(e.id, e);
+        markDirty();
+    }
+
+    /** 상태 효과 제거 — markDirty 자동 호출. */
+    public void removeStatus(String id) {
+        if (status.remove(id) != null) markDirty();
+    }
+
     public boolean isDirty() { return dirty.get(); }
     public void clearDirty() { dirty.set(false); }
     public void markDirty() { dirty.set(true); }

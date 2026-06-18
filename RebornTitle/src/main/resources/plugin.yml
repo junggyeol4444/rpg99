@@ -6,7 +6,7 @@ folia-supported: true
 authors: [ReincarnationWorld]
 description: 칭호 6종 + 분야별 랭킹
 depend: [RebornCore]
-softdepend: [RebornStat, RebornNPC, RebornQuest, RebornClan]
+softdepend: [RebornStat, RebornNPC, RebornQuest, RebornClan, RebornEconomy, RebornHiddenClass]
 load: POSTWORLD
 commands:
   title:
@@ -15,6 +15,10 @@ commands:
   ranking:
     description: 랭킹 GUI
     aliases: [rank]
+  achievement:
+    description: 업적 시스템 - 50종, 6 등급
+    aliases: [ach, achi]
+    usage: /achievement list|earned|progress|info|points
 permissions:
   reborntitle.use:
     default: true

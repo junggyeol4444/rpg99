@@ -1,9 +1,14 @@
 package kr.reborn.god;
 
+import kr.reborn.core.RebornCore;
 import kr.reborn.god.command.GodCommand;
+import kr.reborn.god.faith.FaithEngine;
 import kr.reborn.god.manager.DomainManager;
 import kr.reborn.god.manager.GodManager;
 import kr.reborn.god.manager.ReligionManager;
+import kr.reborn.god.miracle.MiracleEngine;
+import kr.reborn.god.trial.TrialManager;
+import kr.reborn.god.war.DivineWarManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class RebornGod extends JavaPlugin {
@@ -12,6 +17,11 @@ public final class RebornGod extends JavaPlugin {
     private GodManager gods;
     private DomainManager domains;
     private ReligionManager religions;
+    private FaithEngine faith;
+    private MiracleEngine miracles;
+    private TrialManager trials;
+    private DivineWarManager wars;
+    private kr.reborn.core.util.Gui gui;
 
     public static RebornGod get() { return instance; }
 
@@ -21,12 +31,45 @@ public final class RebornGod extends JavaPlugin {
         saveDefaultConfig();
         this.gods = new GodManager(this);
         this.domains = new DomainManager(this);
+        // 신앙 → 신성 변환 엔진 (religion보다 먼저 — religion이 faith를 호출)
+        this.faith = new FaithEngine(this);
         this.religions = new ReligionManager(this);
+        this.miracles = new MiracleEngine(this);
+        this.trials = new TrialManager(this);
+        this.wars = new DivineWarManager(this);
+        this.gui = new kr.reborn.core.util.Gui(this);
+
         getCommand("god").setExecutor(new GodCommand(this));
-        getLogger().info("RebornGod 활성화");
+        getServer().getPluginManager().registerEvents(
+                new kr.reborn.god.listener.GodWorldImpactListener(this), this);
+        getServer().getPluginManager().registerEvents(trials, this);
+        getServer().getPluginManager().registerEvents(wars, this);
+
+        // 신앙 → 신성 변환 1분마다
+        RebornCore.get().scheduler().runTimer(faith::tick, 1200L, 1200L);
+        // 5분마다 교단·신 데이터 영속화 (서버 크래시 시 데이터 손실 방지)
+        RebornCore.get().scheduler().runTimerAsync(() -> {
+            if (religions != null) religions.saveAll();
+            if (gods != null) gods.saveAll();
+        }, 6000L, 6000L);
+
+        getLogger().info("RebornGod 활성화 — NPC신 " + gods.npcAll().size()
+                + " 교단 " + religions.all().size());
+    }
+
+    @Override
+    public void onDisable() {
+        if (religions != null) religions.saveAll();
+        if (gods != null) gods.saveAll();
+        if (gui != null) gui.shutdown();
     }
 
     public GodManager gods() { return gods; }
     public DomainManager domains() { return domains; }
     public ReligionManager religions() { return religions; }
+    public FaithEngine faith() { return faith; }
+    public MiracleEngine miracles() { return miracles; }
+    public TrialManager trials() { return trials; }
+    public DivineWarManager wars() { return wars; }
+    public kr.reborn.core.util.Gui gui() { return gui; }
 }

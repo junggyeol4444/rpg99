@@ -22,12 +22,30 @@ public final class PlayerDataListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         PlayerData d = dm.getOrLoad(e.getPlayer().getUniqueId());
+        if (d == null) return;
         d.name(e.getPlayer().getName());
         d.lastJoin(System.currentTimeMillis());
+        // 접속 5초 후 /guide 안내 — 신규/복귀 사용자 온보딩.
+        final var p = e.getPlayer();
+        try {
+            kr.reborn.core.RebornCore.get().scheduler().runTaskLater(() -> {
+                if (p.isOnline()) {
+                    p.sendMessage(kr.reborn.core.util.Msg.c(
+                            "&7현재 세계의 시스템 안내는 &e/guide &7로 확인하세요."));
+                }
+            }, 100L);
+        } catch (Throwable ignored) {}
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
+        // 세션 playtime 누적 — 이전엔 어디서도 playtime을 갱신 안 해
+        // HiddenClass의 PLAYTIME_MIN 조건이 영영 미달성 상태였음
+        PlayerData d = dm.get(e.getPlayer().getUniqueId());
+        if (d != null) {
+            long session = System.currentTimeMillis() - d.lastJoin();
+            if (session > 0) d.playtime(d.playtime() + session);
+        }
         dm.unload(e.getPlayer().getUniqueId());
     }
 }

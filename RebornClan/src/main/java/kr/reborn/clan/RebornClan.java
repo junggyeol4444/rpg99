@@ -58,8 +58,10 @@ public final class RebornClan extends JavaPlugin {
             if (kingdoms != null) try { kingdoms.saveAll(); } catch (Throwable ignored) {}
         }, 6000L, 6000L);
 
-        // 1시간마다 왕국 세금 — 영토 chunk × 가문 수에 비례한 GOLD_COIN을 왕에게 적립.
-        kr.reborn.core.RebornCore.get().scheduler().runTimer(this::tickKingdomTax, 72000L, 72000L);
+        // 매 N시간마다 왕국 세금 — 영토 chunk × 가문 수에 비례한 GOLD_COIN을 왕에게 적립.
+        long taxIntervalHours = Math.max(1L, getConfig().getLong("kingdom.tax-interval-hours", 1L));
+        long taxTicks = taxIntervalHours * 72000L;
+        kr.reborn.core.RebornCore.get().scheduler().runTimer(this::tickKingdomTax, taxTicks, taxTicks);
 
         getLogger().info("RebornClan 활성화");
     }

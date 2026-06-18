@@ -1,7 +1,7 @@
 clan:
-  create-min-total-stats: 300
+  create-min-total-stats: 250          # 가문 생성 진입 장벽: 300 → 250 (초반 가문 형성 가속)
   create-cost-currency: GOLD_COIN
-  create-cost-amount: 10000
+  create-cost-amount: 8000             # 10000 → 8000 (장기 안착 우대)
   level-thresholds: [0, 100, 300, 700, 1500, 3000, 6000, 12000, 25000, 50000, 100000]
 
 marriage:
@@ -10,24 +10,25 @@ marriage:
   demon-ritual: blood_contract
   yokai-ritual: full_moon_lake
   buff-radius: 30
-  buff-stat-percent: 5
+  buff-stat-percent: 8                 # 5% → 8% (배우자 동반 인센티브)
 
 child:
-  request-success-chance: 0.30
+  request-success-chance: 0.40         # 0.30 → 0.40 (자녀 진입 부드럽게)
   cooldown-hours: 24
-  parent-stat-percent: 5
+  parent-stat-percent: 8               # 5% → 8% (부모 스탯 비례 자녀 보너스)
 
 territory:
   size: 16
   cost-currency: GOLD_COIN
   cost-amount: 1000
   upkeep-per-day: 100
-  bonus-stat-percent: 5
+  bonus-stat-percent: 8                # 5% → 8% (영토 보유 효용)
 
 kingdom:
-  required-clan-level: 7
+  required-clan-level: 5               # 7 → 5 (왕국 진입 가속 — 후반 컨텐츠로 이동)
   required-territories: 3
-  cost: 100000
+  cost: 50000                          # 100000 → 50000 (현실적 endgame 비용)
+  tax-interval-hours: 1                # 세금 자동 적립 주기 (기존 1h 하드코드 노출)
 
 # ============================================================
 # 혈통 정의 (5장 5-1, 5-2, 5-7, 5-12 + 23장 가문·혈통)

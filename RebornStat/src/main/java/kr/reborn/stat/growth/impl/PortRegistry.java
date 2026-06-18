@@ -16,8 +16,13 @@ import java.util.Map;
 public final class PortRegistry {
 
     private static final String NS = "RebornStat.ocean.port";
-    private static final int TAKEOVER_THRESHOLD = 1000;
-    private static final int MAX_INFLUENCE = 5000;
+    private static final int DEFAULT_TAKEOVER_THRESHOLD = 1000;
+    private static final int DEFAULT_MAX_INFLUENCE = 5000;
+    private static final int DEFAULT_DECAY_PCT = 50;
+
+    private int takeoverThreshold = DEFAULT_TAKEOVER_THRESHOLD;
+    private int maxInfluence = DEFAULT_MAX_INFLUENCE;
+    private int decayPct = DEFAULT_DECAY_PCT;
 
     private final Map<String, OceanPort> ports = new LinkedHashMap<>();
 
@@ -25,6 +30,18 @@ public final class PortRegistry {
         for (String id : OceanPort.PORTS) ports.put(id, new OceanPort(id));
         load();
         loadBoundsFromConfig();
+        loadTuningFromConfig();
+    }
+
+    private void loadTuningFromConfig() {
+        try {
+            var plugin = (org.bukkit.plugin.java.JavaPlugin)
+                    org.bukkit.Bukkit.getPluginManager().getPlugin("RebornStat");
+            if (plugin == null) return;
+            takeoverThreshold = plugin.getConfig().getInt("takeover.port-threshold", DEFAULT_TAKEOVER_THRESHOLD);
+            maxInfluence = plugin.getConfig().getInt("takeover.max-influence", DEFAULT_MAX_INFLUENCE);
+            decayPct = Math.max(0, Math.min(100, plugin.getConfig().getInt("takeover.takeover-decay-pct", DEFAULT_DECAY_PCT)));
+        } catch (Throwable ignored) {}
     }
 
     /**
@@ -109,7 +126,7 @@ public final class PortRegistry {
         if (p == null) return;
         synchronized (p) {
             int cur = p.influence.getOrDefault(empireId, 0);
-            int next = Math.max(0, Math.min(MAX_INFLUENCE, cur + delta));
+            int next = Math.max(0, Math.min(maxInfluence, cur + delta));
             p.influence.put(empireId, next);
             RebornCore.get().kv().putInt(NS, null, portId + ".inf." + empireId, next);
             checkTakeover(p);
@@ -124,21 +141,22 @@ public final class PortRegistry {
         for (var e : p.influence.entrySet()) {
             if (e.getValue() > topInf) { topInf = e.getValue(); topEmpire = e.getKey(); }
         }
-        if (topEmpire == null || topInf < TAKEOVER_THRESHOLD) return;
+        if (topEmpire == null || topInf < takeoverThreshold) return;
         if (topEmpire.equals(p.currentRuler)) return;
         String prev = p.currentRuler;
         p.currentRuler = topEmpire;
         p.ruledSince = System.currentTimeMillis();
         RebornCore.get().kv().put(NS, null, p.id + ".ruler", topEmpire);
         RebornCore.get().kv().putLong(NS, null, p.id + ".since", p.ruledSince);
-        java.util.Map<String, Integer> halved = new java.util.LinkedHashMap<>();
+        java.util.Map<String, Integer> decayed = new java.util.LinkedHashMap<>();
+        int retainPct = 100 - decayPct;
         for (var e : p.influence.entrySet()) {
-            int half = e.getValue() / 2;
-            halved.put(e.getKey(), half);
-            RebornCore.get().kv().putInt(NS, null, p.id + ".inf." + e.getKey(), half);
+            int kept = e.getValue() * retainPct / 100;
+            decayed.put(e.getKey(), kept);
+            RebornCore.get().kv().putInt(NS, null, p.id + ".inf." + e.getKey(), kept);
         }
         p.influence.clear();
-        p.influence.putAll(halved);
+        p.influence.putAll(decayed);
         Bukkit.broadcastMessage("§3§l[" + p.id + " 점령] §f" + topEmpire
                 + (prev == null ? " §7가 무인 항구를 차지했다."
                                 : " §7가 §6" + prev + " §7로부터 항구를 빼앗았다."));

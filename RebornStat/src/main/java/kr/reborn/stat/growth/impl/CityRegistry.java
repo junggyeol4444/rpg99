@@ -23,8 +23,15 @@ import java.util.Map;
 public final class CityRegistry {
 
     private static final String NS = "RebornStat.cyberpunk.city";
-    private static final int TAKEOVER_THRESHOLD = 1000;
-    private static final int MAX_INFLUENCE = 5000;
+    // 디폴트 값 — config의 takeover.* 가 없으면 사용. 0이면 정복 영구 차단.
+    private static final int DEFAULT_TAKEOVER_THRESHOLD = 1000;
+    private static final int DEFAULT_MAX_INFLUENCE = 5000;
+    private static final int DEFAULT_DECAY_PCT = 50;
+
+    /** 점령 임계 영향력 — config takeover.district-threshold. */
+    private int takeoverThreshold = DEFAULT_TAKEOVER_THRESHOLD;
+    private int maxInfluence = DEFAULT_MAX_INFLUENCE;
+    private int decayPct = DEFAULT_DECAY_PCT;
 
     private final Map<String, CyberCity> districts = new LinkedHashMap<>();
 
@@ -32,6 +39,18 @@ public final class CityRegistry {
         for (String id : CyberCity.DISTRICTS) districts.put(id, new CyberCity(id));
         load();
         loadBoundsFromConfig();
+        loadTuningFromConfig();
+    }
+
+    private void loadTuningFromConfig() {
+        try {
+            var plugin = (org.bukkit.plugin.java.JavaPlugin)
+                    org.bukkit.Bukkit.getPluginManager().getPlugin("RebornStat");
+            if (plugin == null) return;
+            takeoverThreshold = plugin.getConfig().getInt("takeover.district-threshold", DEFAULT_TAKEOVER_THRESHOLD);
+            maxInfluence = plugin.getConfig().getInt("takeover.max-influence", DEFAULT_MAX_INFLUENCE);
+            decayPct = Math.max(0, Math.min(100, plugin.getConfig().getInt("takeover.takeover-decay-pct", DEFAULT_DECAY_PCT)));
+        } catch (Throwable ignored) {}
     }
 
     /**
@@ -120,7 +139,7 @@ public final class CityRegistry {
         // Folia 다중 리전 동시 접근 차단 — district 인스턴스 단위 lock.
         synchronized (c) {
             int cur = c.influence.getOrDefault(corpId, 0);
-            int next = Math.max(0, Math.min(MAX_INFLUENCE, cur + delta));
+            int next = Math.max(0, Math.min(maxInfluence, cur + delta));
             c.influence.put(corpId, next);
             RebornCore.get().kv().putInt(NS, null, districtId + ".inf." + corpId, next);
             checkTakeover(c);
@@ -135,23 +154,24 @@ public final class CityRegistry {
         for (var e : c.influence.entrySet()) {
             if (e.getValue() > topInf) { topInf = e.getValue(); topCorp = e.getKey(); }
         }
-        if (topCorp == null || topInf < TAKEOVER_THRESHOLD) return;
+        if (topCorp == null || topInf < takeoverThreshold) return;
         if (topCorp.equals(c.currentOwner)) return;
         String prev = c.currentOwner;
         c.currentOwner = topCorp;
         c.ownedSince = System.currentTimeMillis();
         RebornCore.get().kv().put(NS, null, c.id + ".owner", topCorp);
         RebornCore.get().kv().putLong(NS, null, c.id + ".since", c.ownedSince);
-        // 점령 직후 50% 감쇠 — 후속 방어전 쿨다운.
+        // 점령 직후 decayPct% 감쇠 — 후속 방어전 쿨다운.
         // 새 Map에 복사 후 일괄 교체 — iteration 중 put 회피.
-        java.util.Map<String, Integer> halved = new java.util.LinkedHashMap<>();
+        java.util.Map<String, Integer> decayed = new java.util.LinkedHashMap<>();
+        int retainPct = 100 - decayPct;
         for (var e : c.influence.entrySet()) {
-            int half = e.getValue() / 2;
-            halved.put(e.getKey(), half);
-            RebornCore.get().kv().putInt(NS, null, c.id + ".inf." + e.getKey(), half);
+            int kept = e.getValue() * retainPct / 100;
+            decayed.put(e.getKey(), kept);
+            RebornCore.get().kv().putInt(NS, null, c.id + ".inf." + e.getKey(), kept);
         }
         c.influence.clear();
-        c.influence.putAll(halved);
+        c.influence.putAll(decayed);
         Bukkit.broadcastMessage("§b§l[" + c.id + " 점령] §f" + topCorp
                 + (prev == null ? " §7가 무주공산을 차지했다."
                                 : " §7가 §6" + prev + " §7로부터 구역을 빼앗았다."));

@@ -1,7 +1,7 @@
 growth:
   fantasy:
     monster-kill-mult: 1.0
-    quest-mult: 1.5
+    quest-mult: 2.0                    # 1.5 → 2.0 (퀘스트 보상 강화)
   martial:
     monster-kill: false  # 몬스터 사냥 스탯 0
     blood-magic-allowed: false
@@ -25,6 +25,35 @@ growth:
     chamber-ratio: 10
   apocalypse:
     radiation-bonus: 1.2
+
+# ============================================================
+# 코프·제국 점령전 균형 — 영향력 누적/점령 임계점.
+# 낮을수록 점령전 회전 빠름 (방어전 더 잦아짐).
+# ============================================================
+takeover:
+  district-threshold: 1000              # 사이버 구역 점령 임계 영향력
+  port-threshold: 1000                  # 항구 점령 임계
+  max-influence: 5000                   # 영향력 상한
+  takeover-decay-pct: 50                # 점령 직후 50% 감쇠 — 방어전 쿨다운
+
+# ============================================================
+# 메가코프·해양제국 평판 보상 — /corp join, mission 보상 base.
+# rival 감소는 항상 절반.
+# ============================================================
+faction-reward:
+  join-amount: 25
+  rival-loss-pct: 50
+  mission:
+    minor: 25
+    major: 75
+    legend: 200
+    betray: -150
+  empire-mission:
+    escort: 20
+    naval: 60
+    explore: 35
+    pirate: 100
+    betray: -150
 
 # ============================================================
 # 정령계 12 소정령 숲 + 13번째 혼돈 숲 + 4대 정령왕 영역

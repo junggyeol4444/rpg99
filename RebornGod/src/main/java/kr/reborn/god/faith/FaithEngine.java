@@ -112,9 +112,24 @@ public final class FaithEngine {
         return true;
     }
 
-    /** 의식 집전 — 30블록 내 같은 교단 신도 모두 +기도 효과. 8시간 쿨다운. */
+    /** 의식 집전 — config ritual.radius 내 같은 교단 신도 모두 +기도 효과. config ritual.cooldown-hours 쿨다운. */
     private final java.util.Map<java.util.UUID, Long> lastRitual = new java.util.concurrent.ConcurrentHashMap<>();
-    private static final long RITUAL_COOLDOWN_MS = 8L * 3600_000L;
+    private static final long DEFAULT_RITUAL_COOLDOWN_MS = 8L * 3600_000L;
+
+    private long ritualCooldownMs() {
+        try {
+            long h = plugin.getConfig().getLong("ritual.cooldown-hours", 8L);
+            return Math.max(1L, h) * 3600_000L;
+        } catch (Throwable t) { return DEFAULT_RITUAL_COOLDOWN_MS; }
+    }
+    private double ritualRadius() {
+        try { return Math.max(5.0, plugin.getConfig().getDouble("ritual.radius", 30.0)); }
+        catch (Throwable t) { return 30.0; }
+    }
+    private int ritualDurationMin() {
+        try { return Math.max(1, plugin.getConfig().getInt("ritual.duration-min", 30)); }
+        catch (Throwable t) { return 30; }
+    }
 
     public boolean performRitual(org.bukkit.entity.Player p, String religionId) {
         Religion r = plugin.religions().get(religionId);
@@ -125,25 +140,28 @@ public final class FaithEngine {
             kr.reborn.core.util.Msg.error(p, "이 교단 신도가 아닙니다 — /god religion join 먼저."); return false;
         }
         long now = System.currentTimeMillis();
+        long cooldown = ritualCooldownMs();
         Long last = lastRitual.get(p.getUniqueId());
-        if (last != null && now - last < RITUAL_COOLDOWN_MS) {
-            long h = (RITUAL_COOLDOWN_MS - (now - last)) / 3600_000L;
+        if (last != null && now - last < cooldown) {
+            long h = (cooldown - (now - last)) / 3600_000L;
             kr.reborn.core.util.Msg.warn(p, "다음 의식까지 " + Math.max(1, h) + "시간 남음.");
             return false;
         }
         lastRitual.put(p.getUniqueId(), now);
 
         // 주변 같은 교단 신도 카운트 + LUCK 효과.
+        double radius = ritualRadius();
+        int durationTicks = ritualDurationMin() * 60 * 20;
         int participants = 1;
         for (org.bukkit.entity.Player nearby : p.getLocation().getWorld().getPlayers()) {
             if (nearby == p) continue;
-            if (nearby.getLocation().distance(p.getLocation()) > 30) continue;
+            if (nearby.getLocation().distance(p.getLocation()) > radius) continue;
             if (!r.followers.contains(nearby.getUniqueId())) continue;
             try {
                 nearby.addPotionEffect(new org.bukkit.potion.PotionEffect(
-                        org.bukkit.potion.PotionEffectType.LUCK, 20 * 60 * 30, 1, true, false));
+                        org.bukkit.potion.PotionEffectType.LUCK, durationTicks, 1, true, false));
                 nearby.sendMessage("§6[" + r.name + " 의식] §f" + p.getName()
-                        + " §7의 집전 — LUCK II 30분.");
+                        + " §7의 집전 — LUCK II " + ritualDurationMin() + "분.");
             } catch (Throwable ignored) {}
             participants++;
         }
@@ -156,9 +174,9 @@ public final class FaithEngine {
 
         // 집전자 본인에게 더 강한 효과
         p.addPotionEffect(new org.bukkit.potion.PotionEffect(
-                org.bukkit.potion.PotionEffectType.LUCK, 20 * 60 * 30, 2, true, false));
+                org.bukkit.potion.PotionEffectType.LUCK, durationTicks, 2, true, false));
         p.addPotionEffect(new org.bukkit.potion.PotionEffect(
-                org.bukkit.potion.PotionEffectType.REGENERATION, 20 * 60 * 10, 0, true, false));
+                org.bukkit.potion.PotionEffectType.REGENERATION, durationTicks / 3, 0, true, false));
         org.bukkit.Bukkit.broadcastMessage("§6§l[" + r.name + " 의식] §f" + p.getName()
                 + " §7집전 — 참가자 " + participants + "명, 신앙 +" + (int) gain);
         // 시각 효과

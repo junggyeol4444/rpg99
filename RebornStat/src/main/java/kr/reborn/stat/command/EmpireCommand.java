@@ -63,8 +63,9 @@ public final class EmpireCommand implements CommandExecutor {
                 if (a.length < 2) { Msg.warn(p, "/empire join <EMPIRE>"); return true; }
                 String eid = a[1].toUpperCase();
                 if (!empire.isEmpire(eid)) { Msg.error(p, "유효한 EMPIRE 아님. " + java.util.Arrays.toString(OceanGrowth.EMPIRES)); return true; }
-                empire.gainEmpireFavor(p, eid, 25);
-                Msg.send(p, "&a" + eid + " 시민 신청 — 평판 +25, 라이벌 -12");
+                int amt = empire.joinAmount();
+                empire.gainEmpireFavor(p, eid, amt);
+                Msg.send(p, "&a" + eid + " 시민 신청 — 평판 +" + amt);
             }
             case "mission" -> {
                 if (!p.hasPermission("rebornstat.admin") && !p.isOp()) {
@@ -100,6 +101,7 @@ public final class EmpireCommand implements CommandExecutor {
                 org.bukkit.Material.SKELETON_SKULL
         };
         int slot = 0;
+        int joinAmt = empire.joinAmount();
         for (String eid : OceanGrowth.EMPIRES) {
             final String empireId = eid;
             int rep = empire.empireReputation(p.getUniqueId(), eid);
@@ -114,11 +116,11 @@ public final class EmpireCommand implements CommandExecutor {
                     "&7점령 항구: &6" + ruled + "/7",
                     isPatron ? "&e현재 후원 제국" : "",
                     "",
-                    "&a클릭 — 시민 신청 (+25)");
+                    "&a클릭 — 시민 신청 (+" + joinAmt + ")");
             b.set(slot, item, e -> {
                 p.closeInventory();
-                empire.gainEmpireFavor(p, empireId, 25);
-                Msg.send(p, "&a" + empireId + " 시민 신청 — 평판 +25, 라이벌 -12");
+                empire.gainEmpireFavor(p, empireId, joinAmt);
+                Msg.send(p, "&a" + empireId + " 시민 신청 — 평판 +" + joinAmt);
             });
             slot++;
         }

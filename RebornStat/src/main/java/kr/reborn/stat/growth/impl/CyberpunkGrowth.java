@@ -364,7 +364,8 @@ public final class CyberpunkGrowth implements GrowthStrategy {
             String rival = CORP_RIVALS.get(corpId);
             if (rival != null) {
                 int rivalCur = corpReputation(p.getUniqueId(), rival);
-                int rivalNext = Math.max(-1000, rivalCur - (delta / 2));
+                int rivalLoss = delta * rivalLossPct() / 100;
+                int rivalNext = Math.max(-1000, rivalCur - rivalLoss);
                 RebornCore.get().kv().putInt(CORP_NS, p.getUniqueId(), rival, rivalNext);
             }
             // 활동 중인 구역이 있으면 해당 구역의 코프 영향력 누적 (도시 점령전).
@@ -406,16 +407,50 @@ public final class CyberpunkGrowth implements GrowthStrategy {
         return false;
     }
 
-    /** 코프 임무 완료 시 적용. type별 평판 가산. */
+    /** 코프 임무 완료 시 적용. type별 평판 가산 — config faction-reward.mission.* 에서 로드. */
     public void onCorpMission(Player p, String corpId, String missionType) {
-        int amount = switch (missionType) {
+        int amount = missionReward(missionType);
+        gainCorpFavor(p, corpId, amount);
+    }
+
+    /** /corp join 시 부여 평판 — config faction-reward.join-amount. */
+    public int joinAmount() {
+        try {
+            var plugin = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornStat");
+            if (plugin instanceof org.bukkit.plugin.java.JavaPlugin jp) {
+                return Math.max(0, jp.getConfig().getInt("faction-reward.join-amount", 25));
+            }
+        } catch (Throwable ignored) {}
+        return 25;
+    }
+
+    /** 라이벌 코프 평판 감소율(%) — config faction-reward.rival-loss-pct. */
+    private int rivalLossPct() {
+        try {
+            var plugin = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornStat");
+            if (plugin instanceof org.bukkit.plugin.java.JavaPlugin jp) {
+                return Math.max(0, Math.min(100,
+                        jp.getConfig().getInt("faction-reward.rival-loss-pct", 50)));
+            }
+        } catch (Throwable ignored) {}
+        return 50;
+    }
+
+    private int missionReward(String missionType) {
+        int fallback = switch (missionType) {
             case "minor"  -> 25;
             case "major"  -> 75;
             case "legend" -> 200;
             case "betray" -> -150;
             default       -> 10;
         };
-        gainCorpFavor(p, corpId, amount);
+        try {
+            var plugin = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornStat");
+            if (plugin instanceof org.bukkit.plugin.java.JavaPlugin jp) {
+                return jp.getConfig().getInt("faction-reward.mission." + missionType, fallback);
+            }
+        } catch (Throwable ignored) {}
+        return fallback;
     }
 
     public Map<String, Integer> allCorpReputations(UUID p) {

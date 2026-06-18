@@ -80,8 +80,7 @@ public final class RebornClan extends JavaPlugin {
                             .invoke(cm, k.king, "GOLD_COIN", rev);
                     org.bukkit.entity.Player kingP = org.bukkit.Bukkit.getPlayer(k.king);
                     if (kingP != null) {
-                        kingP.sendMessage("§6[왕국 세금] §f" + k.name + " §7→ §6"
-                                + rev + " GOLD §7적립.");
+                        kr.reborn.core.util.Msg.t(kingP, "kingdom.tax", k.name, rev);
                     }
                 } catch (Throwable ignored) {}
             }

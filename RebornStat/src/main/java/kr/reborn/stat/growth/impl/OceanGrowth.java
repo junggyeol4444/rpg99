@@ -285,7 +285,8 @@ public final class OceanGrowth implements GrowthStrategy {
             String rival = EMPIRE_RIVALS.get(empireId);
             if (rival != null) {
                 int rivalCur = empireReputation(p.getUniqueId(), rival);
-                int rivalNext = Math.max(-1000, rivalCur - (delta / 2));
+                int rivalLoss = delta * rivalLossPct() / 100;
+                int rivalNext = Math.max(-1000, rivalCur - rivalLoss);
                 RebornCore.get().kv().putInt(EMPIRE_NS, p.getUniqueId(), rival, rivalNext);
             }
             // 활동 중인 항구가 있으면 제국 영향력 누적 (항구 점령전).
@@ -325,17 +326,50 @@ public final class OceanGrowth implements GrowthStrategy {
         return false;
     }
 
-    /** 해상 임무 보상 — 종류별 평판. */
+    /** 해상 임무 보상 — config faction-reward.empire-mission.* 에서 로드. */
     public void onEmpireMission(Player p, String empireId, String missionType) {
-        int amount = switch (missionType) {
-            case "escort"   -> 20;   // 호송
-            case "naval"    -> 60;   // 해전 참가
-            case "explore"  -> 35;   // 신항로 발견
-            case "pirate"   -> 100;  // 해적 처치 (대형 임무)
-            case "betray"   -> -150; // 배신
+        int amount = empireMissionReward(missionType);
+        gainEmpireFavor(p, empireId, amount);
+    }
+
+    /** /empire join 시 부여 평판 — config faction-reward.join-amount. */
+    public int joinAmount() {
+        try {
+            var plugin = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornStat");
+            if (plugin instanceof org.bukkit.plugin.java.JavaPlugin jp) {
+                return Math.max(0, jp.getConfig().getInt("faction-reward.join-amount", 25));
+            }
+        } catch (Throwable ignored) {}
+        return 25;
+    }
+
+    private int rivalLossPct() {
+        try {
+            var plugin = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornStat");
+            if (plugin instanceof org.bukkit.plugin.java.JavaPlugin jp) {
+                return Math.max(0, Math.min(100,
+                        jp.getConfig().getInt("faction-reward.rival-loss-pct", 50)));
+            }
+        } catch (Throwable ignored) {}
+        return 50;
+    }
+
+    private int empireMissionReward(String missionType) {
+        int fallback = switch (missionType) {
+            case "escort"   -> 20;
+            case "naval"    -> 60;
+            case "explore"  -> 35;
+            case "pirate"   -> 100;
+            case "betray"   -> -150;
             default         -> 10;
         };
-        gainEmpireFavor(p, empireId, amount);
+        try {
+            var plugin = org.bukkit.Bukkit.getPluginManager().getPlugin("RebornStat");
+            if (plugin instanceof org.bukkit.plugin.java.JavaPlugin jp) {
+                return jp.getConfig().getInt("faction-reward.empire-mission." + missionType, fallback);
+            }
+        } catch (Throwable ignored) {}
+        return fallback;
     }
 
     public Map<String, Integer> allEmpireReputations(UUID p) {

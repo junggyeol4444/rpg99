@@ -66,8 +66,9 @@ public final class CorpCommand implements CommandExecutor {
                 if (a.length < 2) { Msg.warn(p, "/corp join <CORP>"); return true; }
                 String cid = a[1].toUpperCase();
                 if (!corp.isCorp(cid)) { Msg.error(p, "유효한 CORP 아님. " + java.util.Arrays.toString(CyberpunkGrowth.CORPS)); return true; }
-                corp.gainCorpFavor(p, cid, 25);
-                Msg.send(p, "&a" + cid + " 시민 신청 — 평판 +25, 라이벌 -12");
+                int amt = corp.joinAmount();
+                corp.gainCorpFavor(p, cid, amt);
+                Msg.send(p, "&a" + cid + " 시민 신청 — 평판 +" + amt);
             }
             case "mission" -> {
                 if (!p.hasPermission("rebornstat.admin") && !p.isOp()) {
@@ -101,6 +102,7 @@ public final class CorpCommand implements CommandExecutor {
                 org.bukkit.Material.NETHERITE_BLOCK
         };
         int slot = 0;
+        int joinAmt = corp.joinAmount();
         for (String cid : CyberpunkGrowth.CORPS) {
             final String corpId = cid;
             int rep = corp.corpReputation(p.getUniqueId(), cid);
@@ -115,11 +117,11 @@ public final class CorpCommand implements CommandExecutor {
                     "&7점령 구역: &6" + owned + "/7",
                     isPatron ? "&e현재 후원 코프" : "",
                     "",
-                    "&a클릭 — 시민 신청 (+25)");
+                    "&a클릭 — 시민 신청 (+" + joinAmt + ")");
             b.set(slot, item, e -> {
                 p.closeInventory();
-                corp.gainCorpFavor(p, corpId, 25);
-                Msg.send(p, "&a" + corpId + " 시민 신청 — 평판 +25, 라이벌 -12");
+                corp.gainCorpFavor(p, corpId, joinAmt);
+                Msg.send(p, "&a" + corpId + " 시민 신청 — 평판 +" + joinAmt);
             });
             slot++;
         }

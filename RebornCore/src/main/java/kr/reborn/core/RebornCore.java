@@ -53,6 +53,9 @@ public final class RebornCore extends JavaPlugin {
         this.reincarnationMemory = new kr.reborn.core.reincarnation.ReincarnationMemory(this);
         this.hiddenWorld = new kr.reborn.core.discovery.HiddenWorldUnlock(this);
 
+        // 다국어 — lang/ko.yml, lang/en.yml 로드 + 서버 기본 언어 설정.
+        kr.reborn.core.util.Lang.init(this);
+
         getServer().getPluginManager().registerEvents(new PlayerDataListener(dataManager), this);
 
         getCommand("reborncore").setExecutor(new CoreCommand(this));
@@ -67,6 +70,12 @@ public final class RebornCore extends JavaPlugin {
         }
         if (getCommand("guide") != null) {
             getCommand("guide").setExecutor(new kr.reborn.core.command.GuideCommand(this));
+        }
+        if (getCommand("lang") != null) {
+            getCommand("lang").setExecutor(new kr.reborn.core.command.LangCommand(this));
+        }
+        if (getCommand("serverstat") != null) {
+            getCommand("serverstat").setExecutor(new kr.reborn.core.command.ServerStatCommand(this));
         }
 
         long interval = getConfig().getLong("auto-save-interval", 300L) * 20L;

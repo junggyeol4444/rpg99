@@ -1,7 +1,7 @@
 name: RebornMob
 version: '${project.version}'
 main: kr.reborn.mob.RebornMob
-api-version: '1.20'
+api-version: '1.21'
 folia-supported: true
 authors: [ReincarnationWorld]
 description: 세계별 몬스터·보스·스폰·드랍

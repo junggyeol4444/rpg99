@@ -29,8 +29,8 @@ subprojects {
     dependencies {
         val implementation by configurations
         val compileOnly by configurations
-        compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
-        compileOnly("dev.folia:folia-api:1.20.4-R0.1-SNAPSHOT")
+        compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+        compileOnly("dev.folia:folia-api:1.21.4-R0.1-SNAPSHOT")
         compileOnly("com.zaxxer:HikariCP:5.1.0")
         compileOnly("mysql:mysql-connector-java:8.0.33")
         compileOnly("org.jetbrains:annotations:24.1.0")
@@ -38,7 +38,7 @@ subprojects {
 
     tasks.withType<JavaCompile>().configureEach {
         options.encoding = "UTF-8"
-        options.release.set(17)
+        options.release.set(21)
     }
 
     tasks.withType<Jar>().configureEach {

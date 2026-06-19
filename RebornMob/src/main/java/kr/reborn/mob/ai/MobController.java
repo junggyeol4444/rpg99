@@ -214,7 +214,7 @@ public final class MobController {
         if (dmg != null) dmg.setBaseValue(def.damage * rage);
         var spd = le.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
         if (spd != null) spd.setBaseValue(def.speed * (1 + (1 - pct) * 0.6));
-        if (pct < 0.3) le.getWorld().spawnParticle(Particle.ANGRY_VILLAGER, le.getLocation().add(0, 1.8, 0), 3);
+        if (pct < 0.3) le.getWorld().spawnParticle(Particle.VILLAGER_ANGRY, le.getLocation().add(0, 1.8, 0), 3);
         if (target != null) setTarget(le, target);
     }
 

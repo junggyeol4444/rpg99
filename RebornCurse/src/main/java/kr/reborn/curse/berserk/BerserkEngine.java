@@ -76,7 +76,7 @@ public final class BerserkEngine {
         try {
             p.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 1200, 1));
             p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 1200, 0));
-            p.addPotionEffect(new PotionEffect(PotionEffectType.MINING_FATIGUE, 1200, 1));
+            p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 1200, 1));
         } catch (Throwable ignored) {}
         try {
             RebornCore.get().api().addStat(p.getUniqueId(),

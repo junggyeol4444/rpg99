@@ -80,7 +80,9 @@ public final class ShopManager {
             ConfigurationSection s = sec.getConfigurationSection(id);
             if (s == null) continue;
             Shop shop = new Shop(id, s.getString("name", id));
-            for (Map<?, ?> raw : s.getMapList("items")) {
+            for (Map<?, ?> rawAny : s.getMapList("items")) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> raw = (Map<String, Object>) rawAny;
                 Material m = Material.matchMaterial(String.valueOf(raw.getOrDefault("material", "STONE")));
                 if (m == null) continue;
                 shop.items.add(new ShopItem(

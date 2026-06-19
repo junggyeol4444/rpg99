@@ -209,7 +209,7 @@ public final class QuestEngine {
             }
             case "GATHER" -> {
                 sound = org.bukkit.Sound.ENTITY_VILLAGER_YES;
-                particle = org.bukkit.Particle.HAPPY_VILLAGER;
+                particle = org.bukkit.Particle.VILLAGER_HAPPY;
                 msg = "&a&l📦 수집 완료: &r&f" + q.name;
             }
             case "TALK" -> {

@@ -629,7 +629,7 @@ public final class EffectExecutor {
             case "HOLY":      return new PotionEffectType[]{PotionEffectType.GLOWING, PotionEffectType.WEAKNESS};
             case "LIGHTNING": return new PotionEffectType[]{PotionEffectType.SLOW, PotionEffectType.CONFUSION};
             case "WIND":      return new PotionEffectType[]{PotionEffectType.LEVITATION, PotionEffectType.WEAKNESS};
-            case "EARTH":     return new PotionEffectType[]{PotionEffectType.SLOW, PotionEffectType.MINING_FATIGUE};
+            case "EARTH":     return new PotionEffectType[]{PotionEffectType.SLOW, PotionEffectType.SLOW_DIGGING};
             case "NATURE":    return new PotionEffectType[]{PotionEffectType.POISON, PotionEffectType.HUNGER};
             case "ARCANE":    return new PotionEffectType[]{PotionEffectType.WEAKNESS, PotionEffectType.CONFUSION};
             default:          return new PotionEffectType[]{PotionEffectType.WEAKNESS, PotionEffectType.SLOW};
@@ -647,7 +647,7 @@ public final class EffectExecutor {
             case "LIGHTNING": return Particle.ELECTRIC_SPARK;
             case "WIND":      return Particle.CLOUD;
             case "EARTH":     return Particle.LANDING_OBSIDIAN_TEAR;
-            case "NATURE":    return Particle.HAPPY_VILLAGER;
+            case "NATURE":    return Particle.VILLAGER_HAPPY;
             case "ARCANE":    return Particle.SPELL_WITCH;
             default:          return Particle.SQUID_INK;
         }
@@ -678,7 +678,7 @@ public final class EffectExecutor {
             case "LIGHTNING": return Particle.ELECTRIC_SPARK;
             case "WIND":      return Particle.CLOUD;
             case "EARTH":     return Particle.LANDING_OBSIDIAN_TEAR;
-            case "NATURE":    return Particle.HAPPY_VILLAGER;
+            case "NATURE":    return Particle.VILLAGER_HAPPY;
             case "ARCANE":    return Particle.SPELL_WITCH;
             default:          return Particle.CRIT_MAGIC;
         }

@@ -130,7 +130,7 @@ public final class ElementCommand implements CommandExecutor {
             case POISON -> org.bukkit.Particle.SPELL_MOB;
             case METAL -> org.bukkit.Particle.CRIT;
             case CRYSTAL -> org.bukkit.Particle.GLOW;
-            case WOOD -> org.bukkit.Particle.VILLAGER_HAPPY;
+            case WOOD -> org.bukkit.Particle.HAPPY_VILLAGER;
             case SOUND -> org.bukkit.Particle.NOTE;
             case CHAOS -> org.bukkit.Particle.PORTAL;
         };

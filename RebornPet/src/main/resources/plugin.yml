@@ -1,7 +1,7 @@
 name: RebornPet
 version: '${project.version}'
 main: kr.reborn.pet.RebornPet
-api-version: '1.20'
+api-version: '1.21'
 folia-supported: true
 authors: [ReincarnationWorld]
 description: 펫·탈것·계약

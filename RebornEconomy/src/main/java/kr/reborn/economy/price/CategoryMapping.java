@@ -46,7 +46,7 @@ public final class CategoryMapping {
         for (Material m : new Material[]{
                 Material.WOODEN_SWORD, Material.STONE_SWORD, Material.IRON_SWORD,
                 Material.GOLDEN_SWORD, Material.DIAMOND_SWORD, Material.NETHERITE_SWORD,
-                Material.BOW, Material.CROSSBOW, Material.TRIDENT,
+                Material.BOW, Material.CROSSBOW, Material.TRIDENT, Material.MACE,
                 Material.WOODEN_AXE, Material.STONE_AXE, Material.IRON_AXE,
                 Material.GOLDEN_AXE, Material.DIAMOND_AXE, Material.NETHERITE_AXE,
                 Material.ARROW, Material.SPECTRAL_ARROW, Material.TIPPED_ARROW

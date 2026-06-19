@@ -1,7 +1,7 @@
 name: RebornEconomy
 version: '${project.version}'
 main: kr.reborn.economy.RebornEconomy
-api-version: '1.20'
+api-version: '1.21'
 folia-supported: true
 authors: [ReincarnationWorld]
 description: 13세계 화폐·환전·상점·경매·거래

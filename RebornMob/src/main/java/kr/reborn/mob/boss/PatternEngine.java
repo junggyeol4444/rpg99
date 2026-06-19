@@ -123,7 +123,7 @@ public final class PatternEngine {
             }
             case FREEZE_AOE -> applyToNearby(boss, 8, p -> {
                 p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 7));
-                p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 100, 2));
+                p.addPotionEffect(new PotionEffect(PotionEffectType.MINING_FATIGUE, 100, 2));
                 try { p.getWorld().spawnParticle(Particle.SNOWFLAKE, p.getLocation(), 30, 1, 1, 1); }
                 catch (Throwable ignored) {}
             });

@@ -1,7 +1,7 @@
 name: RebornTutorial
 version: '${project.version}'
 main: kr.reborn.tutorial.RebornTutorial
-api-version: '1.20'
+api-version: '1.21'
 folia-supported: true
 authors: [ReincarnationWorld]
 description: 13세계 튜토리얼

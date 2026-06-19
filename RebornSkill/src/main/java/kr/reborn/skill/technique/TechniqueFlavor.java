@@ -104,7 +104,7 @@ public final class TechniqueFlavor {
         // ─── 항룡 절기 추가 ───
         register("이견대인", Particle.HEART, Sound.ENTITY_VILLAGER_TRADE,
                 "&6큰 사람을 본다 — 인덕의 일장.");
-        register("홍점우륙", Particle.VILLAGER_HAPPY, Sound.ENTITY_PHANTOM_FLAP,
+        register("홍점우륙", Particle.HAPPY_VILLAGER, Sound.ENTITY_PHANTOM_FLAP,
                 "&6기러기처럼 차차 나아간다.");
         register("돌여기래", Particle.EXPLOSION_NORMAL, Sound.ENTITY_TNT_PRIMED,
                 "&6갑자기 닥친다 — 막을 수 없다.");

@@ -29,7 +29,10 @@ subprojects {
     dependencies {
         val implementation by configurations
         val compileOnly by configurations
-        compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+        // folia-api는 paper-api의 포크로, 동일 패키지의 모든 클래스를 포함하면서
+        // Folia 전용 스케줄러 API까지 추가 제공한다. 둘 다 compileOnly로 선언하면
+        // 둘 다 동일한 Gradle capability(org.spigotmc:spigot-api)를 선언해
+        // 충돌(Cannot select module with conflict on capability)이 발생하므로 하나만 사용.
         compileOnly("dev.folia:folia-api:1.21.4-R0.1-SNAPSHOT")
         compileOnly("com.zaxxer:HikariCP:5.1.0")
         compileOnly("mysql:mysql-connector-java:8.0.33")
